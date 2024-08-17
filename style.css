@@ -1,0 +1,10 @@
+.top-bar{
+    margin-top: 0px;
+    text-align:center;
+    background-color: rgb(40, 145, 243);
+    color: white;
+    font-size: 28px;
+    font-weight: bold;
+    border-radius: 5px;
+    border-bottom:2px solid white;
+}
