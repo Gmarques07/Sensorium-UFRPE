@@ -25,7 +25,7 @@ def processar_cadastro():
     email = request.form['email']
     endereco = request.form['endereco']
     senha = request.form['senha']
-    # Aqui você pode adicionar a lógica para salvar os dados no banco de dados
+   
     print(f'Cadastro de {nome} processado com sucesso!')
     return redirect('/')
 
@@ -33,7 +33,7 @@ def processar_cadastro():
 def login_usuario_processar():
     cpf = request.form['cpf']
     senha = request.form['senha']
-    # Aqui você pode adicionar a lógica para verificar os dados de login
+   
     print(f'Usuário com CPF {cpf} fez login.')
     return redirect('/')
 
@@ -41,7 +41,7 @@ def login_usuario_processar():
 def login_empresa_processar():
     cnpj = request.form['cnpj']
     senha = request.form['senha']
-    # Aqui você pode adicionar a lógica para verificar os dados de login
+   
     print(f'Empresa com CNPJ {cnpj} fez login.')
     return redirect('/')
 
