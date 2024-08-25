@@ -1,9 +1,8 @@
 import re
 import mysql.connector
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for
 
 app = Flask(__name__)
-app.secret_key = 'sua_chave_secreta'
 
 db_config = {
     'user': 'root',
@@ -118,12 +117,6 @@ def cadastro():
             email = request.form['email']
             endereco = request.form['endereco']
             senha = request.form['senha']
-            confirmacao_senha = request.form['confirmacao_senha']
-
-            # Verificação se as senhas coincidem
-            if senha != confirmacao_senha:
-                flash('As senhas não coincidem. Por favor, tente novamente.')
-                return redirect(url_for('cadastro'))
             
             if not re.match(r'^\d{11}$', cpf):
                 return "O CPF deve conter apenas 11 dígitos numéricos", 400
@@ -203,7 +196,7 @@ def dashboard_usuario(cpf):
     try:
         usuario = encontrar_usuario(cpf)
         if usuario:
-            return render_template('dashboard_usuario.html', usuario=usuario)
+            return render_template('index.html', usuario=usuario)
         else:
             return "Usuário não encontrado", 404
     except Exception as e:
@@ -213,7 +206,25 @@ def dashboard_usuario(cpf):
 def solicitar_pedido():
     try:
         if request.method == 'POST':
-            return redirect(url_for('dashboard_usuario', cpf=request.form['cpf']))  
+            nome = request.form['nome']
+            cpf = request.form['cpf']
+            endereco = request.form['endereco']
+            quantidade = request.form['quantidade']
+            data_entrega = request.form['data_entrega']
+
+            # Inserir o pedido no banco de dados
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            query = """
+            INSERT INTO pedidos (nome, cpf, endereco, quantidade, data_entrega)
+            VALUES (%s, %s, %s, %s, %s)
+            """
+            cursor.execute(query, (nome, cpf, endereco, quantidade, data_entrega))
+            conn.commit()
+            cursor.close()
+            conn.close()
+
+            return redirect(url_for('dashboard_usuario', cpf=cpf))  
         return render_template('solicitar_pedido.html')
     except Exception as e:
         return str(e), 500
