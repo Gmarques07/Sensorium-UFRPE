@@ -135,7 +135,9 @@ def editar_usuario_perfil(cpf):
                 return "O CPF deve conter apenas 11 dígitos numéricos", 400
             
             editar_usuario(cpf, nome, email, endereco, senha)
-            return redirect(url_for('dashboard_usuario', cpf=cpf))
+            
+            # Redirecionar para a tela de login após a atualização dos dados
+            return redirect(url_for('login_usuario'))
         
         return render_template('editar_usuario.html', usuario=usuario)
     except Exception as e:
@@ -179,6 +181,16 @@ def dashboard_usuario(cpf):
             return render_template('dashboard_usuario.html', usuario=usuario)
         else:
             return "Usuário não encontrado", 404
+    except Exception as e:
+        return str(e), 500
+
+@app.route('/solicitar_pedido', methods=['GET', 'POST'])
+def solicitar_pedido():
+    try:
+        if request.method == 'POST':
+            
+            return redirect(url_for('dashboard_usuario', cpf=request.form['cpf']))  
+        return render_template('solicitar_pedido.html')
     except Exception as e:
         return str(e), 500
 
