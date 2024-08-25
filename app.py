@@ -1,3 +1,4 @@
+import re
 import mysql.connector
 from flask import Flask, render_template, request, redirect, url_for
 
@@ -7,14 +8,12 @@ db_config = {
     'user': 'root',
     'password': '',
     'host': 'localhost',
-    'database': 'banco_de_dados_teste'
+    'database': 'banco_de_dados'
 }
-
 
 def get_db_connection():
     conn = mysql.connector.connect(**db_config)
     return conn
-
 
 def encontrar_usuario(cpf):
     conn = get_db_connection()
@@ -26,7 +25,6 @@ def encontrar_usuario(cpf):
     conn.close()
     return usuario
 
-
 def encontrar_empresa(email):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -37,6 +35,23 @@ def encontrar_empresa(email):
     conn.close()
     return empresa
 
+def editar_usuario(cpf, nome=None, email=None, endereco=None, senha=None):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    query = "UPDATE usuarios SET nome = %s, email = %s, endereco = %s, senha = %s WHERE cpf = %s"
+    cursor.execute(query, (nome, email, endereco, senha, cpf))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+def editar_empresa(email, nome=None, endereco=None, telefone=None, senha=None):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    query = "UPDATE empresas SET nome = %s, endereco = %s, telefone = %s, senha = %s WHERE email = %s"
+    cursor.execute(query, (nome, endereco, telefone, senha, email))
+    conn.commit()
+    cursor.close()
+    conn.close()
 
 @app.route('/')
 def pagina_inicial():
@@ -44,7 +59,6 @@ def pagina_inicial():
         return render_template('index.html')
     except Exception as e:
         return str(e), 500
-
 
 @app.route('/login_usuario', methods=['GET', 'POST'])
 def login_usuario():
@@ -61,7 +75,6 @@ def login_usuario():
     except Exception as e:
         return str(e), 500
 
-
 @app.route('/login_empresa', methods=['GET', 'POST'])
 def login_empresa():
     try:
@@ -77,7 +90,6 @@ def login_empresa():
     except Exception as e:
         return str(e), 500
 
-
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
     try:
@@ -87,6 +99,10 @@ def cadastro():
             email = request.form['email']
             endereco = request.form['endereco']
             senha = request.form['senha']
+            
+            if not re.match(r'^\d{11}$', cpf):
+                return "O CPF deve conter apenas 11 dígitos numéricos", 400
+            
             conn = get_db_connection()
             cursor = conn.cursor()
             query = "INSERT INTO usuarios (nome, cpf, email, endereco, senha) VALUES (%s, %s, %s, %s, %s)"
@@ -95,10 +111,54 @@ def cadastro():
             cursor.close()
             conn.close()
             return redirect(url_for('pagina_inicial'))
+        
         return render_template('cadastro.html')
     except Exception as e:
         return str(e), 500
 
+@app.route('/editar_usuario/<cpf>', methods=['GET', 'POST'])
+def editar_usuario_perfil(cpf):
+    try:
+        usuario = encontrar_usuario(cpf)
+        if not usuario:
+            return "Usuário não encontrado", 404
+        
+        if request.method == 'POST':
+            nome = request.form['nome']
+            novo_cpf = request.form['cpf']
+            email = request.form['email']
+            endereco = request.form['endereco']
+            senha = request.form['senha']
+            
+            # Validação de CPF: apenas números
+            if not re.match(r'^\d{11}$', novo_cpf):
+                return "O CPF deve conter apenas 11 dígitos numéricos", 400
+            
+            editar_usuario(cpf, nome, email, endereco, senha)
+            return redirect(url_for('dashboard_usuario', cpf=cpf))
+        
+        return render_template('editar_usuario.html', usuario=usuario)
+    except Exception as e:
+        return str(e), 500
+
+@app.route('/editar_empresa/<email>', methods=['GET', 'POST'])
+def editar_empresa_perfil(email):
+    try:
+        empresa = encontrar_empresa(email)
+        if not empresa:
+            return "Empresa não encontrada", 404
+        
+        if request.method == 'POST':
+            nome = request.form['nome']
+            endereco = request.form['endereco']
+            telefone = request.form['telefone']
+            senha = request.form['senha']
+            editar_empresa(email, nome, endereco, telefone, senha)
+            return redirect(url_for('perfil_empresa', email=email))
+        
+        return render_template('editar_empresa.html', empresa=empresa)
+    except Exception as e:
+        return str(e), 500
 
 @app.route('/perfil_empresa/<email>', methods=['GET'])
 def perfil_empresa(email):
@@ -111,7 +171,6 @@ def perfil_empresa(email):
     except Exception as e:
         return str(e), 500
 
-
 @app.route('/dashboard_usuario/<cpf>', methods=['GET'])
 def dashboard_usuario(cpf):
     try:
@@ -123,16 +182,13 @@ def dashboard_usuario(cpf):
     except Exception as e:
         return str(e), 500
 
-
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
 
-
 @app.errorhandler(500)
 def internal_error(e):
     return render_template('500.html'), 500
-
 
 if __name__ == '__main__':
     app.run(debug=True)
