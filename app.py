@@ -7,15 +7,24 @@ db_config = {
     'user': 'root',
     'password': '',
     'host': 'localhost',
+<<<<<<< HEAD
     'database': 'banco_de_dados_teste'
 }
 
 
+=======
+    'database': 'banco_de_dados'
+}
+
+>>>>>>> main
 def get_db_connection():
     conn = mysql.connector.connect(**db_config)
     return conn
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> main
 def encontrar_usuario(cpf):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -26,7 +35,10 @@ def encontrar_usuario(cpf):
     conn.close()
     return usuario
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> main
 def encontrar_empresa(email):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -37,7 +49,10 @@ def encontrar_empresa(email):
     conn.close()
     return empresa
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> main
 @app.route('/')
 def pagina_inicial():
     try:
@@ -45,7 +60,10 @@ def pagina_inicial():
     except Exception as e:
         return str(e), 500
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> main
 @app.route('/login_usuario', methods=['GET', 'POST'])
 def login_usuario():
     try:
@@ -61,7 +79,10 @@ def login_usuario():
     except Exception as e:
         return str(e), 500
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> main
 @app.route('/login_empresa', methods=['GET', 'POST'])
 def login_empresa():
     try:
@@ -77,7 +98,10 @@ def login_empresa():
     except Exception as e:
         return str(e), 500
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> main
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
     try:
@@ -99,7 +123,10 @@ def cadastro():
     except Exception as e:
         return str(e), 500
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> main
 @app.route('/perfil_empresa/<email>', methods=['GET'])
 def perfil_empresa(email):
     try:
@@ -111,7 +138,10 @@ def perfil_empresa(email):
     except Exception as e:
         return str(e), 500
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> main
 @app.route('/dashboard_usuario/<cpf>', methods=['GET'])
 def dashboard_usuario(cpf):
     try:
@@ -123,16 +153,27 @@ def dashboard_usuario(cpf):
     except Exception as e:
         return str(e), 500
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> main
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> main
 @app.errorhandler(500)
 def internal_error(e):
     return render_template('500.html'), 500
 
+<<<<<<< HEAD
 
 if __name__ == '_main_':
     app.run(debug=True)
+=======
+if __name__ == '__main__':
+    app.run(debug=True)
+>>>>>>> main
