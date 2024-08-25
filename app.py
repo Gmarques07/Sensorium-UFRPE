@@ -1,8 +1,9 @@
 import re
 import mysql.connector
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 
 app = Flask(__name__)
+app.secret_key = 'sua_chave_secreta'
 
 db_config = {
     'user': 'root',
@@ -117,6 +118,12 @@ def cadastro():
             email = request.form['email']
             endereco = request.form['endereco']
             senha = request.form['senha']
+            confirmacao_senha = request.form['confirmacao_senha']
+
+            # Verificação se as senhas coincidem
+            if senha != confirmacao_senha:
+                flash('As senhas não coincidem. Por favor, tente novamente.')
+                return redirect(url_for('cadastro'))
             
             if not re.match(r'^\d{11}$', cpf):
                 return "O CPF deve conter apenas 11 dígitos numéricos", 400
