@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for
 
-app = Flask(_name_)
+app = Flask(__name__)
 
 usuarios = []
 empresas = []
@@ -100,5 +100,5 @@ def page_not_found(e):
 def internal_error(e):
     return render_template('500.html'), 500
 
-if _name_ == '_main_':
+if __name__ == '_main_':
     app.run(debug=True)
