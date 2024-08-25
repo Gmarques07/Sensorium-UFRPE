@@ -84,11 +84,17 @@ def login_usuario():
         if request.method == 'POST':
             cpf = request.form['cpf']
             senha = request.form['senha']
+            print(f"CPF: {cpf}, Senha: {senha}") 
             usuario = encontrar_usuario(cpf)
-            if usuario and usuario['senha'] == senha:
-                return redirect(url_for('dashboard_usuario', cpf=cpf))
+            if usuario:
+                print(f"Usuário encontrado: {usuario}")  
+                if usuario['senha'] == senha:
+                    return redirect(url_for('dashboard_usuario', cpf=cpf))
+                else:
+                    print("Senha incorreta")  
             else:
-                return "CPF ou senha incorretos", 400
+                print("Usuário não encontrado")  
+            return "CPF ou senha incorretos", 400
         return render_template('login_usuario.html')
     except Exception as e:
         return str(e), 500
@@ -148,13 +154,12 @@ def editar_usuario_perfil(cpf):
             endereco = request.form['endereco']
             senha = request.form['senha']
             
-            # Validação de CPF: apenas números
             if not re.match(r'^\d{11}$', novo_cpf):
                 return "O CPF deve conter apenas 11 dígitos numéricos", 400
             
             editar_usuario(cpf, nome, email, endereco, senha)
             
-            # Redirecionar para a tela de login após a atualização dos dados
+            
             return redirect(url_for('login_usuario'))
         
         return render_template('editar_usuario.html', usuario=usuario)
@@ -196,7 +201,7 @@ def dashboard_usuario(cpf):
     try:
         usuario = encontrar_usuario(cpf)
         if usuario:
-            return render_template('index.html', usuario=usuario)
+            return render_template('dashboard_usuario.html', usuario=usuario)
         else:
             return "Usuário não encontrado", 404
     except Exception as e:
@@ -206,25 +211,7 @@ def dashboard_usuario(cpf):
 def solicitar_pedido():
     try:
         if request.method == 'POST':
-            nome = request.form['nome']
-            cpf = request.form['cpf']
-            endereco = request.form['endereco']
-            quantidade = request.form['quantidade']
-            data_entrega = request.form['data_entrega']
-
-            # Inserir o pedido no banco de dados
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            query = """
-            INSERT INTO pedidos (nome, cpf, endereco, quantidade, data_entrega)
-            VALUES (%s, %s, %s, %s, %s)
-            """
-            cursor.execute(query, (nome, cpf, endereco, quantidade, data_entrega))
-            conn.commit()
-            cursor.close()
-            conn.close()
-
-            return redirect(url_for('dashboard_usuario', cpf=cpf))  
+            return redirect(url_for('dashboard_usuario', cpf=request.form['cpf']))  
         return render_template('solicitar_pedido.html')
     except Exception as e:
         return str(e), 500
