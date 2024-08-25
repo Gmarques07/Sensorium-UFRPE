@@ -7,14 +7,12 @@ db_config = {
     'user': 'root',
     'password': '',
     'host': 'localhost',
-    'database': 'banco_de_dados_teste'
+    'database': 'banco_de_dados'
 }
-
 
 def get_db_connection():
     conn = mysql.connector.connect(**db_config)
     return conn
-
 
 def encontrar_usuario(cpf):
     conn = get_db_connection()
@@ -26,7 +24,6 @@ def encontrar_usuario(cpf):
     conn.close()
     return usuario
 
-
 def encontrar_empresa(email):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -37,14 +34,12 @@ def encontrar_empresa(email):
     conn.close()
     return empresa
 
-
 @app.route('/')
 def pagina_inicial():
     try:
         return render_template('index.html')
     except Exception as e:
         return str(e), 500
-
 
 @app.route('/login_usuario', methods=['GET', 'POST'])
 def login_usuario():
@@ -61,7 +56,6 @@ def login_usuario():
     except Exception as e:
         return str(e), 500
 
-
 @app.route('/login_empresa', methods=['GET', 'POST'])
 def login_empresa():
     try:
@@ -76,7 +70,6 @@ def login_empresa():
         return render_template('login_empresa.html')
     except Exception as e:
         return str(e), 500
-
 
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
@@ -99,7 +92,6 @@ def cadastro():
     except Exception as e:
         return str(e), 500
 
-
 @app.route('/perfil_empresa/<email>', methods=['GET'])
 def perfil_empresa(email):
     try:
@@ -110,7 +102,6 @@ def perfil_empresa(email):
             return "Empresa não encontrada", 404
     except Exception as e:
         return str(e), 500
-
 
 @app.route('/dashboard_usuario/<cpf>', methods=['GET'])
 def dashboard_usuario(cpf):
@@ -123,16 +114,13 @@ def dashboard_usuario(cpf):
     except Exception as e:
         return str(e), 500
 
-
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
 
-
 @app.errorhandler(500)
 def internal_error(e):
     return render_template('500.html'), 500
-
 
 if __name__ == '__main__':
     app.run(debug=True)
