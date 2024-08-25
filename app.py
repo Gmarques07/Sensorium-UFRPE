@@ -53,6 +53,24 @@ def editar_empresa(email, nome=None, endereco=None, telefone=None, senha=None):
     cursor.close()
     conn.close()
 
+def aceitar_pedido(pedido_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    query = "UPDATE pedidos SET status = 'aceito' WHERE id = %s"
+    cursor.execute(query, (pedido_id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+def excluir_pedido(pedido_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    query = "DELETE FROM pedidos WHERE id = %s"
+    cursor.execute(query, (pedido_id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
 @app.route('/')
 def pagina_inicial():
     try:
@@ -188,9 +206,24 @@ def dashboard_usuario(cpf):
 def solicitar_pedido():
     try:
         if request.method == 'POST':
-            
             return redirect(url_for('dashboard_usuario', cpf=request.form['cpf']))  
         return render_template('solicitar_pedido.html')
+    except Exception as e:
+        return str(e), 500
+
+@app.route('/aceitar_pedido/<int:pedido_id>', methods=['POST'])
+def aceitar_pedido_route(pedido_id):
+    try:
+        aceitar_pedido(pedido_id)
+        return redirect(url_for('solicitar_pedido'))
+    except Exception as e:
+        return str(e), 500
+
+@app.route('/excluir_pedido/<int:pedido_id>', methods=['POST'])
+def excluir_pedido_route(pedido_id):
+    try:
+        excluir_pedido(pedido_id)
+        return redirect(url_for('solicitar_pedido'))
     except Exception as e:
         return str(e), 500
 
