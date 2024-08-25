@@ -126,7 +126,7 @@ def cadastro():
 <<<<<<< HEAD
 
 =======
->>>>>>> main
+>>>>>>> mainGIT 
 @app.route('/perfil_empresa/<email>', methods=['GET'])
 def perfil_empresa(email):
     try:
