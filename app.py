@@ -1,9 +1,8 @@
 import re
 import mysql.connector
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 
 app = Flask(__name__)
-app.secret_key = 'sua_chave_secreta_aqui'  # Adicione uma chave secreta para usar o flash
 
 db_config = {
     'user': 'root',
@@ -86,9 +85,10 @@ def login_usuario():
             cpf = request.form['cpf']
             senha = request.form['senha']
             usuario = encontrar_usuario(cpf)
-            if usuario:
-                if usuario['senha'] == senha:
-                    return redirect(url_for('dashboard_usuario', cpf=cpf))
+            if usuario and usuario['senha'] == senha:
+                session['usuario_id'] = usuario['id']
+                session['nome_usuario'] = usuario['nome']
+                return redirect(url_for('dashboard_usuario', cpf=cpf))
             flash('CPF ou senha incorretos', 'danger')
             return redirect(url_for('login_usuario'))
         return render_template('login_usuario.html')
@@ -103,6 +103,8 @@ def login_empresa():
             senha = request.form['senha']
             empresa = encontrar_empresa(email)
             if empresa and empresa['senha'] == senha:
+                session['empresa_id'] = empresa['id']
+                session['nome_empresa'] = empresa['nome']
                 return redirect(url_for('perfil_empresa', email=email))
             flash('Email ou senha incorretos', 'danger')
             return redirect(url_for('login_empresa'))
@@ -142,37 +144,6 @@ def cadastro():
         return render_template('cadastro.html')
     except Exception as e:
         return str(e), 500
-    
-@app.route('/cadastro_empresa', methods=['GET', 'POST'])
-def cadastro_empresa():
-    try:
-        if request.method == 'POST':
-            nome_empresa = request.form['nome_empresa']
-            cnpj = request.form['cnpj']
-            email_empresa = request.form['email_empresa']
-            endereco_empresa = request.form['endereco_empresa']
-            senha_empresa = request.form['senha_empresa']
-            confirmacao_senha_empresa = request.form['confirmacao_senha_empresa']
-            
-            if senha_empresa != confirmacao_senha_empresa:
-                return "As senhas não coincidem", 400
-
-            if not re.match(r'^\d{14}$', cnpj):
-                return "O CNPJ deve conter apenas 14 dígitos numéricos", 400
-            
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            query = "INSERT INTO empresas (nome_empresa, cnpj, email_empresa, endereco_empresa, senha_empresa) VALUES (%s, %s, %s, %s, %s)"
-            cursor.execute(query, (nome_empresa, cnpj, email_empresa, endereco_empresa, senha_empresa))
-            conn.commit()
-            cursor.close()
-            conn.close()
-            return redirect(url_for('pagina_inicial'))
-        
-        return render_template('cadastro_empresa.html')
-    except Exception as e:
-        return str(e), 500
-
 
 @app.route('/editar_usuario/<cpf>', methods=['GET', 'POST'])
 def editar_usuario_perfil(cpf):
