@@ -1,8 +1,10 @@
+import os
 import re
 import mysql.connector
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 
 app = Flask(__name__)
+app.secret_key = os.urandom(24)
 
 db_config = {
     'user': 'root',
