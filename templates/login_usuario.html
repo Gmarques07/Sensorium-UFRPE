@@ -58,8 +58,16 @@
                 return cpf;
             }
 
+            function unformatCPF(cpf) {
+                return cpf.replace(/\D/g, '');
+            }
+
             cpfInput.addEventListener('input', function() {
                 this.value = formatCPF(this.value);
+            });
+
+            document.querySelector('form').addEventListener('submit', function() {
+                cpfInput.value = unformatCPF(cpfInput.value);
             });
         });
     </script>
