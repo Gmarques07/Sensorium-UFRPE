@@ -84,16 +84,10 @@ def login_usuario():
         if request.method == 'POST':
             cpf = request.form['cpf']
             senha = request.form['senha']
-            print(f"CPF: {cpf}, Senha: {senha}") 
             usuario = encontrar_usuario(cpf)
             if usuario:
-                print(f"Usuário encontrado: {usuario}")  
                 if usuario['senha'] == senha:
                     return redirect(url_for('dashboard_usuario', cpf=cpf))
-                else:
-                    print("Senha incorreta")  
-            else:
-                print("Usuário não encontrado")  
             return "CPF ou senha incorretos", 400
         return render_template('login_usuario.html')
     except Exception as e:
@@ -108,8 +102,7 @@ def login_empresa():
             empresa = encontrar_empresa(email)
             if empresa and empresa['senha'] == senha:
                 return redirect(url_for('perfil_empresa', email=email))
-            else:
-                return "Email ou senha incorretos", 400
+            return "Email ou senha incorretos", 400
         return render_template('login_empresa.html')
     except Exception as e:
         return str(e), 500
@@ -123,7 +116,11 @@ def cadastro():
             email = request.form['email']
             endereco = request.form['endereco']
             senha = request.form['senha']
+            confirmacao_senha = request.form['confirmacao_senha']
             
+            if senha != confirmacao_senha:
+                return "As senhas não coincidem", 400
+
             if not re.match(r'^\d{11}$', cpf):
                 return "O CPF deve conter apenas 11 dígitos numéricos", 400
             
@@ -158,8 +155,6 @@ def editar_usuario_perfil(cpf):
                 return "O CPF deve conter apenas 11 dígitos numéricos", 400
             
             editar_usuario(cpf, nome, email, endereco, senha)
-            
-            
             return redirect(url_for('login_usuario'))
         
         return render_template('editar_usuario.html', usuario=usuario)
