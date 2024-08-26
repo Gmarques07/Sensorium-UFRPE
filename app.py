@@ -1,8 +1,9 @@
 import re
 import mysql.connector
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 
 app = Flask(__name__)
+app.secret_key = 'sua_chave_secreta_aqui'  # Adicione uma chave secreta para usar o flash
 
 db_config = {
     'user': 'root',
@@ -88,7 +89,8 @@ def login_usuario():
             if usuario:
                 if usuario['senha'] == senha:
                     return redirect(url_for('dashboard_usuario', cpf=cpf))
-            return "CPF ou senha incorretos", 400
+            flash('CPF ou senha incorretos', 'danger')
+            return redirect(url_for('login_usuario'))
         return render_template('login_usuario.html')
     except Exception as e:
         return str(e), 500
@@ -102,7 +104,8 @@ def login_empresa():
             empresa = encontrar_empresa(email)
             if empresa and empresa['senha'] == senha:
                 return redirect(url_for('perfil_empresa', email=email))
-            return "Email ou senha incorretos", 400
+            flash('Email ou senha incorretos', 'danger')
+            return redirect(url_for('login_empresa'))
         return render_template('login_empresa.html')
     except Exception as e:
         return str(e), 500
@@ -112,17 +115,19 @@ def cadastro():
     try:
         if request.method == 'POST':
             nome = request.form['nome']
-            cpf = request.form['cpf']
+            cpf = request.form['cpf'].replace('.', '').replace('-', '')
             email = request.form['email']
             endereco = request.form['endereco']
             senha = request.form['senha']
             confirmacao_senha = request.form['confirmacao_senha']
             
             if senha != confirmacao_senha:
-                return "As senhas não coincidem", 400
+                flash('As senhas não coincidem', 'danger')
+                return redirect(url_for('cadastro'))
 
             if not re.match(r'^\d{11}$', cpf):
-                return "O CPF deve conter apenas 11 dígitos numéricos", 400
+                flash('O CPF deve conter apenas 11 dígitos numéricos', 'danger')
+                return redirect(url_for('cadastro'))
             
             conn = get_db_connection()
             cursor = conn.cursor()
@@ -131,6 +136,7 @@ def cadastro():
             conn.commit()
             cursor.close()
             conn.close()
+            flash('Cadastro realizado com sucesso', 'success')
             return redirect(url_for('pagina_inicial'))
         
         return render_template('cadastro.html')
@@ -146,15 +152,17 @@ def editar_usuario_perfil(cpf):
         
         if request.method == 'POST':
             nome = request.form['nome']
-            novo_cpf = request.form['cpf']
+            novo_cpf = request.form['cpf'].replace('.', '').replace('-', '')
             email = request.form['email']
             endereco = request.form['endereco']
             senha = request.form['senha']
             
             if not re.match(r'^\d{11}$', novo_cpf):
-                return "O CPF deve conter apenas 11 dígitos numéricos", 400
+                flash('O CPF deve conter apenas 11 dígitos numéricos', 'danger')
+                return redirect(url_for('editar_usuario_perfil', cpf=cpf))
             
             editar_usuario(cpf, nome, email, endereco, senha)
+            flash('Perfil atualizado com sucesso', 'success')
             return redirect(url_for('login_usuario'))
         
         return render_template('editar_usuario.html', usuario=usuario)
@@ -174,6 +182,7 @@ def editar_empresa_perfil(email):
             telefone = request.form['telefone']
             senha = request.form['senha']
             editar_empresa(email, nome, endereco, telefone, senha)
+            flash('Perfil atualizado com sucesso', 'success')
             return redirect(url_for('perfil_empresa', email=email))
         
         return render_template('editar_empresa.html', empresa=empresa)
