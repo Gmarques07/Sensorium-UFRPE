@@ -136,6 +136,37 @@ def cadastro():
         return render_template('cadastro.html')
     except Exception as e:
         return str(e), 500
+    
+@app.route('/cadastro_empresa', methods=['GET', 'POST'])
+def cadastro_empresa():
+    try:
+        if request.method == 'POST':
+            nome_empresa = request.form['nome_empresa']
+            cnpj = request.form['cnpj']
+            email_empresa = request.form['email_empresa']
+            endereco_empresa = request.form['endereco_empresa']
+            senha_empresa = request.form['senha_empresa']
+            confirmacao_senha_empresa = request.form['confirmacao_senha_empresa']
+            
+            if senha_empresa != confirmacao_senha_empresa:
+                return "As senhas não coincidem", 400
+
+            if not re.match(r'^\d{14}$', cnpj):
+                return "O CNPJ deve conter apenas 14 dígitos numéricos", 400
+            
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            query = "INSERT INTO empresas (nome_empresa, cnpj, email_empresa, endereco_empresa, senha_empresa) VALUES (%s, %s, %s, %s, %s)"
+            cursor.execute(query, (nome_empresa, cnpj, email_empresa, endereco_empresa, senha_empresa))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return redirect(url_for('pagina_inicial'))
+        
+        return render_template('cadastro_empresa.html')
+    except Exception as e:
+        return str(e), 500
+
 
 @app.route('/editar_usuario/<cpf>', methods=['GET', 'POST'])
 def editar_usuario_perfil(cpf):
