@@ -9,6 +9,7 @@ O objetivo desse projeto é organizar o abastecimento de cisternas em zonas rura
 
 - Python 3.8 ou superior
 - MySQL 8.0 ou superior
+- Wampserver 3.3.5
 
 
 ## Instalação de Dependências
