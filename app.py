@@ -155,10 +155,12 @@ def cadastro_empresa():
             confirmacao_senha_empresa = request.form['confirmacao_senha_empresa']
             
             if senha_empresa != confirmacao_senha_empresa:
-                return "As senhas não coincidem", 400
+                flash('As senhas não coincidem', 'danger')
+                return redirect(url_for('cadastro_empresa'))
 
             if not re.match(r'^\d{14}$', cnpj):
-                return "O CNPJ deve conter apenas 14 dígitos numéricos", 400
+                flash('O CNPJ deve conter exatamente 14 dígitos numéricos', 'danger')
+                return redirect(url_for('cadastro_empresa'))
             
             conn = get_db_connection()
             cursor = conn.cursor()
@@ -167,11 +169,13 @@ def cadastro_empresa():
             conn.commit()
             cursor.close()
             conn.close()
+            flash('Cadastro realizado com sucesso', 'success')
             return redirect(url_for('pagina_inicial'))
         
         return render_template('cadastro_empresa.html')
     except Exception as e:
         return str(e), 500
+
 
 
 @app.route('/editar_usuario/<cpf>', methods=['GET', 'POST'])
