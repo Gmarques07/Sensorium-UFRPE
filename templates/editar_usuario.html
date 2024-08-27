@@ -52,8 +52,11 @@
                     <input type="submit" value="Salvar novos dados" class="btn btn-primary">
                 </div>
             </form>
-            <br>
-            <a href="{{ url_for('dashboard_usuario', cpf=usuario['cpf']) }}">Voltar para o Dashboard</a>
+            <div class="d-flex justify-content-center mt-4">
+                <a href="{{ url_for('dashboard_usuario', cpf=usuario['cpf']) }}" class="btn btn-secondary">Voltar para o Perfil</a>
+            </div>
+            
+
         </div>
     </main>
 
