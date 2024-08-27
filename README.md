@@ -40,7 +40,6 @@ Werkzeug==3.0.4: Biblioteca que fornece utilitários WSGI e suporte para Flask.
 
 
 
-
 ## Configuração do Banco de Dados
 
 Criar o Banco de Dados:
@@ -54,17 +53,39 @@ CREATE DATABASE banco_de_dados;
 
 Após criar o banco de dados, você precisa configurar as tabelas necessárias. Utilize o arquivo de esquema SQL fornecido para criar as tabelas no banco de dados. Aqui está um exemplo de comando para criar uma tabela de usuários:
 
+CREATE TABLE usuarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100),
+    cpf VARCHAR(14) UNIQUE,
+    email VARCHAR(100) UNIQUE,
+    endereco VARCHAR(255),
+    senha VARCHAR(255)
+);
 
+CREATE TABLE empresas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100),
+    email VARCHAR(100) UNIQUE,
+    senha VARCHAR(255)
+);
 
+CREATE TABLE pedidos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    cpf_usuario VARCHAR(14),
+    descricao TEXT,
+    data DATETIME,
+    FOREIGN KEY (cpf_usuario) REFERENCES usuarios(cpf)
+);
 
+Alguns usuarios para teste: 
 
-INSERIR CODIGO DAS TABELAS AQUI
+INSERT INTO usuarios (nome, cpf, email, endereco, senha) VALUES
+('João Silva', '12345678900', 'joao.silva@example.com', 'Rua das Flores, 123', 'senha123'),
+('Maria Oliveira', '23456789012', 'maria.oliveira@example.com', 'Avenida Brasil, 456', 'senha456'),
+('Pedro Souza', '34567890123', 'pedro.souza@example.com', 'Praça da Sé, 789', 'senha789');
 
-
-
-
-
-
+INSERT INTO empresas (email, nome, cnpj, senha) 
+VALUES ('empresa2@example.com', 'Empresa Exemplo 2', '12345678000196', 'senha456');
 
 
 ## Configurar as Conexões:
