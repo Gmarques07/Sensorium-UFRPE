@@ -115,10 +115,12 @@ Abaixo estão os principais arquivos e suas funções:
 - **login_usuario.html**: Formulário de login para usuários, onde eles podem inserir seu CPF e senha.
 - **login_empresa.html**: Formulário de login para empresas, com campos para email e senha.
 - **cadastro.html**: Página de cadastro para novos usuários, incluindo campos para nome, CPF, email, endereço e senha.
+- **cadastro_empresa.html**: Página de cadastro para novas empresas, incluindo campos para nome, CNPJ, email, endereço e senha.
 - **editar_usuario.html**: Página para editar o perfil do usuário, onde eles podem atualizar suas informações.
 - **editar_empresa.html**: Página para editar o perfil da empresa, permitindo atualizar dados como nome, endereço e telefone.
 - **perfil_empresa.html**: Exibe o perfil da empresa, com informações relevantes e opções de edição.
 - **dashboard_usuario.html**: Dashboard do usuário, que exibe informações pessoais e opções para solicitar pedidos.
 - **solicitar_pedido.html**: Página para solicitar um novo pedido.
+- **aceitar_pedidos.html**: Página para aceitar pedidos pendentes.
 - **404.html**: Página de erro 404, exibida quando uma página não é encontrada.
 - **500.html**: Página de erro 500, exibida quando ocorre um erro interno do servidor.
