@@ -196,6 +196,10 @@ def editar_empresa_perfil(email):
 @app.route('/perfil_empresa/<email>', methods=['GET'])
 def perfil_empresa(email):
     try:
+        if 'empresa_id' not in session:
+            flash('Você deve estar logado para acessar esta página', 'warning')
+            return redirect(url_for('login_empresa'))
+        
         empresa = encontrar_empresa(email)
         if empresa:
             return render_template('perfil_empresa.html', empresa=empresa)
