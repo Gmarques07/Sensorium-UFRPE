@@ -21,13 +21,13 @@
         Água em Ação
     </div>
 
-    <h1 class="display-2 text-center">Cadastro Empresa</h1>
+    <h1 class="display-2 text-center">Cadastro de Empresa</h1>
 
     <main class="container">
         <div class="form-section">
-            <h3 class="text-center">Preencha os dados para cadastrar sua empresa</h3>
+            <h3 class="text-center">Preencha os dados para se cadastrar</h3>
 
-            <!-- Mensagens de Flash -->
+            
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     <div class="alert alert-dismissible fade show {{ 'alert-' + messages[0][0] }}" role="alert">
@@ -44,7 +44,7 @@
                 </div>
                 <div class="mb-3">
                     <label for="cnpj" class="h4">CNPJ:</label>
-                    <input type="text" id="cnpj" name="cnpj" class="form-control p-2" placeholder="Insira o CNPJ" pattern="\d{14}" title="O CNPJ deve conter exatamente 14 dígitos numéricos" maxlength="18" required>
+                    <input type="text" id="cnpj" name="cnpj" class="form-control p-2" placeholder="Insira o CNPJ" maxlength="18" required>
                 </div>
                 <div class="mb-3">
                     <label for="email_empresa" class="h4">Email:</label>
@@ -56,11 +56,11 @@
                 </div>
                 <div class="mb-3">
                     <label for="senha_empresa" class="h4">Senha:</label>
-                    <input type="password" id="senha_empresa" name="senha_empresa" class="form-control p-2" placeholder="Insira sua senha" required>
+                    <input type="password" id="senha_empresa" name="senha_empresa" class="form-control p-2" placeholder="Insira a Senha" required>
                 </div>
                 <div class="mb-3">
                     <label for="confirmacao_senha_empresa" class="h4">Confirmar Senha:</label>
-                    <input type="password" id="confirmacao_senha_empresa" name="confirmacao_senha_empresa" class="form-control p-2" placeholder="Confirme sua senha" required>
+                    <input type="password" id="confirmacao_senha_empresa" name="confirmacao_senha_empresa" class="form-control p-2" placeholder="Confirme a Senha" required>
                 </div>
                 <div class="d-flex justify-content-center">
                     <input type="submit" value="Cadastrar" class="btn btn-primary">
@@ -83,7 +83,7 @@
             if (cnpjValue.length <= 14) {
                 cnpjValue = cnpjValue.replace(/(\d{2})(\d)/, '$1.$2');
                 cnpjValue = cnpjValue.replace(/(\d{3})(\d)/, '$1.$2');
-                cnpjValue = cnpjValue.replace(/(\d{3})(\d{1,2})$/, '$1/$2');
+                cnpjValue = cnpjValue.replace(/(\d{3})(\d)/, '$1/$2');
                 cnpjValue = cnpjValue.replace(/(\d{4})(\d{1,2})$/, '$1-$2');
             }
             cnpjInput.value = cnpjValue;
