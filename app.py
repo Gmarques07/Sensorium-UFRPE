@@ -3,7 +3,7 @@ import re
 import mysql.connector
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 
-app = Flask(_name_)
+app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
 db_config = {
@@ -146,7 +146,7 @@ def cadastro():
         return render_template('cadastro.html')
     except Exception as e:
         return str(e), 500
-
+    
 @app.route('/cadastro_empresa', methods=['GET', 'POST'])
 def cadastro_empresa():
     try:
@@ -178,6 +178,7 @@ def cadastro_empresa():
         return render_template('cadastro_empresa.html')
     except Exception as e:
         return str(e), 500
+
 
 @app.route('/editar_usuario/<cpf>', methods=['GET', 'POST'])
 def editar_usuario_perfil(cpf):
@@ -255,28 +256,12 @@ def dashboard_usuario(cpf):
 def solicitar_pedido():
     try:
         if request.method == 'POST':
-            descricao = request.form['descricao']
-            data_solicitacao = request.form['data_solicitacao']
-            usuario_id = session.get('usuario_id')
-            if usuario_id:
-                conn = get_db_connection()
-                cursor = conn.cursor()
-                query = "INSERT INTO pedidos (descricao, data_solicitacao, usuario_id) VALUES (%s, %s, %s)"
-                cursor.execute(query, (descricao, data_solicitacao, usuario_id))
-                conn.commit()
-                cursor.close()
-                conn.close()
-                flash('Pedido solicitado com sucesso', 'success')
-                return redirect(url_for('dashboard_usuario', cpf=request.form['cpf']))
-            else:
-                flash('Você deve estar logado para solicitar um pedido', 'warning')
-                return redirect(url_for('login_usuario'))
-        
+            return redirect(url_for('dashboard_usuario', cpf=session.get('cpf')))
         return render_template('solicitar_pedido.html')
     except Exception as e:
         return str(e), 500
 
-@app.route('/cancelar_pedido/<int:pedido_id>')
+@app.route('/cancelar_pedido/<pedido_id>', methods=['POST'])
 def cancelar_pedido(pedido_id):
     try:
         excluir_pedido(pedido_id)
@@ -285,14 +270,14 @@ def cancelar_pedido(pedido_id):
     except Exception as e:
         return str(e), 500
 
-@app.route('/aceitar_pedido/<int:pedido_id>')
-def aceitar_pedido_view(pedido_id):
+@app.route('/aceitar_pedido/<pedido_id>', methods=['POST'])
+def aceitar_pedido(pedido_id):
     try:
         aceitar_pedido(pedido_id)
         flash('Pedido aceito com sucesso', 'success')
-        return redirect(url_for('perfil_empresa', email=session.get('email')))
+        return redirect(url_for('perfil_empresa', email=session.get('email_empresa')))
     except Exception as e:
         return str(e), 500
 
-if _name_ == '_main_':
+if __name__ == '_main_':
     app.run(debug=True)
