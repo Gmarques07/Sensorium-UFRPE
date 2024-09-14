@@ -93,7 +93,9 @@ def login_usuario():
                 return redirect(url_for('dashboard_usuario', cpf=cpf))
             flash('CPF ou senha incorretos', 'danger')
             return redirect(url_for('login_usuario'))
-        return render_template('login_usuario.html')
+        
+        cadastro_sucesso = request.args.get('cadastro_sucesso')
+        return render_template('login_usuario.html', cadastro_sucesso=cadastro_sucesso)
     except Exception as e:
         return str(e), 500
 
@@ -141,7 +143,7 @@ def cadastro():
             cursor.close()
             conn.close()
             flash('Cadastro realizado com sucesso', 'success')
-            return redirect(url_for('pagina_inicial'))
+            return redirect(url_for('login_usuario', cadastro_sucesso=True))
         
         return render_template('cadastro.html')
     except Exception as e:
