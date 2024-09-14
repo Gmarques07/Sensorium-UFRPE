@@ -273,14 +273,10 @@ def cancelar_pedido(pedido_id):
     except Exception as e:
         return str(e), 500
 
-@app.route('/aceitar_pedido/<pedido_id>', methods=['POST'])
-def aceitar_pedido(pedido_id):
-    try:
-        aceitar_pedido(pedido_id)
-        flash('Pedido aceito com sucesso', 'success')
-        return redirect(url_for('perfil_empresa', email=session.get('email_empresa')))
-    except Exception as e:
-        return str(e), 500
+@app.route('/aceitar_pedidos')
+def aceitar_pedidos():
+    return render_template('aceitar_pedidos.html')
+
 
 if __name__ == '__main__':
     app.run(debug=True)
