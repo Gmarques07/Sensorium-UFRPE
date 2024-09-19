@@ -36,7 +36,7 @@
     <main class="container">
         <div class="row">
 
-            <!-- Informações da Empresa -->
+
             <div class="col-md-6 profile-section">
                 <div class="card">
                     <div class="card-header bg-primary text-white">Informações da Empresa</div>
@@ -49,7 +49,7 @@
                 </div>
             </div>
 
-            <!-- Notificações e Alertas -->
+ 
             <div class="col-md-6 profile-section">
                 <div class="card">
                     <div class="card-header bg-warning text-dark">Notificações e Alertas</div>
@@ -73,7 +73,7 @@
         </div>
 
         <div class="row">
-            <!-- Pedidos Realizados -->
+
             <div class="col-md-12 profile-section">
                 <div class="card">
                     <div class="card-header bg-success text-white">Pedidos Realizados</div>
@@ -94,8 +94,13 @@
                 </div>
             </div>
         </div>
-        <div class="d-flex justify-content-center">
-            <a href="{{ url_for('aceitar_pedidos') }}" class="btn btn-secondary">Ver solicitações</a>           
+
+
+        <div class="d-flex justify-content-center mt-4">
+
+            <a href="{{ url_for('editar_empresa') }}" class="btn btn-primary mx-2">Editar Perfil</a>
+
+            <a href="{{ url_for('aceitar_pedidos') }}" class="btn btn-secondary mx-2">Ver solicitações</a>           
         </div>
 
         <br>
