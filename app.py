@@ -73,6 +73,28 @@ def excluir_pedido(pedido_id):
     cursor.close()
     conn.close()
 
+def buscar_ultimos_pedidos(cpf):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        query = """
+            SELECT descricao, quantidade_litros AS quantidade, data
+            FROM pedidos
+            WHERE cpf_usuario = %s
+            ORDER BY data DESC
+            LIMIT 5
+        """
+        cursor.execute(query, (cpf,))
+        pedidos = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return [{'descricao': row['descricao'], 'quantidade': row['quantidade'], 'data': row['data']} for row in pedidos]
+    except Exception as e:
+        print(f"Erro ao buscar pedidos: {e}")
+        return []
+
+
+
 @app.route('/')
 def pagina_inicial():
     try:
@@ -249,11 +271,13 @@ def dashboard_usuario(cpf):
     try:
         usuario = encontrar_usuario(cpf)
         if usuario:
-            return render_template('dashboard_usuario.html', usuario=usuario)
+            pedidos = buscar_ultimos_pedidos(cpf)  # Função para buscar os últimos pedidos do banco
+            return render_template('dashboard_usuario.html', usuario=usuario, pedidos=pedidos)
         else:
             return "Usuário não encontrado", 404
     except Exception as e:
         return str(e), 500
+
 
 @app.route('/solicitar_pedido', methods=['GET', 'POST'])
 def solicitar_pedido():
@@ -261,13 +285,16 @@ def solicitar_pedido():
         if request.method == 'POST':
             cpf = request.form['cpf']
             descricao = request.form['descricao']
+            quantidade = request.form['quantidade']  # Pega a quantidade do pedido
+
             if not encontrar_usuario(cpf):
                 flash('Usuário não encontrado', 'danger')
                 return redirect(url_for('solicitar_pedido'))
+
             conn = get_db_connection()
             cursor = conn.cursor()
-            query = "INSERT INTO pedidos (cpf_usuario, descricao, status) VALUES (%s, %s, %s)"
-            cursor.execute(query, (cpf, descricao, 'pendente'))
+            query = "INSERT INTO pedidos (cpf_usuario, descricao, quantidade, status) VALUES (%s, %s, %s, %s)"
+            cursor.execute(query, (cpf, descricao, quantidade, 'pendente'))
             conn.commit()
             cursor.close()
             conn.close()
@@ -276,6 +303,7 @@ def solicitar_pedido():
         return render_template('solicitar_pedido.html')
     except Exception as e:
         return str(e), 500
+
 
 @app.route('/cancelar_pedido/<pedido_id>', methods=['POST'])
 def cancelar_pedido(pedido_id):
