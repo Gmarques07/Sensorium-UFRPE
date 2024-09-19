@@ -39,16 +39,6 @@
                 <div class="card">
                     <div class="card-header bg-primary text-white">Dados do Pedido</div>
                     <div class="card-body">
-                        <!-- Exibir mensagens de sucesso ou erro -->
-                        {% with messages = get_flashed_messages(with_categories=true) %}
-                            {% if messages %}
-                                <div class="alert {{ messages[0][0] }} alert-dismissible fade show" role="alert">
-                                    {{ messages[0][1] }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                </div>
-                            {% endif %}
-                        {% endwith %}
-                        
                         <form method="POST" action="{{ url_for('solicitar_pedido') }}">
                             <input type="hidden" name="cpf" value="{{ session.get('cpf') }}">
                             <div class="mb-3">
@@ -56,8 +46,12 @@
                                 <textarea class="form-control" id="descricao" name="descricao" placeholder="Descrição do pedido" required></textarea>
                             </div>
                             <div class="mb-3">
-                                <label for="data" class="form-label">Data e Hora</label>
-                                <input type="datetime-local" class="form-control" id="data" name="data" required>
+                                <label for="data" class="form-label">Data de Entrega</label>
+                                <input type="date" class="form-control" id="data" name="data" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="quantidade" class="form-label">Quantidade de Litros de Água</label>
+                                <input type="number" class="form-control" id="quantidade" name="quantidade" placeholder="Quantidade em litros" min="1000" max="100000" step="1000" required>
                             </div>
                             <div class="d-flex justify-content-center">
                                 <button type="submit" class="btn btn-success btn-custom">Solicitar Pedido</button>
@@ -69,7 +63,6 @@
             </div>
         </div>
     </main>
-
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
 </body>

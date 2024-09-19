@@ -3,7 +3,7 @@ import re
 import mysql.connector
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 
-app = Flask(_name_)
+app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
 db_config = {
@@ -94,7 +94,7 @@ def login_usuario():
                 return redirect(url_for('dashboard_usuario', cpf=cpf))
             flash('CPF ou senha incorretos', 'danger')
             return redirect(url_for('login_usuario'))
-        
+
         cadastro_sucesso = request.args.get('cadastro_sucesso')
         return render_template('login_usuario.html', cadastro_sucesso=cadastro_sucesso)
     except Exception as e:
@@ -127,7 +127,7 @@ def cadastro():
             endereco = request.form['endereco']
             senha = request.form['senha']
             confirmacao_senha = request.form['confirmacao_senha']
-            
+
             if senha != confirmacao_senha:
                 flash('As senhas não coincidem', 'danger')
                 return redirect(url_for('cadastro'))
@@ -135,7 +135,7 @@ def cadastro():
             if not re.match(r'^\d{11}$', cpf):
                 flash('O CPF deve conter apenas 11 dígitos numéricos', 'danger')
                 return redirect(url_for('cadastro'))
-            
+
             conn = get_db_connection()
             cursor = conn.cursor()
             query = "INSERT INTO usuarios (nome, cpf, email, endereco, senha) VALUES (%s, %s, %s, %s, %s)"
@@ -145,11 +145,11 @@ def cadastro():
             conn.close()
             flash('Cadastro realizado com sucesso', 'success')
             return redirect(url_for('login_usuario', cadastro_sucesso=True))
-        
+
         return render_template('cadastro.html')
     except Exception as e:
         return str(e), 500
-    
+
 @app.route('/cadastro_empresa', methods=['GET', 'POST'])
 def cadastro_empresa():
     try:
@@ -159,7 +159,7 @@ def cadastro_empresa():
             email_empresa = request.form['email_empresa']
             senha_empresa = request.form['senha_empresa']
             confirmacao_senha_empresa = request.form['confirmacao_senha_empresa']
-            
+
             if senha_empresa != confirmacao_senha_empresa:
                 flash('As senhas não coincidem', 'danger')
                 return redirect(url_for('cadastro_empresa'))
@@ -167,7 +167,7 @@ def cadastro_empresa():
             if not re.match(r'^\d{14}$', cnpj):
                 flash('O CNPJ deve conter apenas 14 dígitos numéricos', 'danger')
                 return redirect(url_for('cadastro_empresa'))
-            
+
             conn = get_db_connection()
             cursor = conn.cursor()
             query = "INSERT INTO empresas (nome, cnpj, email, senha) VALUES (%s, %s, %s, %s)"
@@ -177,10 +177,11 @@ def cadastro_empresa():
             conn.close()
             flash('Cadastro realizado com sucesso. Faça o login abaixo.', 'success')
             return redirect(url_for('login_empresa'))
-        
+
         return render_template('cadastro_empresa.html')
     except Exception as e:
         return str(e), 500
+
 
 @app.route('/editar_usuario/<cpf>', methods=['GET', 'POST'])
 def editar_usuario_perfil(cpf):
@@ -188,22 +189,22 @@ def editar_usuario_perfil(cpf):
         usuario = encontrar_usuario(cpf)
         if not usuario:
             return "Usuário não encontrado", 404
-        
+
         if request.method == 'POST':
             nome = request.form['nome']
             novo_cpf = request.form['cpf'].replace('.', '').replace('-', '')
             email = request.form['email']
             endereco = request.form['endereco']
             senha = request.form['senha']
-            
+
             if not re.match(r'^\d{11}$', novo_cpf):
                 flash('O CPF deve conter apenas 11 dígitos numéricos', 'danger')
                 return redirect(url_for('editar_usuario_perfil', cpf=cpf))
-            
+
             editar_usuario(cpf, nome, email, endereco, senha)
             flash('Perfil atualizado com sucesso', 'success')
             return redirect(url_for('login_usuario'))
-        
+
         return render_template('editar_usuario.html', usuario=usuario)
     except Exception as e:
         return str(e), 500
@@ -214,7 +215,7 @@ def editar_empresa_perfil(email):
         empresa = encontrar_empresa(email)
         if not empresa:
             return "Empresa não encontrada", 404
-        
+
         if request.method == 'POST':
             nome = request.form['nome']
             endereco = request.form['endereco']
@@ -223,7 +224,7 @@ def editar_empresa_perfil(email):
             editar_empresa(email, nome, endereco, telefone, senha)
             flash('Perfil atualizado com sucesso', 'success')
             return redirect(url_for('perfil_empresa', email=email))
-        
+
         return render_template('editar_empresa.html', empresa=empresa)
     except Exception as e:
         return str(e), 500
@@ -234,7 +235,7 @@ def perfil_empresa(email):
         if 'empresa_id' not in session:
             flash('Você deve estar logado para acessar esta página', 'warning')
             return redirect(url_for('login_empresa'))
-        
+
         empresa = encontrar_empresa(email)
         if empresa:
             return render_template('perfil_empresa.html', empresa=empresa)
@@ -263,7 +264,6 @@ def solicitar_pedido():
             if not encontrar_usuario(cpf):
                 flash('Usuário não encontrado', 'danger')
                 return redirect(url_for('solicitar_pedido'))
-
             conn = get_db_connection()
             cursor = conn.cursor()
             query = "INSERT INTO pedidos (cpf_usuario, descricao, status) VALUES (%s, %s, %s)"
@@ -273,28 +273,22 @@ def solicitar_pedido():
             conn.close()
             flash('Pedido solicitado com sucesso', 'success')
             return redirect(url_for('dashboard_usuario', cpf=cpf))
-        
         return render_template('solicitar_pedido.html')
     except Exception as e:
         return str(e), 500
 
-@app.route('/aceitar_pedido/<int:pedido_id>')
-def aceitar_pedido_view(pedido_id):
-    try:
-        aceitar_pedido(pedido_id)
-        flash('Pedido aceito com sucesso', 'success')
-        return redirect(url_for('perfil_empresa', email=session.get('nome_empresa')))
-    except Exception as e:
-        return str(e), 500
-
-@app.route('/excluir_pedido/<int:pedido_id>')
-def excluir_pedido_view(pedido_id):
+@app.route('/cancelar_pedido/<pedido_id>', methods=['POST'])
+def cancelar_pedido(pedido_id):
     try:
         excluir_pedido(pedido_id)
-        flash('Pedido excluído com sucesso', 'success')
-        return redirect(url_for('perfil_empresa', email=session.get('nome_empresa')))
+        flash('Pedido cancelado com sucesso', 'success')
+        return redirect(url_for('dashboard_usuario', cpf=session.get('cpf')))
     except Exception as e:
         return str(e), 500
 
-if _name_ == '_main_':
+@app.route('/aceitar_pedidos')
+def aceitar_pedidos():
+    return render_template('aceitar_pedidos.html')
+
+if __name__ == '__main__':
     app.run(debug=True)
