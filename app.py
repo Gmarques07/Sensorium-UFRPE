@@ -3,7 +3,7 @@ import re
 import mysql.connector
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 
-app = Flask(__name__)
+app = Flask(_name_)
 app.secret_key = os.urandom(24)
 
 db_config = {
@@ -90,6 +90,7 @@ def login_usuario():
             if usuario and usuario['senha'] == senha:
                 session['usuario_id'] = usuario['id']
                 session['nome_usuario'] = usuario['nome']
+                session['cpf'] = cpf
                 return redirect(url_for('dashboard_usuario', cpf=cpf))
             flash('CPF ou senha incorretos', 'danger')
             return redirect(url_for('login_usuario'))
@@ -154,7 +155,7 @@ def cadastro_empresa():
     try:
         if request.method == 'POST':
             nome_empresa = request.form['nome_empresa']
-            cnpj = request.form['cnpj'].replace('.', '').replace('/', '').replace('-', '')  # Remove a máscara
+            cnpj = request.form['cnpj'].replace('.', '').replace('/', '').replace('-', '')
             email_empresa = request.form['email_empresa']
             senha_empresa = request.form['senha_empresa']
             confirmacao_senha_empresa = request.form['confirmacao_senha_empresa']
@@ -180,8 +181,6 @@ def cadastro_empresa():
         return render_template('cadastro_empresa.html')
     except Exception as e:
         return str(e), 500
-
-
 
 @app.route('/editar_usuario/<cpf>', methods=['GET', 'POST'])
 def editar_usuario_perfil(cpf):
@@ -259,24 +258,43 @@ def dashboard_usuario(cpf):
 def solicitar_pedido():
     try:
         if request.method == 'POST':
-            return redirect(url_for('dashboard_usuario', cpf=session.get('cpf')))
+            cpf = request.form['cpf']
+            descricao = request.form['descricao']
+            if not encontrar_usuario(cpf):
+                flash('Usuário não encontrado', 'danger')
+                return redirect(url_for('solicitar_pedido'))
+
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            query = "INSERT INTO pedidos (cpf_usuario, descricao, status) VALUES (%s, %s, %s)"
+            cursor.execute(query, (cpf, descricao, 'pendente'))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            flash('Pedido solicitado com sucesso', 'success')
+            return redirect(url_for('dashboard_usuario', cpf=cpf))
+        
         return render_template('solicitar_pedido.html')
     except Exception as e:
         return str(e), 500
 
-@app.route('/cancelar_pedido/<pedido_id>', methods=['POST'])
-def cancelar_pedido(pedido_id):
+@app.route('/aceitar_pedido/<int:pedido_id>')
+def aceitar_pedido_view(pedido_id):
     try:
-        excluir_pedido(pedido_id)
-        flash('Pedido cancelado com sucesso', 'success')
-        return redirect(url_for('dashboard_usuario', cpf=session.get('cpf')))
+        aceitar_pedido(pedido_id)
+        flash('Pedido aceito com sucesso', 'success')
+        return redirect(url_for('perfil_empresa', email=session.get('nome_empresa')))
     except Exception as e:
         return str(e), 500
 
-@app.route('/aceitar_pedidos')
-def aceitar_pedidos():
-    return render_template('aceitar_pedidos.html')
+@app.route('/excluir_pedido/<int:pedido_id>')
+def excluir_pedido_view(pedido_id):
+    try:
+        excluir_pedido(pedido_id)
+        flash('Pedido excluído com sucesso', 'success')
+        return redirect(url_for('perfil_empresa', email=session.get('nome_empresa')))
+    except Exception as e:
+        return str(e), 500
 
-
-if __name__ == '__main__':
+if _name_ == '_main_':
     app.run(debug=True)
