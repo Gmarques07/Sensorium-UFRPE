@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -39,30 +39,23 @@
                 <div class="card">
                     <div class="card-header bg-primary text-white">Dados do Pedido</div>
                     <div class="card-body">
-                        <form>
+                        <form method="POST" action="{{ url_for('solicitar_pedido') }}">
+                            <input type="hidden" name="cpf" value="{{ session.get('cpf') }}">
                             <div class="mb-3">
-                                <label for="Nome" class="form-label">Nome</label>
-                                <input type="text" class="form-control" id="nome" placeholder="Insira o seu nome completo" required minlength="10">
+                                <label for="descricao" class="form-label">Descrição</label>
+                                <textarea class="form-control" id="descricao" name="descricao" placeholder="Descrição do pedido" required></textarea>
                             </div>
                             <div class="mb-3">
-                                <label for="cpf" class="form-label">CPF</label>
-                                <input type="text" class="form-control" id="cpf" placeholder="000.000.000-00" required pattern="\d{3}\.\d{3}\.\d{3}-\d{2}">
+                                <label for="data" class="form-label">Data de Entrega</label>
+                                <input type="date" class="form-control" id="data" name="data" required>
                             </div>
                             <div class="mb-3">
-                                <label for="address" class="form-label">Endereço</label>
-                                <input type="text" class="form-control" id="address" placeholder="Confirme o seu endereço" required minlength="10">
-                            </div>
-                            <div class="mb-3">
-                                <label for="quantity" class="form-label">Quantidade de Água (em litros)</label>
-                                <input type="number" class="form-control" id="quantity" placeholder="Insira a quantidade em litros" required min="100" step="1">
-                            </div>
-                            <div class="mb-3">
-                                <label for="deliveryDate" class="form-label">Data de Entrega</label>
-                                <input type="date" class="form-control" id="deliveryDate" id="deliveryDate" required>
+                                <label for="quantidade" class="form-label">Quantidade de Litros de Água</label>
+                                <input type="number" class="form-control" id="quantidade" name="quantidade" placeholder="Quantidade em litros" min="1000" max="100000" step="1000" required>
                             </div>
                             <div class="d-flex justify-content-center">
                                 <button type="submit" class="btn btn-success btn-custom">Solicitar Pedido</button>
-                                <a href="index.html" class="btn btn-secondary btn-custom">Cancelar</a>
+                                <a href="{{ url_for('dashboard_usuario', cpf=session.get('cpf')) }}" class="btn btn-secondary btn-custom">Cancelar</a>
                             </div>
                         </form>
                     </div>
@@ -70,5 +63,7 @@
             </div>
         </div>
     </main>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
 </body>
 </html>

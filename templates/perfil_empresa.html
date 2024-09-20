@@ -25,83 +25,128 @@
         }
     </style>
 </head>
-<body class="align-items-center py-4 bg-body-tertiary-dark">
-    <div class="topBar">
-        Água em Ação
-    </div>
+<body class="bg-body-tertiary-dark">
+    <div class="topBar">Água em Ação</div>
 
     <h1 class="display-4 text-center">Perfil da Empresa</h1>
-    <br><br>
 
     <main class="container">
-        <div class="row">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+        {% endwith %}
 
-            <!-- Informações da Empresa -->
-            <div class="col-md-6 profile-section">
+        <div class="row">
+            <div class="col-md-12 profile-section">
                 <div class="card">
                     <div class="card-header bg-primary text-white">Informações da Empresa</div>
                     <div class="card-body">
                         <p><strong>Nome da Empresa:</strong> {{ empresa.nome }}</p>
                         <p><strong>CNPJ:</strong> {{ empresa.cnpj }}</p>
                         <p><strong>Email:</strong> {{ empresa.email }}</p>
-                        <p><strong>Endereço:</strong> {{ empresa.endereco }}</p>
                     </div>
                 </div>
             </div>
-
-            <!-- Notificações e Alertas -->
-            <div class="col-md-6 profile-section">
-                <div class="card">
-                    <div class="card-header bg-warning text-dark">Notificações e Alertas</div>
-                    <div class="card-body">
-                        <ul class="list-group">
-                            <li class="list-group-item">
-                                <h5 class="mb-1">Notificação 1</h5>
-                                <p class="mb-1">Detalhes sobre a notificação 1.</p>
-                                <small>Data da notificação</small>
-                            </li>
-                            <li class="list-group-item">
-                                <h5 class="mb-1">Alerta 2</h5>
-                                <p class="mb-1">Detalhes sobre o alerta 2.</p>
-                                <small>Data do alerta</small>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
         </div>
 
         <div class="row">
-            <!-- Pedidos Realizados -->
-            <div class="col-md-12 profile-section">
+            <div class="col-md-6 profile-section">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">Avisos Gerais</div>
+                    <div class="card-body">
+                        <ul class="list-group">
+                            {% for comunicado in comunicados_gerais %}
+                                <li class="list-group-item">
+                                    <h5 class="mb-1">{{ comunicado.assunto }}</h5>
+                                    <p class="mb-1">{{ comunicado.mensagem }}</p>
+                                    <small>Data: {{ comunicado.data }}</small>
+                                    <form action="{{ url_for('excluir_comunicado_geral_view', comunicado_id=comunicado['id']) }}" method="POST">
+                                        <button type="submit" class="btn btn-danger">Excluir</button>
+                                    </form>
+                                    
+                                </li>
+                            {% else %}
+                                <li class="list-group-item">Nenhum aviso enviado.</li>
+                            {% endfor %}
+                        </ul>
+                        <a href="{{ url_for('criar_comunicado') }}" class="btn btn-primary mt-3">Criar Novo Aviso</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 profile-section">
                 <div class="card">
                     <div class="card-header bg-success text-white">Pedidos Realizados</div>
                     <div class="card-body">
                         <ul class="list-group">
-                            <li class="list-group-item">
-                                <h5 class="mb-1">Pedido 1</h5>
-                                <p class="mb-1">Detalhes sobre o pedido 1.</p>
-                                <small>Data do pedido</small>
-                            </li>
-                            <li class="list-group-item">
-                                <h5 class="mb-1">Pedido 2</h5>
-                                <p class="mb-1">Detalhes sobre o pedido 2.</p>
-                                <small>Data do pedido</small>
-                            </li>
+                            {% for pedido in pedidos %}
+                                <li class="list-group-item">
+                                    <h5 class="mb-1">{{ pedido.descricao }}</h5>
+                                    <p class="mb-1">Quantidade: {{ pedido.quantidade }}</p>
+                                    <p class="mb-1">Usuário: {{ pedido.usuario_nome }}</p>
+                                    <p class="mb-1">Status: {{ pedido.status }}</p>
+                                    <small>Data: {{ pedido.data }}</small>
+                                    
+                                    <form action="{{ url_for('alterar_status', pedido_id=pedido.id, email=empresa.email) }}" method="POST" class="mt-2">
+                                        <select name="novo_status" class="form-select" required>
+                                            <option value="pendente" {% if pedido.status == 'pendente' %}selected{% endif %}>Pendente</option>
+                                            <option value="aceito" {% if pedido.status == 'aceito' %}selected{% endif %}>Aceito</option>
+                                            <option value="cancelado" {% if pedido.status == 'cancelado' %}selected{% endif %}>Cancelado</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-primary mt-2">Alterar Status</button>
+                                    </form>
+                                    <form action="{{ url_for('excluir_pedido_view', pedido_id=pedido.id, email=empresa.email) }}" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-danger" onclick="return confirmExclusao();">Excluir</button>
+                                    </form>
+                                    <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#comunicadoModal" onclick="document.getElementById('pedidoId').value='{{ pedido.id }}';">Enviar Comunicado</button>
+                                </li>
+                            {% else %}
+                                <li class="list-group-item">Nenhum pedido encontrado.</li>
+                            {% endfor %}
                         </ul>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="d-flex justify-content-center">
-            <a href="{{ url_for('aceitar_pedidos') }}" class="btn btn-secondary">Ver solicitações</a>           
+
+        <div class="modal fade" id="comunicadoModal" tabindex="-1" aria-labelledby="comunicadoModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="comunicadoModalLabel">Enviar Comunicado</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formComunicado" action="" method="POST">
+                            <textarea name="mensagem" required class="form-control" placeholder="Escreva seu comunicado aqui..." rows="4"></textarea>
+                            <input type="hidden" name="pedido_id" id="pedidoId" value="">
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        <button type="button" class="btn btn-primary" onclick="document.getElementById('formComunicado').submit();">Enviar Comunicado</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <br>
-        <div class="d-flex justify-content-center">
-            <a href="{{ url_for('pagina_inicial') }}" class="btn btn-secondary">Voltar para a Tela Inicial</a>           
+        <div class="d-flex justify-content-center my-4">
+            <a href="{{ url_for('pagina_inicial') }}" class="btn btn-secondary">Voltar para a Tela Inicial</a>
         </div>
     </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
+    <script>
+        function confirmExclusao() {
+            return confirm("Tem certeza que deseja excluir este pedido? Esta ação não pode ser desfeita.");
+        }
+    </script>
 </body>
 </html>
