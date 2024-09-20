@@ -35,8 +35,6 @@
 
     <main class="container">
         <div class="row">
-
-
             <div class="col-md-6 profile-section">
                 <div class="card">
                     <div class="card-header bg-primary text-white">Informações da Empresa</div>
@@ -48,7 +46,6 @@
                     </div>
                 </div>
             </div>
-
 
             <div class="col-md-6 profile-section">
                 <div class="card">
@@ -69,33 +66,37 @@
                     </div>
                 </div>
             </div>
-
         </div>
 
-        <div class="row">
-
-            <div class="col-md-12 profile-section">
-                <div class="card">
-                    <div class="card-header bg-success text-white">Pedidos Realizados</div>
-                    <div class="card-body">
-                        <ul class="list-group">
-                            {% for pedido in pedidos %}
-                                <li class="list-group-item">
-                                    <h5 class="mb-1">{{ pedido.descricao }}</h5>
-                                    <p class="mb-1">Quantidade: {{ pedido.quantidade }}</p>
-                                    <p class="mb-1">Usuário: {{ pedido.usuario_nome }}</p>
-                                    <p class="mb-1">Status: {{ pedido.status }}</p>
-                                    <small>Data: {{ pedido.data }}</small>
-                                </li>
-                            {% else %}
-                                <li class="list-group-item">Nenhum pedido encontrado.</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
+        <div class="col-md-12 profile-section">
+            <div class="card">
+                <div class="card-header bg-success text-white">Pedidos Realizados</div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for pedido in pedidos %}
+                            <li class="list-group-item">
+                                <h5 class="mb-1">{{ pedido.descricao }}</h5>
+                                <p class="mb-1">Quantidade: {{ pedido.quantidade }}</p>
+                                <p class="mb-1">Usuário: {{ pedido.usuario_nome }}</p>
+                                <p class="mb-1">Status: {{ pedido.status }}</p>
+                                <small>Data: {{ pedido.data }}</small>
+                                <form action="{{ url_for('alterar_status', pedido_id=pedido.id) }}" method="POST" class="mt-2">
+                                    <select name="status" class="form-select">
+                                        <option value="pendente" {% if pedido.status == 'pendente' %}selected{% endif %}>Pendente</option>
+                                        <option value="aceito" {% if pedido.status == 'aceito' %}selected{% endif %}>Aceito</option>
+                                        <option value="cancelado" {% if pedido.status == 'cancelado' %}selected{% endif %}>Cancelado</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-primary mt-2">Alterar Status</button>
+                                </form>
+                            </li>
+                        {% else %}
+                            <li class="list-group-item">Nenhum pedido encontrado.</li>
+                        {% endfor %}
+                    </ul>
                 </div>
             </div>
-            
-            
+        </div>
+        
         <br>
         <div class="d-flex justify-content-center">
             <a href="{{ url_for('pagina_inicial') }}" class="btn btn-secondary">Voltar para a Tela Inicial</a>           

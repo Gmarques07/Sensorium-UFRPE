@@ -18,6 +18,16 @@ def get_db_connection():
     conn = mysql.connector.connect(**db_config)
     return conn
 
+
+def alterar_status_pedido(pedido_id, novo_status):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    query = "UPDATE pedidos SET status = %s WHERE id = %s"
+    cursor.execute(query, (novo_status, pedido_id))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
 def encontrar_usuario(cpf):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -342,6 +352,17 @@ def cancelar_pedido(pedido_id):
         return redirect(url_for('dashboard_usuario', cpf=session.get('cpf')))
     except Exception as e:
         return str(e), 500
+    
+@app.route('/alterar_status/<int:pedido_id>', methods=['POST'])
+def alterar_status(pedido_id):
+    try:
+        novo_status = request.form['status']
+        alterar_status_pedido(pedido_id, novo_status)
+        flash('Status do pedido alterado com sucesso', 'success')
+        return redirect(url_for('perfil_empresa', email=session.get('nome_empresa')))
+    except Exception as e:
+        return str(e), 500
+   
     
 if __name__ == '__main__':
     app.run(debug=True)
