@@ -43,7 +43,7 @@
         {% endwith %}
 
         <div class="row">
-            <div class="col-md-6 profile-section">
+            <div class="col-md-12 profile-section">
                 <div class="card">
                     <div class="card-header bg-primary text-white">Informações da Empresa</div>
                     <div class="card-body">
@@ -53,60 +53,60 @@
                     </div>
                 </div>
             </div>
-
-            <div class="col-md-6 profile-section">
-            
-                <div class="card">
-                <div class="card-header bg-warning text-dark">Avisos Gerais</div>
-                <div class="card-body">
-                    <ul class="list-group">
-                        {% for comunicado in comunicados %}
-                            <li class="list-group-item">
-                                <h5 class="mb-1">{{ comunicado.assunto }}</h5>
-                                <p class="mb-1">{{ comunicado.mensagem }}</p>
-                                <small>Data: {{ comunicado.data }}</small>
-                            </li>
-                        {% else %}
-                            <li class="list-group-item">Nenhum aviso enviado.</li>
-                        {% endfor %}
-                    </ul>
-                    
-                    <a href="{{ url_for('criar_comunicado') }}" class="btn btn-primary mt-3">Criar Novo aviso</a>
-                </div>
-            </div>
         </div>
 
+        <div class="row">
+            <div class="col-md-6 profile-section">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">Comunicados Gerais</div>
+                    <div class="card-body">
+                        <ul class="list-group">
+                            {% for comunicado in comunicados_gerais %}
+                                <li class="list-group-item">
+                                    <h5 class="mb-1">{{ comunicado.assunto }}</h5>
+                                    <p class="mb-1">{{ comunicado.mensagem }}</p>
+                                    <small>Data: {{ comunicado.data }}</small>
+                                </li>
+                            {% else %}
+                                <li class="list-group-item">Nenhum aviso enviado.</li>
+                            {% endfor %}
+                        </ul>
+                        <a href="{{ url_for('criar_comunicado') }}" class="btn btn-primary mt-3">Criar Novo Aviso</a>
+                    </div>
+                </div>
+            </div>
 
-        <div class="col-md-12 profile-section">
-            <div class="card">
-                <div class="card-header bg-success text-white">Pedidos Realizados</div>
-                <div class="card-body">
-                    <ul class="list-group">
-                        {% for pedido in pedidos %}
-                            <li class="list-group-item">
-                                <h5 class="mb-1">{{ pedido.descricao }}</h5>
-                                <p class="mb-1">Quantidade: {{ pedido.quantidade }}</p>
-                                <p class="mb-1">Usuário: {{ pedido.usuario_nome }}</p>
-                                <p class="mb-1">Status: {{ pedido.status }}</p>
-                                <small>Data: {{ pedido.data }}</small>
-                                
-                                <form action="{{ url_for('alterar_status', pedido_id=pedido.id, email=empresa.email) }}" method="POST" class="mt-2">
-                                    <select name="novo_status" class="form-select" required>
-                                        <option value="pendente" {% if pedido.status == 'pendente' %}selected{% endif %}>Pendente</option>
-                                        <option value="aceito" {% if pedido.status == 'aceito' %}selected{% endif %}>Aceito</option>
-                                        <option value="cancelado" {% if pedido.status == 'cancelado' %}selected{% endif %}>Cancelado</option>
-                                    </select>
-                                    <button type="submit" class="btn btn-primary mt-2">Alterar Status</button>
-                                </form>
-                                <form action="{{ url_for('excluir_pedido_view', pedido_id=pedido.id, email=empresa.email) }}" method="POST" style="display:inline;">
-                                    <button type="submit" class="btn btn-danger" onclick="return confirmExclusao();">Excluir</button>
-                                </form>
-                                <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#comunicadoModal" onclick="document.getElementById('pedidoId').value='{{ pedido.id }}';">Enviar Comunicado</button>
-                            </li>
-                        {% else %}
-                            <li class="list-group-item">Nenhum pedido encontrado.</li>
-                        {% endfor %}
-                    </ul>
+            <div class="col-md-6 profile-section">
+                <div class="card">
+                    <div class="card-header bg-success text-white">Pedidos Realizados</div>
+                    <div class="card-body">
+                        <ul class="list-group">
+                            {% for pedido in pedidos %}
+                                <li class="list-group-item">
+                                    <h5 class="mb-1">{{ pedido.descricao }}</h5>
+                                    <p class="mb-1">Quantidade: {{ pedido.quantidade }}</p>
+                                    <p class="mb-1">Usuário: {{ pedido.usuario_nome }}</p>
+                                    <p class="mb-1">Status: {{ pedido.status }}</p>
+                                    <small>Data: {{ pedido.data }}</small>
+                                    
+                                    <form action="{{ url_for('alterar_status', pedido_id=pedido.id, email=empresa.email) }}" method="POST" class="mt-2">
+                                        <select name="novo_status" class="form-select" required>
+                                            <option value="pendente" {% if pedido.status == 'pendente' %}selected{% endif %}>Pendente</option>
+                                            <option value="aceito" {% if pedido.status == 'aceito' %}selected{% endif %}>Aceito</option>
+                                            <option value="cancelado" {% if pedido.status == 'cancelado' %}selected{% endif %}>Cancelado</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-primary mt-2">Alterar Status</button>
+                                    </form>
+                                    <form action="{{ url_for('excluir_pedido_view', pedido_id=pedido.id, email=empresa.email) }}" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-danger" onclick="return confirmExclusao();">Excluir</button>
+                                    </form>
+                                    <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#comunicadoModal" onclick="document.getElementById('pedidoId').value='{{ pedido.id }}';">Enviar Comunicado</button>
+                                </li>
+                            {% else %}
+                                <li class="list-group-item">Nenhum pedido encontrado.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>

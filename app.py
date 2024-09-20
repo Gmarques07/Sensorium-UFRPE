@@ -359,6 +359,7 @@ def perfil_empresa(email):
 
 
 
+
 @app.route('/dashboard_usuario/<cpf>', methods=['GET'])
 def dashboard_usuario(cpf):
     try:
@@ -440,7 +441,6 @@ def enviar_comunicado_usuario(pedido_id):
     except Exception as e:
         return str(e), 500
 
-#AVISOS GERAIS
 @app.route('/criar_comunicado', methods=['GET', 'POST'])
 def criar_comunicado():
     try:
