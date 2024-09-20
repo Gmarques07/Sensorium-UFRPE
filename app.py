@@ -182,6 +182,15 @@ def enviar_comunicado(assunto, mensagem):
     cursor.close()
     conn.close()
 
+def excluir_comunicado_geral(comunicado_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    query = "DELETE FROM comunicados_gerais WHERE id = %s"
+    cursor.execute(query, (comunicado_id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
 
 @app.route('/')
 def pagina_inicial():
@@ -453,6 +462,15 @@ def criar_comunicado():
             return render_template('criar_comunicado.html')
 
         return render_template('criar_comunicado.html') 
+    except Exception as e:
+        return str(e), 500
+
+@app.route('/excluir_comunicado_geral/<int:comunicado_id>', methods=['POST'])
+def excluir_comunicado_geral_view(comunicado_id):
+    try:
+        excluir_comunicado_geral(comunicado_id)
+        flash('Comunicado excluído com sucesso', 'success')
+        return redirect(url_for('perfil_empresa', email=session.get('email_empresa')))
     except Exception as e:
         return str(e), 500
 

@@ -58,7 +58,7 @@
         <div class="row">
             <div class="col-md-6 profile-section">
                 <div class="card">
-                    <div class="card-header bg-warning text-dark">Comunicados Gerais</div>
+                    <div class="card-header bg-warning text-dark">Avisos Gerais</div>
                     <div class="card-body">
                         <ul class="list-group">
                             {% for comunicado in comunicados_gerais %}
@@ -66,6 +66,10 @@
                                     <h5 class="mb-1">{{ comunicado.assunto }}</h5>
                                     <p class="mb-1">{{ comunicado.mensagem }}</p>
                                     <small>Data: {{ comunicado.data }}</small>
+                                    <form action="{{ url_for('excluir_comunicado_geral_view', comunicado_id=comunicado['id']) }}" method="POST">
+                                        <button type="submit" class="btn btn-danger">Excluir</button>
+                                    </form>
+                                    
                                 </li>
                             {% else %}
                                 <li class="list-group-item">Nenhum aviso enviado.</li>
