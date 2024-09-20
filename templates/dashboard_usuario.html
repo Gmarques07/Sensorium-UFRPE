@@ -35,10 +35,10 @@
 
     <main class="container">
         <div class="row">
-            <!-- Comunicados -->
+            <!-- Comunicados dos Pedidos -->
             <div class="col-md-6 dashboard-section">
                 <div class="card">
-                    <div class="card-header bg-warning text-dark">Comunicados</div>
+                    <div class="card-header bg-warning text-dark">Comunicados dos Pedidos</div>
                     <div class="card-body">
                         <ul class="list-group">
                             <li class="list-group-item">
@@ -50,6 +50,27 @@
                                 <h5 class="mb-1">Comunicado 2</h5>
                                 <p class="mb-1">Detalhes sobre o comunicado 2.</p>
                                 <small>Data do comunicado</small>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Avisos Gerais -->
+            <div class="col-md-6 dashboard-section">
+                <div class="card">
+                    <div class="card-header bg-info text-white">Avisos Gerais</div>
+                    <div class="card-body">
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <h5 class="mb-1">Aviso 1</h5>
+                                <p class="mb-1">Detalhes sobre o aviso 1.</p>
+                                <small>Data do aviso</small>
+                            </li>
+                            <li class="list-group-item">
+                                <h5 class="mb-1">Aviso 2</h5>
+                                <p class="mb-1">Detalhes sobre o aviso 2.</p>
+                                <small>Data do aviso</small>
                             </li>
                         </ul>
                     </div>
@@ -77,11 +98,12 @@
                 </div>
             </div>            
 
-        <br>
-        <div class="d-flex justify-content-center gap-3">
-            <a href="{{ url_for('solicitar_pedido') }}" class="btn btn-primary">Solicitar Pedido</a>
-            <a href="{{ url_for('editar_usuario_perfil', cpf=usuario['cpf']) }}" class="btn btn-secondary">Editar seus dados</a>
-            <a href="{{ url_for('pagina_inicial') }}" class="btn btn-secondary">Voltar para a tela inicial</a>
+            <br>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{{ url_for('solicitar_pedido') }}" class="btn btn-primary">Solicitar Pedido</a>
+                <a href="{{ url_for('editar_usuario_perfil', cpf=usuario['cpf']) }}" class="btn btn-secondary">Editar seus dados</a>
+                <a href="{{ url_for('pagina_inicial') }}" class="btn btn-secondary">Voltar para a tela inicial</a>
+            </div>
         </div>
     </main>
 
