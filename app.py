@@ -220,7 +220,8 @@ def login_empresa():
             if empresa and empresa['senha'] == senha:
                 session['empresa_id'] = empresa['id']
                 session['nome_empresa'] = empresa['nome']
-                return redirect(url_for('perfil_empresa', email=email))
+                session['email_empresa'] = empresa['email'] 
+                return redirect(url_for('perfil_empresa', email=empresa['email'])) 
             flash('Email ou senha incorretos', 'danger')
             return redirect(url_for('login_empresa'))
         return render_template('login_empresa.html')
