@@ -60,16 +60,15 @@
                     <div class="card-header bg-info text-white">Avisos Gerais</div>
                     <div class="card-body">
                         <ul class="list-group">
-                            <li class="list-group-item">
-                                <h5 class="mb-1">Aviso 1</h5>
-                                <p class="mb-1">Detalhes sobre o aviso 1.</p>
-                                <small>Data do aviso</small>
-                            </li>
-                            <li class="list-group-item">
-                                <h5 class="mb-1">Aviso 2</h5>
-                                <p class="mb-1">Detalhes sobre o aviso 2.</p>
-                                <small>Data do aviso</small>
-                            </li>
+                            {% for comunicado in comunicados_gerais %}
+                                <li class="list-group-item">
+                                    <h5 class="mb-1">{{ comunicado.assunto }}</h5>
+                                    <p class="mb-1">{{ comunicado.mensagem }}</p>
+                                    <small>{{ comunicado.data }}</small>
+                                </li>
+                            {% else %}
+                                <li class="list-group-item">Nenhum aviso encontrado.</li>
+                            {% endfor %}
                         </ul>
                     </div>
                 </div>

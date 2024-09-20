@@ -348,13 +348,14 @@ def perfil_empresa(email):
 
         empresa = encontrar_empresa(email)
         pedidos = buscar_todos_pedidos()
-        comunicados_gerais = buscar_comunicados_gerais()  # Buscar comunicados gerais
+        comunicados_gerais = buscar_comunicados_gerais()
         if empresa:
             return render_template('perfil_empresa.html', empresa=empresa, pedidos=pedidos, comunicados_gerais=comunicados_gerais)
         else:
             return "Empresa não encontrada", 404
     except Exception as e:
         return str(e), 500
+
 
 
 @app.route('/dashboard_usuario/<cpf>', methods=['GET'])
@@ -364,15 +365,12 @@ def dashboard_usuario(cpf):
         if usuario:
             pedidos = buscar_pedidos_usuarios(cpf)
             comunicados = buscar_comunicados_usuario(cpf)
-            return render_template('dashboard_usuario.html', usuario=usuario, pedidos=pedidos, comunicados=comunicados)
+            comunicados_gerais = buscar_comunicados_gerais()
+            return render_template('dashboard_usuario.html', usuario=usuario, pedidos=pedidos, comunicados=comunicados, comunicados_gerais=comunicados_gerais)
         else:
             return "Usuário não encontrado", 404
     except Exception as e:
         return str(e), 500
-
-
-
-from datetime import datetime
 
 @app.route('/solicitar_pedido', methods=['GET', 'POST'])
 def solicitar_pedido():
