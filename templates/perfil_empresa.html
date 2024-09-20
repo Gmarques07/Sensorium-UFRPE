@@ -44,24 +44,27 @@
             </div>
 
             <div class="col-md-6 profile-section">
+            
                 <div class="card">
-                    <div class="card-header bg-warning text-dark">Comunicados Enviados</div>
-                    <div class="card-body">
-                        <ul class="list-group">
-                            {% for comunicado in comunicados %}
-                                <li class="list-group-item">
-                                    <h5 class="mb-1">{{ comunicado.assunto }}</h5>
-                                    <p class="mb-1">{{ comunicado.mensagem }}</p>
-                                    <small>Data: {{ comunicado.data }}</small>
-                                </li>
-                            {% else %}
-                                <li class="list-group-item">Nenhum comunicado enviado.</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
+                <div class="card-header bg-warning text-dark">Avisos Gerais</div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for comunicado in comunicados %}
+                            <li class="list-group-item">
+                                <h5 class="mb-1">{{ comunicado.assunto }}</h5>
+                                <p class="mb-1">{{ comunicado.mensagem }}</p>
+                                <small>Data: {{ comunicado.data }}</small>
+                            </li>
+                        {% else %}
+                            <li class="list-group-item">Nenhum aviso enviado.</li>
+                        {% endfor %}
+                    </ul>
+                    <!-- Botão para criar novo comunicado -->
+                    <a href="{{ url_for('criar_comunicado') }}" class="btn btn-primary mt-3">Criar Novo aviso</a>
                 </div>
             </div>
         </div>
+
 
         <div class="col-md-12 profile-section">
             <div class="card">

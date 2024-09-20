@@ -132,7 +132,7 @@ def buscar_todos_pedidos():
 def enviar_comunicado(pedido_id, mensagem):
     conn = get_db_connection()
     cursor = conn.cursor()
-    query = "INSERT INTO comunicados (pedido_id, mensagem) VALUES (%s, %s)"
+    query = "INSERT INTO comunicado_pedido (pedido_id, mensagem) VALUES (%s, %s)"
     cursor.execute(query, (pedido_id, mensagem))
     conn.commit()
     cursor.close()
@@ -143,7 +143,7 @@ def buscar_comunicados_usuario(cpf):
     cursor = conn.cursor(dictionary=True)
     query = """
         SELECT c.mensagem, c.data, c.lido
-        FROM comunicados c
+        FROM comunicado_pedido c
         JOIN pedidos p ON c.pedido_id = p.id
         WHERE p.cpf_usuario = %s
         ORDER BY c.data DESC
@@ -153,6 +153,34 @@ def buscar_comunicados_usuario(cpf):
     cursor.close()
     conn.close()
     return comunicados
+
+def enviar_comunicado_geral(assunto, mensagem):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    query = "INSERT INTO comunicados_gerais (assunto, mensagem) VALUES (%s, %s)"
+    cursor.execute(query, (assunto, mensagem))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+def buscar_comunicados_gerais():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    query = "SELECT * FROM comunicados_gerais ORDER BY data DESC"
+    cursor.execute(query)
+    comunicados = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return comunicados
+
+def enviar_comunicado(assunto, mensagem):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    query = "INSERT INTO comunicados_gerais (assunto, mensagem) VALUES (%s, %s)"
+    cursor.execute(query, (assunto, mensagem))
+    conn.commit()
+    cursor.close()
+    conn.close()
 
 
 @app.route('/')
@@ -319,14 +347,14 @@ def perfil_empresa(email):
             return redirect(url_for('login_empresa'))
 
         empresa = encontrar_empresa(email)
-        pedidos = buscar_todos_pedidos() 
+        pedidos = buscar_todos_pedidos()
+        comunicados_gerais = buscar_comunicados_gerais()  # Buscar comunicados gerais
         if empresa:
-            return render_template('perfil_empresa.html', empresa=empresa, pedidos=pedidos)
+            return render_template('perfil_empresa.html', empresa=empresa, pedidos=pedidos, comunicados_gerais=comunicados_gerais)
         else:
             return "Empresa não encontrada", 404
     except Exception as e:
         return str(e), 500
-
 
 
 @app.route('/dashboard_usuario/<cpf>', methods=['GET'])
@@ -411,6 +439,22 @@ def enviar_comunicado_usuario(pedido_id):
         enviar_comunicado(pedido_id, mensagem)
         flash('Comunicado enviado com sucesso', 'success')
         return redirect(url_for('perfil_empresa', email=session.get('nome_empresa')))
+    except Exception as e:
+        return str(e), 500
+
+#AVISOS GERAIS
+@app.route('/criar_comunicado', methods=['GET', 'POST'])
+def criar_comunicado():
+    try:
+        if request.method == 'POST':
+            assunto = request.form['assunto']
+            mensagem = request.form['mensagem']
+            enviar_comunicado(assunto, mensagem)  
+            flash('Comunicado criado com sucesso!', 'success')
+            
+            return render_template('criar_comunicado.html')
+
+        return render_template('criar_comunicado.html') 
     except Exception as e:
         return str(e), 500
 
