@@ -57,28 +57,24 @@
             </div>
 
             <!-- Últimos Pedidos -->
-            <div class="col-md-6 dashboard-section">
+            <div class="col-md-12 profile-section">
                 <div class="card">
                     <div class="card-header bg-success text-white">Últimos Pedidos</div>
                     <div class="card-body">
                         <ul class="list-group">
                             {% for pedido in pedidos %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center pedido-item">
-                                <div>
+                                <li class="list-group-item">
                                     <h5 class="mb-1">{{ pedido.descricao }}</h5>
-                                    <p class="mb-1">Quantidade: {{ pedido.quantidade }} litros</p>
-                                    <small>Data do pedido: {{ pedido.data }}</small>
-                                </div>
-                                <form action="{{ url_for('cancelar_pedido', pedido_id=pedido.id) }}" method="POST" class="ms-2">
-                                    <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
-                                </form>
-                            </li>
+                                    <p class="mb-1">Quantidade: {{ pedido.quantidade }}</p>
+                                    <small>Data: {{ pedido.data }}</small>
+                                </li>
+                            {% else %}
+                                <li class="list-group-item">Nenhum pedido encontrado.</li>
                             {% endfor %}
                         </ul>
                     </div>
                 </div>
-            </div>
-        </div>
+            </div>            
 
         <br>
         <div class="d-flex justify-content-center gap-3">

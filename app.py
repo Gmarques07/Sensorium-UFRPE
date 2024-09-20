@@ -73,25 +73,45 @@ def excluir_pedido(pedido_id):
     cursor.close()
     conn.close()
 
-def buscar_ultimos_pedidos(cpf):
+def buscar_pedidos_usuarios(cpf):
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         query = """
-            SELECT descricao, quantidade_litros AS quantidade, data
-            FROM pedidos
-            WHERE cpf_usuario = %s
-            ORDER BY data DESC
-            LIMIT 5
+            SELECT p.descricao, p.quantidade, p.data, u.nome AS usuario_nome
+            FROM pedidos p
+            JOIN usuarios u ON p.cpf_usuario = u.cpf
+            WHERE p.cpf_usuario = %s
+            ORDER BY p.data DESC
         """
         cursor.execute(query, (cpf,))
         pedidos = cursor.fetchall()
         cursor.close()
         conn.close()
-        return [{'descricao': row['descricao'], 'quantidade': row['quantidade'], 'data': row['data']} for row in pedidos]
+        return pedidos
     except Exception as e:
         print(f"Erro ao buscar pedidos: {e}")
         return []
+    
+def buscar_todos_pedidos():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        query = """
+            SELECT p.id, p.descricao, p.quantidade, p.data, u.nome AS usuario_nome
+            FROM pedidos p
+            JOIN usuarios u ON p.cpf_usuario = u.cpf
+            ORDER BY p.data DESC
+        """
+        cursor.execute(query)
+        pedidos = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return pedidos
+    except Exception as e:
+        print(f"Erro ao buscar todos os pedidos: {e}")
+        return []
+
 
 @app.route('/')
 def pagina_inicial():
@@ -257,19 +277,22 @@ def perfil_empresa(email):
             return redirect(url_for('login_empresa'))
 
         empresa = encontrar_empresa(email)
+        pedidos = buscar_todos_pedidos()
         if empresa:
-            return render_template('perfil_empresa.html', empresa=empresa)
+            return render_template('perfil_empresa.html', empresa=empresa, pedidos=pedidos)
         else:
             return "Empresa não encontrada", 404
     except Exception as e:
         return str(e), 500
+
+
 
 @app.route('/dashboard_usuario/<cpf>', methods=['GET'])
 def dashboard_usuario(cpf):
     try:
         usuario = encontrar_usuario(cpf)
         if usuario:
-            pedidos = buscar_ultimos_pedidos(cpf) 
+            pedidos = buscar_pedidos_usuarios(cpf)
             return render_template('dashboard_usuario.html', usuario=usuario, pedidos=pedidos)
         else:
             return "Usuário não encontrado", 404
@@ -283,16 +306,13 @@ def solicitar_pedido():
         if request.method == 'POST':
             cpf = request.form['cpf']
             descricao = request.form['descricao']
-            quantidade = request.form['quantidade'] 
-
             if not encontrar_usuario(cpf):
                 flash('Usuário não encontrado', 'danger')
                 return redirect(url_for('solicitar_pedido'))
-
             conn = get_db_connection()
             cursor = conn.cursor()
-            query = "INSERT INTO pedidos (cpf_usuario, descricao, quantidade, status) VALUES (%s, %s, %s, %s)"
-            cursor.execute(query, (cpf, descricao, quantidade, 'pendente'))
+            query = "INSERT INTO pedidos (cpf_usuario, descricao, status) VALUES (%s, %s, %s)"
+            cursor.execute(query, (cpf, descricao, 'pendente'))
             conn.commit()
             cursor.close()
             conn.close()
@@ -311,10 +331,6 @@ def cancelar_pedido(pedido_id):
         return redirect(url_for('dashboard_usuario', cpf=session.get('cpf')))
     except Exception as e:
         return str(e), 500
-
-@app.route('/aceitar_pedidos')
-def aceitar_pedidos():
-    return render_template('aceitar_pedidos.html')
-
+    
 if __name__ == '__main__':
     app.run(debug=True)

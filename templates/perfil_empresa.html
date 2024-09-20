@@ -79,25 +79,22 @@
                     <div class="card-header bg-success text-white">Pedidos Realizados</div>
                     <div class="card-body">
                         <ul class="list-group">
-                            <li class="list-group-item">
-                                <h5 class="mb-1">Pedido 1</h5>
-                                <p class="mb-1">Detalhes sobre o pedido 1.</p>
-                                <small>Data do pedido</small>
-                            </li>
-                            <li class="list-group-item">
-                                <h5 class="mb-1">Pedido 2</h5>
-                                <p class="mb-1">Detalhes sobre o pedido 2.</p>
-                                <small>Data do pedido</small>
-                            </li>
+                            {% for pedido in pedidos %}
+                                <li class="list-group-item">
+                                    <h5 class="mb-1">{{ pedido.descricao }}</h5>
+                                    <p class="mb-1">Quantidade: {{ pedido.quantidade }}</p>
+                                    <p class="mb-1">Usuário: {{ pedido.usuario_nome }}</p>
+                                    <small>Data: {{ pedido.data }}</small>
+                                </li>
+                            {% else %}
+                                <li class="list-group-item">Nenhum pedido encontrado.</li>
+                            {% endfor %}
                         </ul>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="d-flex justify-content-center">
-            <a href="{{ url_for('aceitar_pedidos') }}" class="btn btn-secondary">Ver solicitações</a>           
-        </div>
-
+            
+            
         <br>
         <div class="d-flex justify-content-center">
             <a href="{{ url_for('pagina_inicial') }}" class="btn btn-secondary">Voltar para a Tela Inicial</a>           
