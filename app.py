@@ -1,6 +1,7 @@
 import os
 import re
 import mysql.connector
+from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 
 app = Flask(__name__)
@@ -78,7 +79,7 @@ def buscar_pedidos_usuarios(cpf):
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         query = """
-            SELECT p.descricao, p.quantidade, p.data, u.nome AS usuario_nome
+            SELECT p.descricao, p.quantidade, p.data, p.status, u.nome AS usuario_nome
             FROM pedidos p
             JOIN usuarios u ON p.cpf_usuario = u.cpf
             WHERE p.cpf_usuario = %s
@@ -92,13 +93,14 @@ def buscar_pedidos_usuarios(cpf):
     except Exception as e:
         print(f"Erro ao buscar pedidos: {e}")
         return []
+
     
 def buscar_todos_pedidos():
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         query = """
-            SELECT p.id, p.descricao, p.quantidade, p.data, u.nome AS usuario_nome
+            SELECT p.id, p.descricao, p.quantidade, p.status, p.data, u.nome AS usuario_nome
             FROM pedidos p
             JOIN usuarios u ON p.cpf_usuario = u.cpf
             ORDER BY p.data DESC
@@ -277,7 +279,7 @@ def perfil_empresa(email):
             return redirect(url_for('login_empresa'))
 
         empresa = encontrar_empresa(email)
-        pedidos = buscar_todos_pedidos()
+        pedidos = buscar_todos_pedidos() 
         if empresa:
             return render_template('perfil_empresa.html', empresa=empresa, pedidos=pedidos)
         else:
@@ -300,24 +302,33 @@ def dashboard_usuario(cpf):
         return str(e), 500
 
 
+from datetime import datetime
+
 @app.route('/solicitar_pedido', methods=['GET', 'POST'])
 def solicitar_pedido():
     try:
         if request.method == 'POST':
             cpf = request.form['cpf']
             descricao = request.form['descricao']
+            quantidade = request.form['quantidade']
+            data = request.form['data']  
+            hora_atual = datetime.now().strftime('%H:%M:%S')
+            data_hora = f"{data} {hora_atual}"
+    
             if not encontrar_usuario(cpf):
                 flash('Usuário não encontrado', 'danger')
                 return redirect(url_for('solicitar_pedido'))
+
             conn = get_db_connection()
             cursor = conn.cursor()
-            query = "INSERT INTO pedidos (cpf_usuario, descricao, status) VALUES (%s, %s, %s)"
-            cursor.execute(query, (cpf, descricao, 'pendente'))
+            query = "INSERT INTO pedidos (cpf_usuario, descricao, quantidade, data, status) VALUES (%s, %s, %s, %s, %s)"
+            cursor.execute(query, (cpf, descricao, quantidade, data_hora, 'pendente'))
             conn.commit()
             cursor.close()
             conn.close()
             flash('Pedido solicitado com sucesso', 'success')
             return redirect(url_for('dashboard_usuario', cpf=cpf))
+
         return render_template('solicitar_pedido.html')
     except Exception as e:
         return str(e), 500
