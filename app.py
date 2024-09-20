@@ -22,11 +22,16 @@ def get_db_connection():
 def alterar_status_pedido(pedido_id, novo_status):
     conn = get_db_connection()
     cursor = conn.cursor()
+    
+    if novo_status not in ['pendente', 'aceito', 'cancelado']:
+        raise ValueError("Status inválido")
+    
     query = "UPDATE pedidos SET status = %s WHERE id = %s"
     cursor.execute(query, (novo_status, pedido_id))
     conn.commit()
     cursor.close()
     conn.close()
+
 
 def encontrar_usuario(cpf):
     conn = get_db_connection()
@@ -353,16 +358,15 @@ def cancelar_pedido(pedido_id):
     except Exception as e:
         return str(e), 500
     
-@app.route('/alterar_status/<int:pedido_id>', methods=['POST'])
-def alterar_status(pedido_id):
+@app.route('/alterar_status/<int:pedido_id>/<email>', methods=['POST'])
+def alterar_status(pedido_id, email):
     try:
-        novo_status = request.form['status']
+        novo_status = request.form['novo_status'] 
         alterar_status_pedido(pedido_id, novo_status)
         flash('Status do pedido alterado com sucesso', 'success')
-        return redirect(url_for('perfil_empresa', email=session.get('nome_empresa')))
+        return redirect(url_for('perfil_empresa', email=email))
     except Exception as e:
         return str(e), 500
-   
-    
+
 if __name__ == '__main__':
     app.run(debug=True)

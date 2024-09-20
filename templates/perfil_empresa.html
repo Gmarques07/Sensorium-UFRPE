@@ -25,13 +25,10 @@
         }
     </style>
 </head>
-<body class="align-items-center py-4 bg-body-tertiary-dark">
-    <div class="topBar">
-        Água em Ação
-    </div>
+<body class="bg-body-tertiary-dark">
+    <div class="topBar">Água em Ação</div>
 
     <h1 class="display-4 text-center">Perfil da Empresa</h1>
-    <br><br>
 
     <main class="container">
         <div class="row">
@@ -80,8 +77,8 @@
                                 <p class="mb-1">Usuário: {{ pedido.usuario_nome }}</p>
                                 <p class="mb-1">Status: {{ pedido.status }}</p>
                                 <small>Data: {{ pedido.data }}</small>
-                                <form action="{{ url_for('alterar_status', pedido_id=pedido.id) }}" method="POST" class="mt-2">
-                                    <select name="status" class="form-select">
+                                <form action="{{ url_for('alterar_status', pedido_id=pedido.id, email=empresa.email) }}" method="POST" class="mt-2">
+                                    <select name="novo_status" class="form-select" required>
                                         <option value="pendente" {% if pedido.status == 'pendente' %}selected{% endif %}>Pendente</option>
                                         <option value="aceito" {% if pedido.status == 'aceito' %}selected{% endif %}>Aceito</option>
                                         <option value="cancelado" {% if pedido.status == 'cancelado' %}selected{% endif %}>Cancelado</option>
@@ -96,10 +93,9 @@
                 </div>
             </div>
         </div>
-        
-        <br>
-        <div class="d-flex justify-content-center">
-            <a href="{{ url_for('pagina_inicial') }}" class="btn btn-secondary">Voltar para a Tela Inicial</a>           
+
+        <div class="d-flex justify-content-center my-4">
+            <a href="{{ url_for('pagina_inicial') }}" class="btn btn-secondary">Voltar para a Tela Inicial</a>
         </div>
     </main>
 </body>
