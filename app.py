@@ -396,7 +396,6 @@ def solicitar_pedido():
             conn.commit()
             cursor.close()
             conn.close()
-            flash('Pedido solicitado com sucesso', 'success')
             return redirect(url_for('dashboard_usuario', cpf=cpf))
 
         return render_template('solicitar_pedido.html')
