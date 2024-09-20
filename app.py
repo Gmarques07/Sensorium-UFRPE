@@ -93,8 +93,6 @@ def buscar_ultimos_pedidos(cpf):
         print(f"Erro ao buscar pedidos: {e}")
         return []
 
-
-
 @app.route('/')
 def pagina_inicial():
     try:
@@ -271,7 +269,7 @@ def dashboard_usuario(cpf):
     try:
         usuario = encontrar_usuario(cpf)
         if usuario:
-            pedidos = buscar_ultimos_pedidos(cpf)  # Função para buscar os últimos pedidos do banco
+            pedidos = buscar_ultimos_pedidos(cpf) 
             return render_template('dashboard_usuario.html', usuario=usuario, pedidos=pedidos)
         else:
             return "Usuário não encontrado", 404
@@ -285,7 +283,7 @@ def solicitar_pedido():
         if request.method == 'POST':
             cpf = request.form['cpf']
             descricao = request.form['descricao']
-            quantidade = request.form['quantidade']  # Pega a quantidade do pedido
+            quantidade = request.form['quantidade'] 
 
             if not encontrar_usuario(cpf):
                 flash('Usuário não encontrado', 'danger')
