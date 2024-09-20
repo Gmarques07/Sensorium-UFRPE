@@ -358,6 +358,17 @@ def cancelar_pedido(pedido_id):
     except Exception as e:
         return str(e), 500
     
+@app.route('/excluir_pedido/<int:pedido_id>/<email>', methods=['POST'])
+def excluir_pedido_view(pedido_id, email):
+    try:
+        excluir_pedido(pedido_id)
+        flash('Pedido excluído com sucesso', 'success')
+        return redirect(url_for('perfil_empresa', email=email))
+    except Exception as e:
+        return str(e), 500
+
+
+    
 @app.route('/alterar_status/<int:pedido_id>/<email>', methods=['POST'])
 def alterar_status(pedido_id, email):
     try:
