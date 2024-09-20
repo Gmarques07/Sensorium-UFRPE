@@ -39,26 +39,24 @@
                         <p><strong>Nome da Empresa:</strong> {{ empresa.nome }}</p>
                         <p><strong>CNPJ:</strong> {{ empresa.cnpj }}</p>
                         <p><strong>Email:</strong> {{ empresa.email }}</p>
-                        <p><strong>Endereço:</strong> {{ empresa.endereco }}</p>
                     </div>
                 </div>
             </div>
 
             <div class="col-md-6 profile-section">
                 <div class="card">
-                    <div class="card-header bg-warning text-dark">Notificações e Alertas</div>
+                    <div class="card-header bg-warning text-dark">Comunicados Enviados</div>
                     <div class="card-body">
                         <ul class="list-group">
-                            <li class="list-group-item">
-                                <h5 class="mb-1">Notificação 1</h5>
-                                <p class="mb-1">Detalhes sobre a notificação 1.</p>
-                                <small>Data da notificação</small>
-                            </li>
-                            <li class="list-group-item">
-                                <h5 class="mb-1">Alerta 2</h5>
-                                <p class="mb-1">Detalhes sobre o alerta 2.</p>
-                                <small>Data do alerta</small>
-                            </li>
+                            {% for comunicado in comunicados %}
+                                <li class="list-group-item">
+                                    <h5 class="mb-1">{{ comunicado.assunto }}</h5>
+                                    <p class="mb-1">{{ comunicado.mensagem }}</p>
+                                    <small>Data: {{ comunicado.data }}</small>
+                                </li>
+                            {% else %}
+                                <li class="list-group-item">Nenhum comunicado enviado.</li>
+                            {% endfor %}
                         </ul>
                     </div>
                 </div>
@@ -87,8 +85,9 @@
                                     <button type="submit" class="btn btn-primary mt-2">Alterar Status</button>
                                 </form>
                                 <form action="{{ url_for('excluir_pedido_view', pedido_id=pedido.id, email=empresa.email) }}" method="POST" style="display:inline;">
-                                    <button type="submit" class="btn btn-danger">Excluir</button>
+                                    <button type="submit" class="btn btn-danger" onclick="return confirmExclusao();">Excluir</button>
                                 </form>
+                                <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#comunicadoModal" onclick="document.getElementById('pedidoId').value='{{ pedido.id }}';">Enviar Comunicado</button>
                             </li>
                         {% else %}
                             <li class="list-group-item">Nenhum pedido encontrado.</li>
@@ -98,9 +97,38 @@
             </div>
         </div>
 
+        <div class="modal fade" id="comunicadoModal" tabindex="-1" aria-labelledby="comunicadoModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="comunicadoModalLabel">Enviar Comunicado</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formComunicado" action="" method="POST">
+                            <textarea name="mensagem" required class="form-control" placeholder="Escreva seu comunicado aqui..." rows="4"></textarea>
+                            <input type="hidden" name="pedido_id" id="pedidoId" value="">
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        <button type="button" class="btn btn-primary" onclick="document.getElementById('formComunicado').submit();">Enviar Comunicado</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="d-flex justify-content-center my-4">
             <a href="{{ url_for('pagina_inicial') }}" class="btn btn-secondary">Voltar para a Tela Inicial</a>
         </div>
     </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
+    <script>
+        function confirmExclusao() {
+            return confirm("Tem certeza que deseja excluir este pedido? Esta ação não pode ser desfeita.");
+        }
+    </script>
 </body>
 </html>

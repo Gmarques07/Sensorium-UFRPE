@@ -129,6 +129,31 @@ def buscar_todos_pedidos():
         print(f"Erro ao buscar todos os pedidos: {e}")
         return []
 
+def enviar_comunicado(pedido_id, mensagem):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    query = "INSERT INTO comunicados (pedido_id, mensagem) VALUES (%s, %s)"
+    cursor.execute(query, (pedido_id, mensagem))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+def buscar_comunicados_usuario(cpf):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    query = """
+        SELECT c.mensagem, c.data, c.lido
+        FROM comunicados c
+        JOIN pedidos p ON c.pedido_id = p.id
+        WHERE p.cpf_usuario = %s
+        ORDER BY c.data DESC
+    """
+    cursor.execute(query, (cpf,))
+    comunicados = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return comunicados
+
 
 @app.route('/')
 def pagina_inicial():
@@ -310,11 +335,13 @@ def dashboard_usuario(cpf):
         usuario = encontrar_usuario(cpf)
         if usuario:
             pedidos = buscar_pedidos_usuarios(cpf)
-            return render_template('dashboard_usuario.html', usuario=usuario, pedidos=pedidos)
+            comunicados = buscar_comunicados_usuario(cpf)
+            return render_template('dashboard_usuario.html', usuario=usuario, pedidos=pedidos, comunicados=comunicados)
         else:
             return "Usuário não encontrado", 404
     except Exception as e:
         return str(e), 500
+
 
 
 from datetime import datetime
@@ -367,8 +394,6 @@ def excluir_pedido_view(pedido_id, email):
     except Exception as e:
         return str(e), 500
 
-
-    
 @app.route('/alterar_status/<int:pedido_id>/<email>', methods=['POST'])
 def alterar_status(pedido_id, email):
     try:
@@ -378,6 +403,17 @@ def alterar_status(pedido_id, email):
         return redirect(url_for('perfil_empresa', email=email))
     except Exception as e:
         return str(e), 500
+
+@app.route('/enviar_comunicado/<int:pedido_id>', methods=['POST'])
+def enviar_comunicado_usuario(pedido_id):
+    try:
+        mensagem = request.form['mensagem']
+        enviar_comunicado(pedido_id, mensagem)
+        flash('Comunicado enviado com sucesso', 'success')
+        return redirect(url_for('perfil_empresa', email=session.get('nome_empresa')))
+    except Exception as e:
+        return str(e), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)
