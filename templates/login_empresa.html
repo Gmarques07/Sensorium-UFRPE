@@ -4,62 +4,109 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login da Empresa - Água em Ação</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        /* Fundo com imagem */
+        body {
+            background-image: url('https://iili.io/2UF8rZl.jpg'); /* Link direto da imagem */
+            background-size: cover; /* Faz a imagem cobrir toda a tela */
+            background-position: center; /* Centraliza a imagem */
+            background-attachment: fixed; /* Fixa o fundo ao rolar a página */
+            color: #fff; /* Texto branco para contraste */
+            font-family: 'Poppins', sans-serif;
+        }
+
         .topBar {
             font-size: 2.5rem;
             font-weight: bold;
-            color: #007bff;
             text-align: center;
             margin-bottom: 1.5rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Sombra para destacar o texto */
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
+        }
+
+        .form-section {
+            background-color: rgba(34, 34, 34, 0.85); /* Fundo cinza escuro translúcido */
+            padding: 2rem;
+            border-radius: 15px; /* Bordas arredondadas */
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25); /* Sombra para destaque */
+        }
+
+        label {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            padding: 0.75rem 1.5rem;
+            font-size: 1.25rem;
+            border-radius: 30px; /* Bordas arredondadas */
+        }
+
+        .btn-secondary {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
         }
     </style>
 </head>
-<body class="bg-body-tertiary-dark">
-    <div class="topBar">
-        Água em Ação
-    </div>
+<body>
+    <!-- Título principal -->
+    <div class="topBar">Água em Ação</div>
 
-    <h1 class="display-2 text-center">Login da Empresa</h1>
+    <h1>Login da Empresa</h1>
 
-    <main class="container">
-        {% with messages = get_flashed_messages(with_categories=True) %}
-            {% if messages %}
-                <div class="alert-container">
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-        
-        <div class="form-section">
-            <h3 class="text-center">Faça o login com seus dados</h3>
+    <!-- Formulário de Login -->
+    <main class="container d-flex justify-content-center align-items-center" style="min-height: calc(100vh - 150px);">
+        <div class="form-section col-md-6">
+
+            <!-- Mensagens de erro ou sucesso -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="alert-container">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <!-- Formulário -->
             <form action="{{ url_for('login_empresa') }}" method="post">
                 <div class="mb-3">
-                    <label for="email-login" class="h4">Email:</label>
+                    <label for="email-login">Email:</label>
                     <input type="email" id="email-login" name="email" class="form-control p-2" placeholder="Insira seu email" required>
                 </div>
                 <div class="mb-3">
-                    <label for="senha-login" class="h4">Senha:</label>
+                    <label for="senha-login">Senha:</label>
                     <input type="password" id="senha-login" name="senha" class="form-control p-2" placeholder="Insira sua senha" required>
                 </div>
-                <div class="d-flex justify-content-center">
+                <div class="d-flex justify-content-center mt-4">
                     <input type="submit" value="Entrar" class="btn btn-primary">
                 </div>
             </form>
-            <br>
-            <div class="d-flex justify-content-center">
+
+            <!-- Botão Voltar -->
+            <div class="d-flex justify-content-center mt-3">
                 <a href="{{ url_for('pagina_inicial') }}" class="btn btn-secondary">Voltar para a tela inicial</a>
             </div>
         </div>
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
 </body>
 </html>
