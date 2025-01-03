@@ -4,65 +4,99 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solicitar Pedido - Água em Ação</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        /* Fundo com imagem */
+        body {
+            background-image: url('https://iili.io/2UF8rZl.jpg'); /* Link direto da imagem */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #fff; /* Texto branco para contraste */
+            font-family: 'Poppins', sans-serif;
+        }
+
         .topBar {
             font-size: 2.5rem;
             font-weight: bold;
-            color: #007bff;
             text-align: center;
-            margin-bottom: 1.5rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        .request-section {
             margin-bottom: 2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Sombra para destacar o texto */
         }
-        .card-header {
+
+        h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
+        }
+
+        .form-section {
+            background-color: rgba(34, 34, 34, 0.85); /* Fundo cinza escuro translúcido */
+            padding: 2rem;
+            border-radius: 15px; /* Bordas arredondadas */
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25); /* Sombra para destaque */
+        }
+
+        label {
+            font-size: 1.25rem;
             font-weight: bold;
         }
-        .btn-custom {
-            margin: 1rem;
+
+        .btn-primary {
+            padding: 0.75rem 1.5rem;
+            font-size: 1.25rem;
+            border-radius: 30px; /* Bordas arredondadas */
+        }
+
+        .btn-secondary {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
         }
     </style>
 </head>
-<body class="align-items-center py-4 bg-body-tertiary-dark">
-    <div class="topBar">
-        Água em Ação
-    </div>
+<body>
+    <!-- Título principal -->
+    <div class="topBar">Água em Ação</div>
 
-    <h1 class="display-4 text-center">Solicitar Pedido</h1>
-    <br><br>
+    <h1>Solicitar Pedido</h1>
 
-    <main class="container">
-        <div class="row">
-            <div class="col-md-8 offset-md-2 request-section">
-                <div class="card">
-                    <div class="card-header bg-primary text-white">Dados do Pedido</div>
-                    <div class="card-body">
-                        <form method="POST" action="{{ url_for('solicitar_pedido') }}">
-                            <input type="hidden" name="cpf" value="{{ session.get('cpf') }}">
-                            <div class="mb-3">
-                                <label for="descricao" class="form-label">Descrição</label>
-                                <textarea class="form-control" id="descricao" name="descricao" placeholder="Descrição do pedido" required></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label for="data" class="form-label">Data de Entrega</label>
-                                <input type="date" class="form-control" id="data" name="data" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="quantidade" class="form-label">Quantidade de Litros de Água</label>
-                                <input type="number" class="form-control" id="quantidade" name="quantidade" placeholder="Quantidade em litros" min="1000" max="100000" step="1000" required>
-                            </div>
-                            <div class="d-flex justify-content-center">
-                                <button type="submit" class="btn btn-success btn-custom">Solicitar Pedido</button>
-                                <a href="{{ url_for('dashboard_usuario', cpf=session.get('cpf')) }}" class="btn btn-secondary btn-custom">Cancelar</a>
-                            </div>
-                        </form>
-                    </div>
+    <!-- Formulário de Solicitação -->
+    <main class="container d-flex justify-content-center align-items-center" style="min-height: calc(100vh - 150px);">
+        <div class="form-section col-md-6">
+            <h3 class="text-center mb-4">Preencha os dados do pedido</h3>
+
+            <!-- Formulário -->
+            <form method="POST" action="{{ url_for('solicitar_pedido') }}">
+                <input type="hidden" name="cpf" value="{{ session.get('cpf') }}">
+                <div class="mb-3">
+                    <label for="descricao">Descrição:</label>
+                    <textarea class="form-control p-2" id="descricao" name="descricao"
+                        placeholder="Descrição do pedido" required></textarea>
                 </div>
-            </div>
+                <div class="mb-3">
+                    <label for="data">Data de Entrega:</label>
+                    <input type="date" class="form-control p-2" id="data" name="data" required>
+                </div>
+                <div class="mb-3">
+                    <label for="quantidade">Quantidade de Litros de Água:</label>
+                    <input type="number" class="form-control p-2" id="quantidade" name="quantidade"
+                        placeholder="Quantidade em litros (mínimo de 1000)" min="1000" max="100000"
+                        step="1000" required>
+                </div>
+                <div class="d-flex justify-content-center mt-4 gap-3">
+                    <button type="submit" class="btn btn-primary">Solicitar Pedido</button>
+                    <a href="{{ url_for('dashboard_usuario', cpf=session.get('cpf')) }}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
         </div>
     </main>
+
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
 </body>
