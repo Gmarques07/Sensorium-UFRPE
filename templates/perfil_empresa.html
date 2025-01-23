@@ -139,6 +139,10 @@
                                     Status Atual: {{ pedido.status }}<br />
                                     Data do Pedido: {{ pedido.data }}
                                     
+                                    <!-- Botão Ver Detalhes -->
+                                    <a href="{{ url_for('visualizar_pedido', pedido_id=pedido.id) }}" 
+                                       class="btn btn-info btn-sm mt-2">Ver Detalhes</a>
+
                                     <!-- Formulário para Alterar Status -->
                                     <form action="{{ url_for('alterar_status', pedido_id=pedido.id, email=empresa.email) }}" method="POST" style="margin-top:10px;">
                                         <select name="novo_status" class="form-select mb-2" required>
@@ -179,7 +183,7 @@
 
     <!-- Modal Enviar Comunicado -->
     ...
-    
+
     <!-- Bootstrap JS -->
     <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js'></script>
 

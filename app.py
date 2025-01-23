@@ -473,6 +473,38 @@ def excluir_comunicado_geral_view(comunicado_id):
         return redirect(url_for('perfil_empresa', email=session.get('email_empresa')))
     except Exception as e:
         return str(e), 500
+    
+@app.route('/pedido/<int:pedido_id>', methods=['GET'])
+def visualizar_pedido(pedido_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Buscar informações do pedido
+        query_pedido = """
+            SELECT p.id, p.descricao, p.quantidade, p.status, p.data, u.nome AS usuario_nome
+            FROM pedidos p
+            JOIN usuarios u ON p.cpf_usuario = u.cpf
+            WHERE p.id = %s
+        """
+        cursor.execute(query_pedido, (pedido_id,))
+        pedido = cursor.fetchone()
+
+        # Buscar imagens relacionadas ao pedido
+        query_imagens = "SELECT caminho FROM imagens_pedido WHERE pedido_id = %s"
+        cursor.execute(query_imagens, (pedido_id,))
+        imagens = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        if not pedido:
+            return "Pedido não encontrado", 404
+
+        return render_template('pedido_detalhe.html', pedido=pedido, imagens=imagens)
+    except Exception as e:
+        return str(e), 500
+   
 
 
 if __name__ == '__main__':
