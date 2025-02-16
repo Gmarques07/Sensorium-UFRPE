@@ -11,58 +11,65 @@
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-        /* Fundo com imagem */
+        /* Fundo sólido */
         body {
-            background-image: url('https://iili.io/2UF8rZl.jpg'); /* Link direto da imagem */
-            background-size: cover; /* Faz a imagem cobrir toda a tela */
-            background-position: center; /* Centraliza a imagem */
-            background-attachment: fixed; /* Fixa o fundo ao rolar a página */
-            color: #fff; /* Texto branco para contraste */
+            background-color: #F8F9FA; /* Cinza claro */
             font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
         }
 
+        /* Barra superior */
         .topBar {
-            font-size: 2.5rem;
+            background-color: #1565C0; /* Azul escuro */
+            color: white;
+            font-size: 2rem;
             font-weight: bold;
             text-align: center;
-            margin-bottom: 1.5rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Sombra para destacar o texto */
+            padding: 1rem 0;
         }
 
         h1 {
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-weight: bold;
             text-align: center;
-            margin-bottom: 2rem;
-            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
+            margin-top: 2rem;
+            color: #003366; /* Azul escuro */
         }
 
         .dashboard-section {
-            margin-bottom: 2rem;
+            margin-top: 2rem;
         }
 
         .card {
             border-radius: 15px; /* Bordas arredondadas */
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25); /* Sombra para destaque */
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Sombra leve */
+            border: none;
         }
 
-        .card-header {
-            font-weight: bold;
+        .card-body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
-        .list-group-item {
-            border-color: #ddd; /* Bordas mais claras */
+        .icon-container {
+            font-size: 3rem;
+            color: #1565C0; /* Azul escuro */
         }
 
         .btn-custom {
             padding: 0.75rem 1.5rem;
-            font-size: 1.25rem;
-            border-radius: 30px; /* Bordas arredondadas */
+            font-size: 1rem;
+            border-radius: 25px; /* Bordas arredondadas */
+            background-color: #1565C0; /* Azul escuro */
+            color: white;
+            border: none;
         }
-        
-        .icon-container {
-            font-size: 3rem;
-            color: #fff;
+
+        .btn-custom:hover {
+            background-color: #4FC3F7; /* Azul claro no hover */
         }
 
         .details-section {
@@ -71,47 +78,48 @@
     </style>
 </head>
 <body>
-    <!-- Título principal -->
+    <!-- Barra Superior -->
     <div class="topBar">Água em Ação</div>
 
+    <!-- Título principal -->
     <h1>Bem-vindo(a) ao seu Dashboard</h1>
 
     <!-- Conteúdo principal -->
-    <main class="container">
+    <main class="container dashboard-section">
         <div class="row g-4">
             
             <!-- Comunicados dos Pedidos -->
             <div class="col-md-4">
-                <div class="card bg-warning text-dark">
-                    <div class="card-body text-center">
+                <div class="card text-center">
+                    <div class="card-body">
                         <div class="icon-container mb-3"><i class="bi bi-chat-dots-fill"></i></div>
                         <h5 class="card-title">Comunicados dos Pedidos</h5>
                         <p class="card-text">Veja as atualizações sobre seus pedidos.</p>
-                        <button class="btn btn-light btn-custom toggle-details" data-target="#comunicados">Ver Detalhes</button>
+                        <button class="btn btn-custom toggle-details" data-target="#comunicados">Ver Detalhes</button>
                     </div>
                 </div>
             </div>
 
             <!-- Avisos Gerais -->
             <div class="col-md-4">
-                <div class="card bg-info text-white">
-                    <div class="card-body text-center">
+                <div class="card text-center">
+                    <div class="card-body">
                         <div class="icon-container mb-3"><i class="bi bi-bell-fill"></i></div>
                         <h5 class="card-title">Avisos Gerais</h5>
                         <p class="card-text">Fique por dentro das últimas notícias.</p>
-                        <button class="btn btn-light btn-custom toggle-details" data-target="#avisos">Ver Detalhes</button>
+                        <button class="btn btn-custom toggle-details" data-target="#avisos">Ver Detalhes</button>
                     </div>
                 </div>
             </div>
 
             <!-- Últimos Pedidos -->
             <div class="col-md-4">
-                <div class="card bg-success text-white">
-                    <div class="card-body text-center">
+                <div class="card text-center">
+                    <div class="card-body">
                         <div class="icon-container mb-3"><i class="bi bi-box-seam"></i></div>
                         <h5 class="card-title">Últimos Pedidos</h5>
                         <p class="card-text">Confira o status dos seus pedidos recentes.</p>
-                        <button class="btn btn-light btn-custom toggle-details" data-target="#pedidos">Ver Detalhes</button>
+                        <button class="btn btn-custom toggle-details" data-target="#pedidos">Ver Detalhes</button>
                     </div>
                 </div>
             </div>
@@ -138,8 +146,7 @@
             <ul class="list-group mt-3">
                 {% for aviso in comunicados_gerais %}
                     <li class="list-group-item">
-                        <h5>{{ aviso.assunto }}</h5>
-                        {{ aviso.mensagem }}
+                        {{ aviso.assunto }} - {{ aviso.mensagem }}
                         <small>{{ aviso.data }}</small>
                     </li>
                 {% else %}
