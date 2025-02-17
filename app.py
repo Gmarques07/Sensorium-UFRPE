@@ -3,6 +3,9 @@ import re
 import mysql.connector
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, session
+from werkzeug.security import generate_password_hash
+from your_database_module import get_db_connection
+
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -56,9 +59,30 @@ def encontrar_empresa(email):
 def editar_usuario(cpf, nome=None, email=None, endereco=None, senha=None):
     conn = get_db_connection()
     cursor = conn.cursor()
-    query = "UPDATE usuarios SET nome = %s, email = %s, endereco = %s, senha = %s WHERE cpf = %s"
-    cursor.execute(query, (nome, email, endereco, senha, cpf))
-    conn.commit()
+
+    query = "UPDATE usuarios SET"
+    params = []
+    
+    if nome:
+        query += " nome = %s,"
+        params.append(nome)
+    if email:
+        query += " email = %s,"
+        params.append(email)
+    if endereco:
+        query += " endereco = %s,"
+        params.append(endereco)
+    if senha:
+        query += " senha = %s,"
+        params.append(generate_password_hash(senha))  
+    
+    query = query.rstrip(",") + " WHERE cpf = %s"
+    params.append(cpf)
+
+    if len(params) > 1:
+        cursor.execute(query, tuple(params))
+        conn.commit()
+
     cursor.close()
     conn.close()
 
