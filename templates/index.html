@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Água em Ação - Tela Inicial</title>
+   
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <!-- Bootstrap CSS -->
@@ -41,33 +41,19 @@
         }
         /* Seção Hero */
         .hero {
-            background: url('https://via.placeholder.com/1920x1080') no-repeat center center/cover;
+            background-color: #FFFFFF; 
             text-align: center;
             padding: 8rem 1rem;
-            color: #FFFFFF;
-            position: relative;
-        }
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(21, 101, 192, 0.7);
-            z-index: 1;
-        }
-        .hero h1, .hero p {
-            position: relative;
-            z-index: 2;
+            color: #1565C0; 
         }
         .hero h1 {
             font-size: 3.5rem;
             font-weight: bold;
             margin-bottom: 1rem;
+            color: #1565C0; 
         }
         .hero p {
-            font-size: 1.25rem;
+            font-size: 1.75rem;
             margin-bottom: 2rem;
         }
         
@@ -95,7 +81,7 @@
             bottom: 0;
             width: 100%;
         }
-        /* Responsividade */
+
         @media (max-width: 768px) {
             .hero h1 {
                 font-size: 2rem;
@@ -129,7 +115,7 @@
 
     <!-- Seção Hero -->
     <section class="hero">
-        <div class="container text-center text-white">
+        <div class="container text-center">
             <h1 data-aos="fade-up">Água em Ação</h1>
             <p data-aos="fade-up" data-aos-delay="200">Gerenciamento eficiente do abastecimento de água para cisternas em áreas rurais.</p>
         </div>
