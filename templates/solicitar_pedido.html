@@ -31,8 +31,13 @@
             font-size: 2rem;
             font-weight: bold;
             text-align: center;
-            margin-bottom: 2rem;
+            margin-top:6rem; /* Adiciona uma margem no topo para mover o h1 mais para baixo */
+            margin-bottom: 1rem;
             color: #003366; /* Azul escuro */
+        }
+
+        .main {
+            min-height: calc(100vh - 100px); /* Ajuste a altura mínima para que a caixa suba */
         }
 
         .form-section {
@@ -40,6 +45,7 @@
             padding: 2rem;
             border-radius: 15px; /* Bordas arredondadas */
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Sombra leve */
+            margin-top: -20rem; /* Move a caixa para cima */
         }
 
         label {

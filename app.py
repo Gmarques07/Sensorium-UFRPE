@@ -4,8 +4,6 @@ import mysql.connector
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash
-from your_database_module import get_db_connection
-
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -56,33 +54,26 @@ def encontrar_empresa(email):
     conn.close()
     return empresa
 
-def editar_usuario(cpf, nome=None, email=None, endereco=None, senha=None):
+def editar_usuario(cpf_atual, nome=None, email=None, endereco=None, senha=None, novo_cpf=None):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    query = "UPDATE usuarios SET"
-    params = []
-    
-    if nome:
-        query += " nome = %s,"
-        params.append(nome)
-    if email:
-        query += " email = %s,"
-        params.append(email)
-    if endereco:
-        query += " endereco = %s,"
-        params.append(endereco)
+    # Atualizar CPF primeiro, se necessário
+    if novo_cpf:
+        query = "UPDATE usuarios SET cpf = %s WHERE cpf = %s"
+        cursor.execute(query, (novo_cpf, cpf_atual))
+        conn.commit()  # Confirma a alteração antes de continuar
+        cpf_atual = novo_cpf  # Atualiza a referência do CPF para as próximas operações
+
+    # Atualizar os demais dados
     if senha:
-        query += " senha = %s,"
-        params.append(generate_password_hash(senha))  
+        query = "UPDATE usuarios SET nome = %s, email = %s, endereco = %s, senha = %s WHERE cpf = %s"
+        cursor.execute(query, (nome, email, endereco, senha, cpf_atual))
+    else:
+        query = "UPDATE usuarios SET nome = %s, email = %s, endereco = %s WHERE cpf = %s"
+        cursor.execute(query, (nome, email, endereco, cpf_atual))
     
-    query = query.rstrip(",") + " WHERE cpf = %s"
-    params.append(cpf)
-
-    if len(params) > 1:
-        cursor.execute(query, tuple(params))
-        conn.commit()
-
+    conn.commit()
     cursor.close()
     conn.close()
 
