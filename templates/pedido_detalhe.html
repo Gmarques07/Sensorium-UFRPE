@@ -85,70 +85,55 @@
         </div>
 
         <!-- Imagens de pH da Água -->
-        {% if imagens_ph %}
         <div class="row mb-4">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header bg-info text-white">Imagens do pH da Água</div>
                     <div class="card-body">
                         <div class="row">
-                            {% for imagem in imagens_ph %}
-                                <div class="col-md-4 mb-3">
-                                    <img src="{{ imagem.caminho }}" class="img-fluid rounded" alt="Imagem de pH da água">
-                                </div>
-                            {% endfor %}
+                            <!-- Testando com a imagem fornecida -->
+                            <div class="col-md-4 mb-3">
+                                <img src="https://iili.io/2UF8rZl.jpg" class="img-fluid rounded zoomable" alt="Imagem de teste - pH da água">
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        {% else %}
-        <p class="text-center">Nenhuma imagem de pH da água disponível.</p>
-        {% endif %}
 
         <!-- Imagens de Rachaduras na Cisterna -->
-        {% if imagens_rachaduras %}
         <div class="row mb-4">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="card-header bg-warning text-dark">Imagens de Rachaduras na Cisterna</div>
+                    <div class="card-header bg-info text-white">Imagens de Rachaduras na Cisterna</div>
                     <div class="card-body">
                         <div class="row">
-                            {% for imagem in imagens_rachaduras %}
-                                <div class="col-md-4 mb-3">
-                                    <img src="{{ imagem.caminho }}" class="img-fluid rounded" alt="Imagem de rachadura na cisterna">
-                                </div>
-                            {% endfor %}
+                            <!-- Testando com a imagem fornecida -->
+                            <div class="col-md-4 mb-3">
+                                <img src="https://iili.io/2UF8rZl.jpg" class="img-fluid rounded zoomable" alt="Imagem de teste - rachadura na cisterna">
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        {% else %}
-        <p class="text-center">Nenhuma imagem de rachaduras na cisterna disponível.</p>
-        {% endif %}
 
         <!-- Imagens do Nível da Água -->
-        {% if imagens_nivel %}
         <div class="row mb-4">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="card-header bg-success text-white">Imagens do Nível da Água</div>
+                    <div class="card-header bg-info text-white">Imagens do Nível da Água</div>
                     <div class="card-body">
                         <div class="row">
-                            {% for imagem in imagens_nivel %}
-                                <div class="col-md-4 mb-3">
-                                    <img src="{{ imagem.caminho }}" class="img-fluid rounded" alt="Imagem do nível da água">
-                                </div>
-                            {% endfor %}
+                            <!-- Testando com a imagem fornecida -->
+                            <div class="col-md-4 mb-3">
+                                <img src="https://iili.io/2UF8rZl.jpg" class="img-fluid rounded zoomable" alt="Imagem de teste - nível da água">
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        {% else %}
-        <p class="text-center">Nenhuma imagem do nível da água disponível.</p>
-        {% endif %}
 
         <!-- Botão Voltar -->
         <div class='text-center'>
@@ -157,6 +142,16 @@
         </div>
 
     </main>
+
+    <!-- Medium Zoom Script -->
+    <script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js"></script>
+    <!-- Ativar o Medium Zoom -->
+    <script>
+        mediumZoom('.zoomable', {
+           margin: 24,
+           background: 'rgba(0, 0, 0, 0.8)'
+       });
+    </script>
 
     <!-- Bootstrap JS -->
     <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js'></script>
