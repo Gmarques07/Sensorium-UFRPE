@@ -2,7 +2,7 @@ import os
 import re
 import mysql.connector
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, request, session, redirect, url_for, render_template, flash
 from werkzeug.security import generate_password_hash
 
 app = Flask(__name__)
@@ -44,15 +44,18 @@ def encontrar_usuario(cpf):
     conn.close()
     return usuario
 
-def encontrar_empresa(email):
+def encontrar_empresa(cnpj):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    query = "SELECT * FROM empresas WHERE email = %s"
-    cursor.execute(query, (email,))
+    query = "SELECT * FROM empresas WHERE cnpj = %s"
+    cursor.execute(query, (cnpj,))
     empresa = cursor.fetchone()
     cursor.close()
     conn.close()
     return empresa
+
+def limpar_cnpj(cnpj):
+    return re.sub(r'\D', '', cnpj)  # Remove tudo que não for número
 
 def editar_usuario(cpf_atual, nome=None, email=None, endereco=None, senha=None, novo_cpf=None):
     conn = get_db_connection()
@@ -77,7 +80,7 @@ def editar_usuario(cpf_atual, nome=None, email=None, endereco=None, senha=None, 
     cursor.close()
     conn.close()
 
-def editar_empresa(email, nome=None, endereco=None, telefone=None, senha=None):
+def _editar_empresa(email, nome=None, endereco=None, telefone=None, senha=None):
     conn = get_db_connection()
     cursor = conn.cursor()
     query = "UPDATE empresas SET nome = %s, endereco = %s, telefone = %s, senha = %s WHERE email = %s"
@@ -144,7 +147,7 @@ def buscar_todos_pedidos():
         print(f"Erro ao buscar todos os pedidos: {e}")
         return []
 
-def enviar_comunicado(pedido_id, mensagem):
+def enviar_comunicado_pedido(pedido_id, mensagem):
     conn = get_db_connection()
     cursor = conn.cursor()
     query = "INSERT INTO comunicado_pedido (pedido_id, mensagem) VALUES (%s, %s)"
@@ -178,7 +181,7 @@ def enviar_comunicado_geral(assunto, mensagem):
     cursor.close()
     conn.close()
 
-def buscar_comunicados_gerais():
+def buscar_comunicado_geral():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     query = "SELECT * FROM comunicados_gerais ORDER BY data DESC"
@@ -188,7 +191,7 @@ def buscar_comunicados_gerais():
     conn.close()
     return comunicados
 
-def enviar_comunicado(assunto, mensagem):
+def enviar_comunicado_geral(assunto, mensagem):
     conn = get_db_connection()
     cursor = conn.cursor()
     query = "INSERT INTO comunicados_gerais (assunto, mensagem) VALUES (%s, %s)"
@@ -238,19 +241,33 @@ def login_usuario():
 def login_empresa():
     try:
         if request.method == 'POST':
-            email = request.form['email']
+            cnpj = limpar_cnpj(request.form['cnpj'])
             senha = request.form['senha']
-            empresa = encontrar_empresa(email)
-            if empresa and empresa['senha'] == senha:
-                session['empresa_id'] = empresa['id']
-                session['nome_empresa'] = empresa['nome']
-                session['email_empresa'] = empresa['email'] 
-                return redirect(url_for('perfil_empresa', email=empresa['email'])) 
-            flash('Email ou senha incorretos', 'danger')
+
+            print(f"Tentando buscar empresa com CNPJ: {cnpj}")  # Debug
+
+            empresa = encontrar_empresa(cnpj)
+
+            if empresa:
+                print(f"Empresa encontrada: {empresa['nome']}")  # Debug
+                if empresa['senha'] == senha:  # Se a senha estiver em texto puro
+                    session['empresa_id'] = empresa['id']
+                    session['nome_empresa'] = empresa['nome']
+                    session['cnpj_empresa'] = empresa['cnpj']
+                    return redirect(url_for('perfil_empresa', cnpj=empresa['cnpj']))
+                else:
+                    flash('Senha incorreta', 'danger')
+            else:
+                flash('CNPJ não encontrado', 'danger')
+
             return redirect(url_for('login_empresa'))
+
         return render_template('login_empresa.html')
+
     except Exception as e:
+        print(f"Erro no login: {e}")  # Debug
         return str(e), 500
+
 
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
@@ -344,10 +361,10 @@ def editar_usuario_perfil(cpf):
     except Exception as e:
         return str(e), 500
 
-@app.route('/editar_empresa/<email>', methods=['GET', 'POST'])
-def editar_empresa_perfil(email):
+@app.route('/editar_empresa/<cnpj>', methods=['GET', 'POST'])
+def editar_empresa_perfil(cnpj):
     try:
-        empresa = encontrar_empresa(email)
+        empresa = encontrar_empresa(cnpj)  # Buscar empresa pelo CNPJ
         if not empresa:
             return "Empresa não encontrada", 404
 
@@ -356,33 +373,30 @@ def editar_empresa_perfil(email):
             endereco = request.form['endereco']
             telefone = request.form['telefone']
             senha = request.form['senha']
-            editar_empresa(email, nome, endereco, telefone, senha)
+            editar_empresa(cnpj, nome, endereco, telefone, senha)  # Passar CNPJ
             flash('Perfil atualizado com sucesso', 'success')
-            return redirect(url_for('perfil_empresa', email=email))
+            return redirect(url_for('perfil_empresa', cnpj=cnpj))  # Corrigir URL
 
         return render_template('editar_empresa.html', empresa=empresa)
     except Exception as e:
         return str(e), 500
 
-@app.route('/perfil_empresa/<email>', methods=['GET'])
-def perfil_empresa(email):
+@app.route('/perfil_empresa/<cnpj>', methods=['GET'])
+def perfil_empresa(cnpj):
     try:
         if 'empresa_id' not in session:
             flash('Você deve estar logado para acessar esta página', 'warning')
             return redirect(url_for('login_empresa'))
 
-        empresa = encontrar_empresa(email)
+        empresa = encontrar_empresa(cnpj)  # Use 'cnpj' aqui
         pedidos = buscar_todos_pedidos()
-        comunicados_gerais = buscar_comunicados_gerais()
+        comunicados_gerais = buscar_comunicado_geral()
         if empresa:
             return render_template('perfil_empresa.html', empresa=empresa, pedidos=pedidos, comunicados_gerais=comunicados_gerais)
         else:
             return "Empresa não encontrada", 404
     except Exception as e:
         return str(e), 500
-
-
-
 
 @app.route('/dashboard_usuario/<cpf>', methods=['GET'])
 def dashboard_usuario(cpf):
@@ -391,7 +405,7 @@ def dashboard_usuario(cpf):
         if usuario:
             pedidos = buscar_pedidos_usuarios(cpf)
             comunicados = buscar_comunicados_usuario(cpf)
-            comunicados_gerais = buscar_comunicados_gerais()
+            comunicados_gerais = buscar_comunicado_geral()
             return render_template('dashboard_usuario.html', usuario=usuario, pedidos=pedidos, comunicados=comunicados, comunicados_gerais=comunicados_gerais)
         else:
             return "Usuário não encontrado", 404
@@ -436,22 +450,22 @@ def cancelar_pedido(pedido_id):
     except Exception as e:
         return str(e), 500
     
-@app.route('/excluir_pedido/<int:pedido_id>/<email>', methods=['POST'])
-def excluir_pedido_view(pedido_id, email):
+@app.route('/excluir_pedido/<int:pedido_id>/<cnpj>', methods=['POST'])
+def excluir_pedido_view(pedido_id, cnpj):
     try:
         excluir_pedido(pedido_id)
         flash('Pedido excluído com sucesso', 'success')
-        return redirect(url_for('perfil_empresa', email=email))
+        return redirect(url_for('perfil_empresa', cnpj=cnpj))  # Ajuste aqui
     except Exception as e:
         return str(e), 500
 
-@app.route('/alterar_status/<int:pedido_id>/<email>', methods=['POST'])
-def alterar_status(pedido_id, email):
+@app.route('/alterar_status/<int:pedido_id>/<cnpj>', methods=['POST'])
+def alterar_status(pedido_id, cnpj):
     try:
-        novo_status = request.form['novo_status'] 
+        novo_status = request.form['novo_status']
         alterar_status_pedido(pedido_id, novo_status)
         flash('Status do pedido alterado com sucesso', 'success')
-        return redirect(url_for('perfil_empresa', email=email))
+        return redirect(url_for('perfil_empresa', cnpj=cnpj))  # Ajuste aqui
     except Exception as e:
         return str(e), 500
 
@@ -459,9 +473,9 @@ def alterar_status(pedido_id, email):
 def enviar_comunicado_usuario(pedido_id):
     try:
         mensagem = request.form['mensagem']
-        enviar_comunicado(pedido_id, mensagem)
+        enviar_comunicado_pedido(pedido_id, mensagem)
         flash('Comunicado enviado com sucesso', 'success')
-        return redirect(url_for('perfil_empresa', email=session.get('nome_empresa')))
+        return redirect(url_for('perfil_empresa', cnpj=session.get('cnpj_empresa')))  # Corrigido aqui
     except Exception as e:
         return str(e), 500
 
@@ -471,12 +485,19 @@ def criar_comunicado():
         if request.method == 'POST':
             assunto = request.form['assunto']
             mensagem = request.form['mensagem']
-            enviar_comunicado(assunto, mensagem)  
+            enviar_comunicado_geral(assunto, mensagem)  
             flash('Comunicado criado com sucesso!', 'success')
-            
-            return render_template('criar_comunicado.html')
 
-        return render_template('criar_comunicado.html') 
+            cnpj_empresa = session.get('cnpj_empresa')
+
+            if not cnpj_empresa:
+                flash("Erro: Não foi possível identificar a empresa. Faça login novamente.", "danger")
+                return redirect(url_for('login_empresa'))
+
+            return redirect(url_for('perfil_empresa', cnpj=cnpj_empresa))
+
+        return render_template('criar_comunicado.html')
+
     except Exception as e:
         return str(e), 500
 
@@ -485,7 +506,7 @@ def excluir_comunicado_geral_view(comunicado_id):
     try:
         excluir_comunicado_geral(comunicado_id)
         flash('Comunicado excluído com sucesso', 'success')
-        return redirect(url_for('perfil_empresa', email=session.get('email_empresa')))
+        return redirect(url_for('perfil_empresa', cnpj=session.get('cnpj_empresa')))  # Corrigido aqui
     except Exception as e:
         return str(e), 500
     
