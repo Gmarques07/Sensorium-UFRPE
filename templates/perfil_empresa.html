@@ -8,6 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         body {
             background-color: #F8F9FA;
@@ -24,107 +26,150 @@
         .card {
             border-radius: 15px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            border: none;
         }
-        .card-header {
-            font-weight: bold;
-            background-color: #1565C0;
-            color: white;
+        .card-body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .icon-container {
+            font-size: 3rem;
+            color: #1565C0;
         }
         .btn-custom {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
             border-radius: 25px;
             background-color: #1565C0;
             color: white;
+            border: none;
         }
         .btn-custom:hover {
             background-color: #4FC3F7;
+        }
+        .details-section {
+            display: none;
+        }
+        .btn-container {
+            display: flex;
+            justify-content: center; /* Centraliza os botões horizontalmente */
+            align-items: center; /* Centraliza os botões verticalmente */
+            flex-direction: column;
+            gap: 10px; /* Diminui o espaçamento entre os botões */
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <div class="topBar">Água em Ação</div>
     <h1 class="text-center">Perfil da Empresa</h1>
-    <main class="container">
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-              <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                  {% for message in messages %}
-                      <p>{{ message }}</p>
-                  {% endfor %}
-                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-              </div>
-          {% endif %}
-        {% endwith %}
-        <div class="row mb-4">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">Informações da Empresa</div>
+    
+    <main class="container dashboard-section">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card text-center">
                     <div class="card-body">
-                        <p><strong>Nome:</strong> {{ empresa.nome }}</p>
-                        <p><strong>CNPJ:</strong> {{ empresa.cnpj }}</p>
+                        <div class="icon-container mb-3"><i class="bi bi-building"></i></div>
+                        <h5 class="card-title">Informações da Empresa</h5>
+                        <button class="btn btn-custom toggle-details" data-target="#informacoes-empresa">Ver Detalhes</button>
+                        <div id="informacoes-empresa" class="details-section mt-3">
+                            <p><strong>Nome:</strong> {{ empresa.nome }}</p>
+                            <p><strong>CNPJ:</strong> {{ empresa.cnpj }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <div class="icon-container mb-3"><i class="bi bi-bell-fill"></i></div>
+                        <h5 class="card-title">Avisos Gerais</h5>
+                        <button class="btn btn-custom toggle-details" data-target="#avisos">Ver Detalhes</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <div class="icon-container mb-3"><i class="bi bi-box-seam"></i></div>
+                        <h5 class="card-title">Pedidos Realizados</h5>
+                        <button class="btn btn-custom toggle-details" data-target="#pedidos">Ver Detalhes</button>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">Avisos Gerais</div>
-                    <div class="card-body">
-                        <ul class="list-group">
-                            {% for comunicado in comunicados_gerais %}
-                                <li class="list-group-item">
-                                    <h5>{{ comunicado.assunto }}</h5>
-                                    {{ comunicado.mensagem }}
-                                    <small>Data: {{ comunicado.data }}</small>
-                                    <form action="{{ url_for('excluir_comunicado_geral_view', comunicado_id=comunicado.id) }}" method="POST" style="display:inline;">
-                                        <button type="submit" class="btn btn-danger btn-sm mt-2">Excluir</button>
-                                    </form>
-                                </li>
-                            {% else %}
-                                <li class="list-group-item">Nenhum aviso enviado.</li>
-                            {% endfor %}
-                        </ul>
-                        <a href="{{ url_for('criar_comunicado') }}" class="btn btn-primary mt-3">Criar Novo Aviso</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">Pedidos Realizados</div>
-                    <div class="card-body">
-                        <ul class="list-group">
-                            {% for pedido in pedidos %}
-                                <li class="list-group-item">
-                                    {{ pedido.descricao }} - Quantidade: {{ pedido.quantidade }}<br />
-                                    Usuário: {{ pedido.usuario_nome }}<br />
-                                    Status Atual: {{ pedido.status }}<br />
-                                    Data do Pedido: {{ pedido.data }}
-                                    <a href="{{ url_for('visualizar_pedido', pedido_id=pedido.id) }}" class="btn btn-info btn-sm mt-2">Ver Detalhes</a>
-                                    <form action="{{ url_for('alterar_status', pedido_id=pedido.id, cnpj=empresa.cnpj) }}" method="POST" style="margin-top:10px;">
-                                        <select name="novo_status" class="form-select mb-2" required>
-                                            <option value="pendente" {% if pedido.status == 'pendente' %}selected{% endif %}>Pendente</option>
-                                            <option value="aceito" {% if pedido.status == 'aceito' %}selected{% endif %}>Aceito</option>
-                                            <option value="cancelado" {% if pedido.status == 'cancelado' %}selected{% endif %}>Cancelado</option>
-                                        </select>
-                                        <button type="submit" class="btn btn-primary btn-sm">Alterar Status</button>
-                                    </form>
-                                    <form action="{{ url_for('excluir_pedido_view', pedido_id=pedido.id, cnpj=empresa.cnpj) }}" method="POST" style="display:inline;">
-                                        <button type="submit" onclick='return confirm("Tem certeza que deseja excluir este pedido?")' class='btn btn-danger btn-sm mt-2'>Excluir</button>
-                                    </form>
-                                    <button type='button' data-bs-toggle='modal' data-bs-target='#comunicadoModal' onclick='document.getElementById("pedidoId").value="{{ pedido.id }}";' class='btn btn-info btn-sm mt-2'>Enviar Comunicado</button>
-                                </li>
-                            {% else %}
-                                <li class='list-group-item'>Nenhum pedido encontrado.</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class='text-center mt-4'>
-            <a href="{{ url_for('pagina_inicial') }}" class='btn btn-secondary btn-back'>Voltar para a Tela Inicial</a>
+        
+        <section id="avisos" class="mt-5 details-section">
+            <h3>Avisos Gerais</h3>
+            <ul class="list-group mt-3">
+                {% for comunicado in comunicados_gerais %}
+                    <li class="list-group-item">
+                        <h5>{{ comunicado.assunto }}</h5>
+                        {{ comunicado.mensagem }}
+                        <small>Data: {{ comunicado.data }}</small>
+                        <form action="{{ url_for('excluir_comunicado_geral_view', comunicado_id=comunicado.id) }}" method="POST">
+                            <button type="submit" class="btn btn-danger btn-sm mt-2">Excluir</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li class="list-group-item">Nenhum aviso enviado.</li>
+                {% endfor %}
+            </ul>
+            <a href="{{ url_for('criar_comunicado') }}" class="btn btn-primary mt-3">Criar Novo Aviso</a>
+        </section>
+        
+        <section id="pedidos" class="mt-5 details-section">
+            <h3>Pedidos Realizados</h3>
+            <ul class="list-group mt-3">
+                {% for pedido in pedidos %}
+                    <li class="list-group-item">
+                        {{ pedido.descricao }} - Quantidade: {{ pedido.quantidade }} - Status: {{ pedido.status }}<br>
+                        Usuário: {{ pedido.usuario_nome }}<br>
+                        Data do Pedido: {{ pedido.data }}
+                        <a href="{{ url_for('visualizar_pedido', pedido_id=pedido.id) }}" class="btn btn-info btn-sm mt-2">Ver Detalhes</a>
+                        <form action="{{ url_for('alterar_status', pedido_id=pedido.id, cnpj=empresa.cnpj) }}" method="POST" class="mt-2">
+                            <select name="novo_status" class="form-select mb-2" required>
+                                <option value="pendente" {% if pedido.status == 'pendente' %}selected{% endif %}>Pendente</option>
+                                <option value="aceito" {% if pedido.status == 'aceito' %}selected{% endif %}>Aceito</option>
+                                <option value="cancelado" {% if pedido.status == 'cancelado' %}selected{% endif %}>Cancelado</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary btn-sm">Alterar Status</button>
+                        </form>
+                        <form action="{{ url_for('enviar_comunicado_usuario', pedido_id=pedido.id) }}" method="POST">
+                            <div class="form-group">
+                                <label for="mensagem">Mensagem</label>
+                                <textarea name="mensagem" id="mensagem" class="form-control" placeholder="Digite sua mensagem" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-success btn-sm">Enviar Comunicado</button>
+                        </form>
+                        <form action="{{ url_for('excluir_pedido_view', pedido_id=pedido.id, cnpj=empresa.cnpj) }}" method="POST" class="mt-2">
+                            <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li class="list-group-item">Nenhum pedido encontrado.</li>
+                {% endfor %}
+            </ul>
+        </section>
+        
+        <!-- Container para os botões "Editar Dados" e "Voltar para a Tela Inicial" -->
+        <div class="btn-container">
+            <a href="{{ url_for('editar_empresa_perfil', cnpj=empresa.cnpj) }}" class="btn btn-secondary btn-custom">Editar Dados</a>
+            <a href="{{ url_for('pagina_inicial') }}" class="btn btn-secondary btn-custom">Voltar para a Tela Inicial</a>
         </div>
     </main>
-    <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js'></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.querySelectorAll('.toggle-details').forEach(button => {
+            button.addEventListener('click', function () {
+                const target = document.querySelector(this.dataset.target);
+                target.style.display = target.style.display === 'none' || target.style.display === '' ? 'block' : 'none';
+                this.textContent = target.style.display === 'block' ? 'Ocultar Detalhes' : 'Ver Detalhes';
+            });
+        });
+    </script>
 </body>
 </html>

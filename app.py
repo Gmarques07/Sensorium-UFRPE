@@ -78,11 +78,37 @@ def editar_usuario(cpf_atual, nome=None, email=None, endereco=None, senha=None, 
     cursor.close()
     conn.close()
 
-def _editar_empresa(email, nome=None, endereco=None, telefone=None, senha=None):
+def editar_empresa(cnpj, nome=None, endereco=None, telefone=None, senha=None):
     conn = get_db_connection()
     cursor = conn.cursor()
-    query = "UPDATE empresas SET nome = %s, endereco = %s, telefone = %s, senha = %s WHERE email = %s"
-    cursor.execute(query, (nome, endereco, telefone, senha, email))
+
+    # Iniciar uma lista para armazenar os valores de atualização
+    set_values = []
+    query = "UPDATE empresas SET "
+
+    # Atualiza apenas os campos não None
+    if nome:
+        query += "nome = %s, "
+        set_values.append(nome)
+    if endereco:
+        query += "endereco = %s, "
+        set_values.append(endereco)
+    if telefone:
+        query += "telefone = %s, "
+        set_values.append(telefone)
+    if senha:
+        query += "senha = %s, "
+        set_values.append(senha)
+
+    # Remover a vírgula extra no final da query
+    query = query.rstrip(', ')  # Remover vírgula extra
+
+    # Adicionar a condição para o CNPJ
+    query += " WHERE cnpj = %s"
+    set_values.append(cnpj)
+
+    # Executar a query
+    cursor.execute(query, tuple(set_values))
     conn.commit()
     cursor.close()
     conn.close()
@@ -169,15 +195,6 @@ def buscar_comunicados_usuario(cpf):
     cursor.close()
     conn.close()
     return comunicados
-
-def enviar_comunicado_geral(assunto, mensagem):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    query = "INSERT INTO comunicados_gerais (assunto, mensagem) VALUES (%s, %s)"
-    cursor.execute(query, (assunto, mensagem))
-    conn.commit()
-    cursor.close()
-    conn.close()
 
 def buscar_comunicado_geral():
     conn = get_db_connection()
@@ -348,20 +365,35 @@ def editar_usuario_perfil(cpf):
 @app.route('/editar_empresa/<cnpj>', methods=['GET', 'POST'])
 def editar_empresa_perfil(cnpj):
     try:
-        empresa = encontrar_empresa(cnpj)  # Buscar empresa pelo CNPJ
+        # Buscar empresa pelo CNPJ
+        empresa = encontrar_empresa(cnpj)
         if not empresa:
             return "Empresa não encontrada", 404
 
         if request.method == 'POST':
+            # Recupera os dados do formulário
             nome = request.form['nome']
             endereco = request.form['endereco']
             telefone = request.form['telefone']
-            senha = request.form['senha']
-            editar_empresa(cnpj, nome, endereco, telefone, senha)  # Passar CNPJ
-            flash('Perfil atualizado com sucesso', 'success')
-            return redirect(url_for('perfil_empresa', cnpj=cnpj))  # Corrigir URL
+            senha = request.form['senha'] if 'senha' in request.form else None
 
+            # Validação dos dados - Certifique-se de que todos os campos necessários estão preenchidos
+            if not nome or not endereco or not telefone:
+                flash('Todos os campos são obrigatórios!', 'error')
+                return redirect(request.url)
+
+            # Atualiza os dados da empresa
+            if senha:  # Atualiza a senha somente se foi fornecida
+                editar_empresa(cnpj, nome, endereco, telefone, senha)
+            else:  # Se a senha não for fornecida, apenas atualiza os outros dados
+                editar_empresa(cnpj, nome, endereco, telefone)
+
+            flash('Perfil atualizado com sucesso', 'success')
+            return redirect(url_for('perfil_empresa', cnpj=cnpj))  # Redireciona para o perfil da empresa
+
+        # Renderiza o template de edição com os dados atuais da empresa
         return render_template('editar_empresa.html', empresa=empresa)
+
     except Exception as e:
         return str(e), 500
 
@@ -447,9 +479,17 @@ def alterar_status(pedido_id, cnpj):
 
 @app.route('/enviar_comunicado/<int:pedido_id>', methods=['POST'])
 def enviar_comunicado_usuario(pedido_id):
-    mensagem = request.form['mensagem']
+    # Verifica se a mensagem foi fornecida
+    mensagem = request.form.get('mensagem')
+    if not mensagem:
+        flash('Mensagem não fornecida', 'error')
+        return redirect(url_for('perfil_empresa', cnpj=session.get('cnpj_empresa')))
+    
+    # Chama a função para enviar o comunicado
     enviar_comunicado_pedido(pedido_id, mensagem)
     flash('Comunicado enviado com sucesso', 'success')
+    
+    # Redireciona de volta para o perfil da empresa
     return redirect(url_for('perfil_empresa', cnpj=session.get('cnpj_empresa')))
 
 @app.route('/criar_comunicado', methods=['GET', 'POST'])
@@ -480,6 +520,7 @@ def visualizar_pedido(pedido_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
+    # Consulta para buscar as informações do pedido
     query_pedido = """
         SELECT p.id, p.descricao, p.quantidade, p.status, p.data, u.nome AS usuario_nome
         FROM pedidos p
@@ -489,17 +530,31 @@ def visualizar_pedido(pedido_id):
     cursor.execute(query_pedido, (pedido_id,))
     pedido = cursor.fetchone()
 
-    query_imagens = "SELECT caminho FROM imagens_pedido WHERE pedido_id = %s"
+    if not pedido:
+        cursor.close()
+        conn.close()
+        return "Pedido não encontrado", 404  # Garantir que a página não carregue sem o pedido
+
+    # Consulta para buscar as imagens do pedido
+    query_imagens = """
+        SELECT tipo_imagem, caminho
+        FROM imagens_pedido
+        WHERE pedido_id = %s
+    """
     cursor.execute(query_imagens, (pedido_id,))
     imagens = cursor.fetchall()
 
     cursor.close()
     conn.close()
 
-    if not pedido:
-        return "Pedido não encontrado", 404
+    # Organizando as imagens por tipo
+    imagens_ph = [imagem for imagem in imagens if imagem['tipo_imagem'] == 'ph']
+    imagens_ra = [imagem for imagem in imagens if imagem['tipo_imagem'] == 'rachadura']
+    imagens_nivel = [imagem for imagem in imagens if imagem['tipo_imagem'] == 'nivel']
 
-    return render_template('pedido_detalhe.html', pedido=pedido, imagens=imagens)
+    return render_template('pedido_detalhe.html', pedido=pedido, 
+                           imagens_ph=imagens_ph, imagens_ra=imagens_ra, imagens_nivel=imagens_nivel)
+
    
    
 if __name__ == '__main__':
