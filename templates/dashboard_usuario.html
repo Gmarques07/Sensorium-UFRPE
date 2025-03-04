@@ -75,6 +75,39 @@
         .details-section {
             display: none; /* Oculta as seções inicialmente */
         }
+        
+        .pedido-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+        }
+        
+        .pedido-info {
+            flex-grow: 1;
+        }
+        
+        .badge-status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-right: 10px;
+        }
+        
+        .badge-pendente {
+            background-color: #FFC107;
+            color: #212529;
+        }
+        
+        .badge-aceito {
+            background-color: #28A745;
+            color: white;
+        }
+        
+        .badge-cancelado {
+            background-color: #DC3545;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -146,7 +179,8 @@
             <ul class="list-group mt-3">
                 {% for aviso in comunicados_gerais %}
                     <li class="list-group-item">
-                        {{ aviso.assunto }} - {{ aviso.mensagem }}
+                        <h5>{{ aviso.assunto }}</h5>
+                        <p>{{ aviso.mensagem }}</p>
                         <small>{{ aviso.data }}</small>
                     </li>
                 {% else %}
@@ -157,24 +191,41 @@
 
         <section id="pedidos" class="mt-5 dashboard-section details-section">
             <h3>Últimos Pedidos</h3>
-            <ul class="list-group mt-3">
+            <div class="list-group mt-3">
                 {% for pedido in pedidos %}
-                    <li class="list-group-item">
-                        {{ pedido.descricao }} - Quantidade: {{ pedido.quantidade }} - Status: {{ pedido.status }}
-                        ({{ pedido.data }})
-                    </li>
+                    <div class="list-group-item pedido-item">
+                        <div class="pedido-info">
+                            <h5>{{ pedido.descricao }}</h5>
+                            <p>Quantidade: {{ pedido.quantidade }}</p>
+                            <p>
+                                <span class="badge badge-status badge-{{ pedido.status }}">{{ pedido.status }}</span>
+                                <small>{{ pedido.data }}</small>
+                            </p>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('visualizar_pedido', pedido_id=pedido['id']) }}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-eye"></i> Detalhes
+                            </a>
+                        </div>
+                    </div>
                 {% else %}
-                    <li class="list-group-item">Nenhum pedido encontrado.</li>
+                    <div class="list-group-item">Nenhum pedido encontrado.</div>
                 {% endfor %}
-            </ul>
+            </div>
         </section>
-
+        
         <!-- Botões de Ação -->
         <br />
         <div class="d-flex justify-content-center gap-3 mt-4">
-            <a href="{{ url_for('solicitar_pedido') }}" class="btn btn-primary btn-custom">Solicitar Pedido</a>
-            <a href="{{ url_for('editar_usuario_perfil', cpf=usuario['cpf']) }}" class="btn btn-secondary btn-custom">Editar Perfil</a>
-            <a href="{{ url_for('pagina_inicial') }}" class="btn btn-secondary btn-custom">Voltar à Página Inicial</a>
+            <a href="{{ url_for('solicitar_pedido') }}" class="btn btn-primary btn-custom">
+                <i class="bi bi-plus-circle"></i> Solicitar Pedido
+            </a>
+            <a href="{{ url_for('editar_usuario_perfil', cpf=usuario['cpf']) }}" class="btn btn-secondary btn-custom">
+                <i class="bi bi-pencil"></i> Editar Perfil
+            </a>
+            <a href="{{ url_for('pagina_inicial') }}" class="btn btn-secondary btn-custom">
+                <i class="bi bi-house"></i> Página Inicial
+            </a>
         </div>
 
     </main>

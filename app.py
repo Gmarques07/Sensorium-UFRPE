@@ -4,6 +4,11 @@ import mysql.connector
 from datetime import datetime
 from flask import Flask, request, session, redirect, url_for, render_template, flash
 from werkzeug.security import generate_password_hash
+import cv2
+import numpy as np
+from werkzeug.utils import secure_filename
+from time import time
+
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -15,9 +20,104 @@ db_config = {
     'database': 'banco_de_dados'
 }
 
+
 def get_db_connection():
     conn = mysql.connector.connect(**db_config)
     return conn
+
+UPLOAD_FOLDER = "static/uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024 
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename):
+    """Verifica se o arquivo tem uma extensão permitida."""
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def detect_cracks(image):
+    """Processa a imagem para detectar rachaduras."""
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    edges = cv2.Canny(blurred, 50, 150)
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    cracks_found = False
+    for contour in contours:
+        if cv2.contourArea(contour) > 50:
+            cv2.drawContours(image, [contour], -1, (0, 255, 0), 2)
+            cracks_found = True
+    
+    return image, cracks_found
+
+def salvar_imagem_pedido(pedido_id, tipo_imagem, caminho_imagem, tem_rachadura):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    query = "INSERT INTO imagens_pedido (pedido_id, tipo_imagem, caminho, tem_rachadura) VALUES (%s, %s, %s, %s)"
+    cursor.execute(query, (pedido_id, tipo_imagem, caminho_imagem, tem_rachadura))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+def excluir_imagem(imagem_id):
+    """Exclui uma imagem do banco de dados e do sistema de arquivos"""
+    try:
+        # Primeiro, obtém o caminho da imagem
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        query = "SELECT caminho FROM imagens_pedido WHERE id = %s"
+        cursor.execute(query, (imagem_id,))
+        imagem = cursor.fetchone()
+        
+        if not imagem:
+            cursor.close()
+            conn.close()
+            return False
+            
+        # Exclui do banco de dados
+        query_delete = "DELETE FROM imagens_pedido WHERE id = %s"
+        cursor.execute(query_delete, (imagem_id,))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        # Exclui o arquivo físico
+        caminho_completo = os.path.join('static', imagem['caminho'])
+        if os.path.exists(caminho_completo):
+            os.remove(caminho_completo)
+            
+        return True
+    except Exception as e:
+        print(f"Erro ao excluir imagem: {e}")
+        return False
+
+def notificar_rachadura(pedido_id, imagem_id, mensagem):
+    """Cria uma notificação para a empresa sobre rachaduras detectadas"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Obter informações do pedido para incluir na notificação
+        query_pedido = "SELECT cpf_usuario, descricao FROM pedidos WHERE id = %s"
+        cursor.execute(query_pedido, (pedido_id,))
+        pedido = cursor.fetchone()
+        
+        # Criar mensagem de notificação
+        assunto = f"ALERTA: Rachaduras detectadas no pedido #{pedido_id}"
+        mensagem_completa = f"{mensagem}\n\nPedido: {pedido['descricao']}\nImagem ID: {imagem_id}"
+        
+        # Inserir na tabela de comunicados
+        query = "INSERT INTO comunicados_gerais (assunto, mensagem) VALUES (%s, %s)"
+        cursor.execute(query, (assunto, mensagem_completa))
+        conn.commit()
+        
+        cursor.close()
+        conn.close()
+        return True
+    except Exception as e:
+        print(f"Erro ao notificar rachadura: {e}")
+        return False
 
 
 def alterar_status_pedido(pedido_id, novo_status):
@@ -135,7 +235,7 @@ def buscar_pedidos_usuarios(cpf):
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         query = """
-            SELECT p.descricao, p.quantidade, p.data, p.status, u.nome AS usuario_nome
+            SELECT p.id, p.descricao, p.quantidade, p.data, p.status, u.nome AS usuario_nome
             FROM pedidos p
             JOIN usuarios u ON p.cpf_usuario = u.cpf
             WHERE p.cpf_usuario = %s
@@ -150,7 +250,7 @@ def buscar_pedidos_usuarios(cpf):
         print(f"Erro ao buscar pedidos: {e}")
         return []
 
-    
+
 def buscar_todos_pedidos():
     try:
         conn = get_db_connection()
@@ -548,7 +648,6 @@ def visualizar_pedido(pedido_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-
     query_pedido = """
         SELECT p.id, p.descricao, p.quantidade, p.status, p.data, u.nome AS usuario_nome
         FROM pedidos p
@@ -561,10 +660,10 @@ def visualizar_pedido(pedido_id):
     if not pedido:
         cursor.close()
         conn.close()
-        return "Pedido não encontrado", 404 
+        return "Pedido não encontrado", 404
 
     query_imagens = """
-        SELECT tipo_imagem, caminho
+        SELECT id, caminho, tipo_imagem, tem_rachadura
         FROM imagens_pedido
         WHERE pedido_id = %s
     """
@@ -574,14 +673,9 @@ def visualizar_pedido(pedido_id):
     cursor.close()
     conn.close()
 
-    imagens_ph = [imagem for imagem in imagens if imagem['tipo_imagem'] == 'ph']
-    imagens_ra = [imagem for imagem in imagens if imagem['tipo_imagem'] == 'rachadura']
-    imagens_nivel = [imagem for imagem in imagens if imagem['tipo_imagem'] == 'nivel']
+    return render_template('pedido_detalhe.html', pedido=pedido, imagens=imagens)
 
-    return render_template('pedido_detalhe.html', pedido=pedido, 
-                           imagens_ph=imagens_ph, imagens_ra=imagens_ra, imagens_nivel=imagens_nivel)
-
-@app.route('/detalhes_cisterna/<cnpj>', methods=['GET'])
+@app.route('/detalhes_cisterna/<cnpj>')
 def detalhes_cisterna(cnpj):
     empresa = encontrar_empresa(cnpj)
     if not empresa:
@@ -589,12 +683,154 @@ def detalhes_cisterna(cnpj):
     
     ph_atual, historico_ph, nivel_atual, historico_nivel = buscar_dados_cisterna(cnpj)
     
+    # Buscar imagens de rachaduras
+    imagens_rachaduras = buscar_imagens_rachaduras(cnpj)
+    
     return render_template('detalhes_cisterna.html', 
                            empresa=empresa,
-                           ph_atual=ph_atual,
-                           historico_ph=historico_ph,
-                           nivel_atual=nivel_atual,
-                           historico_nivel=historico_nivel)
+                           ph_atual=ph_atual, 
+                           historico_ph=historico_ph, 
+                           nivel_atual=nivel_atual, 
+                           historico_nivel=historico_nivel,
+                           imagens_rachaduras=imagens_rachaduras)
+
+def buscar_imagens_rachaduras(cnpj):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    query = """
+    SELECT i.id, i.caminho, i.data_upload, i.tem_rachadura
+    FROM imagens_pedido i
+    JOIN pedidos p ON i.pedido_id = p.id
+    JOIN empresas e ON p.cnpj_empresa = e.cnpj
+    WHERE e.cnpj = %s AND i.tipo_imagem = 'rachadura'
+    ORDER BY i.data_upload DESC
+    LIMIT 6
+    """
+    cursor.execute(query, (cnpj,))
+    imagens = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return imagens
+
+
+@app.route('/analisar_rachadura/<int:pedido_id>', methods=['POST'])
+def analisar_rachadura(pedido_id):
+    try:
+        if 'imagem' not in request.files:
+            flash('Nenhum arquivo enviado', 'danger')
+            return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
+            
+        file = request.files['imagem']
+        if file.filename == '':
+            flash('Nenhum arquivo selecionado', 'danger')
+            return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
+            
+        if not allowed_file(file.filename):
+            flash('Tipo de arquivo não permitido', 'danger')
+            return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
+            
+        # Gera nome único para o arquivo
+        filename = f"{int(time())}_{secure_filename(file.filename)}"
+        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        file.save(filepath)
+        
+        # Processa a imagem
+        image = cv2.imread(filepath)
+        if image is None:
+            flash('Erro ao processar a imagem', 'danger')
+            return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
+            
+        processed_image, cracks_found = detect_cracks(image)
+        
+        # Salva a imagem processada
+        processed_filename = f"processed_{filename}"
+        processed_filepath = os.path.join(app.config["UPLOAD_FOLDER"], processed_filename)
+        cv2.imwrite(processed_filepath, processed_image)
+        
+        # Salva no banco de dados
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        db_filepath = f"uploads/{processed_filename}"
+        query = "INSERT INTO imagens_pedido (pedido_id, caminho, tipo_imagem) VALUES (%s, %s, %s)"
+        cursor.execute(query, (pedido_id, db_filepath, 'rachadura'))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        if cracks_found:
+            flash('Rachaduras detectadas na imagem!', 'warning')
+        else:
+            flash('Nenhuma rachadura detectada', 'success')
+            
+        return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
+    except Exception as e:
+        print(f"Erro ao analisar rachadura: {e}")
+        flash(f"Erro ao processar a imagem: {str(e)}", 'danger')
+        return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
+
+
+
+@app.route('/upload_rachadura/<int:pedido_id>', methods=['POST'])
+def upload_rachadura(pedido_id):
+    try:
+        if "imagem" not in request.files:
+            flash("Nenhum arquivo enviado", "danger")
+            return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
+        
+        file = request.files["imagem"]
+        if file.filename == "":
+            flash("Nenhum arquivo selecionado", "danger")
+            return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
+        
+        if not allowed_file(file.filename):
+            flash("Tipo de arquivo não permitido", "danger")
+            return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
+        
+        filename = f"{int(time())}_{secure_filename(file.filename)}"
+        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        file.save(filepath)
+        
+        image = cv2.imread(filepath)
+        if image is None:
+            flash("Erro ao carregar a imagem", "danger")
+            return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
+        
+        processed_image, cracks_found = detect_cracks(image)
+        
+        processed_filename = f"processed_{filename}"
+        processed_filepath = os.path.join(app.config["UPLOAD_FOLDER"], processed_filename)
+        cv2.imwrite(processed_filepath, processed_image)
+
+        db_filepath = f"uploads/{processed_filename}"
+        
+        salvar_imagem_pedido(pedido_id, 'rachadura', db_filepath, cracks_found)
+
+        if cracks_found:
+            flash("Rachaduras detectadas na imagem!", "warning")
+            notificar_rachadura(pedido_id, db_filepath, "Rachaduras detectadas em nova imagem")
+        else:
+            flash("Nenhuma rachadura detectada na imagem", "success")
+            
+        return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
+
+    except Exception as e:
+        print(f"Erro inesperado: {e}")
+        flash(f"Erro ao processar a imagem: {str(e)}", "danger")
+        return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
+
+@app.route('/excluir_imagem/<int:imagem_id>/<int:pedido_id>', methods=['POST'])
+def excluir_imagem_view(imagem_id, pedido_id):
+    """Rota para excluir uma imagem"""
+    try:
+        if excluir_imagem(imagem_id):
+            flash('Imagem excluída com sucesso', 'success')
+        else:
+            flash('Erro ao excluir imagem', 'danger')
+    except Exception as e:
+        flash(f'Erro ao excluir imagem: {str(e)}', 'danger')
+        
+    return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
+
 
 if __name__ == '__main__':
     app.run(debug=True)

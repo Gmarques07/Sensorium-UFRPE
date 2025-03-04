@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Pedido - Água em Ação</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #F8F9FA;
+            font-family: 'Poppins', sans-serif;
+        }
+        .topBar {
+            background-color: #1565C0;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            padding: 1rem 0;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            border: none;
+            margin-bottom: 20px;
+        }
+        .btn-custom {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 25px;
+            background-color: #1565C0;
+            color: white;
+            border: none;
+        }
+        .btn-custom:hover {
+            background-color: #4FC3F7;
+        }
+        .badge-status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        .badge-pendente {
+            background-color: #FFC107;
+            color: #212529;
+        }
+        .badge-aceito {
+            background-color: #28A745;
+            color: white;
+        }
+        .badge-cancelado {
+            background-color: #DC3545;
+            color: white;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        .image-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px 10px 0 0;
+            height: 200px;
+        }
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .card-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra Superior -->
+    <div class="topBar">Água em Ação</div>
+
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Detalhes do Pedido</h2>
+            </div>
+            <div class="card-body">
+                <h3>{{ pedido.descricao }}</h3>
+                <p><strong>Quantidade:</strong> {{ pedido.quantidade }}</p>
+                <p><strong>Status:</strong> <span class="badge badge-status badge-{{ pedido.status }}">{{ pedido.status }}</span></p>
+                <p><strong>Data:</strong> {{ pedido.data }}</p>
+                <p><strong>Solicitante:</strong> {{ pedido.usuario_nome }}</p>
+            </div>
+        </div>
+
+        <!-- Seção de Análise de Rachaduras -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Análise de Rachaduras</h3>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('analisar_rachadura', pedido_id=pedido['id']) }}" method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="imagem" class="form-label">Selecione uma imagem para análise:</label>
+                        <input type="file" class="form-control" id="imagem" name="imagem" accept=".jpg,.jpeg,.png,.gif" required>
+                    </div>
+                    <button type="submit" class="btn btn-custom">
+                        <i class="bi bi-camera"></i> Analisar Imagem
+                    </button>
+                </form>
+
+                {% if imagens %}
+                <div class="mt-4">
+                    <h4>Imagens Analisadas</h4>
+                    <div class="row">
+                        {% for imagem in imagens %}
+                            {% if imagem.tipo_imagem == 'rachadura' %}
+                                <div class="col-md-4 mb-3">
+                                    <div class="card h-100">
+                                        <div class="image-container">
+                                            <img src="{{ url_for('static', filename=imagem.caminho) }}" alt="Imagem de rachadura">
+                                        </div>
+                                        <div class="card-body">
+                                            <h5 class="card-title">Análise de Rachadura</h5>
+                                            <p class="card-text">
+                                                <small class="text-muted">ID: {{ imagem.id }}</small>
+                                            </p>
+                                            <div class="card-actions">
+                                                <a href="{{ url_for('static', filename=imagem.caminho) }}" target="_blank" class="btn btn-primary btn-sm">
+                                                    <i class="bi bi-zoom-in"></i> Ampliar
+                                                </a>
+                                                <form action="{{ url_for('excluir_imagem_view', imagem_id=imagem.id, pedido_id=pedido['id']) }}" method="post" onsubmit="return confirm('Tem certeza que deseja excluir esta imagem?');">
+                                                    <button type="submit" class="btn btn-danger btn-sm">
+                                                        <i class="bi bi-trash"></i> Excluir
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="mt-4">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Nenhuma imagem analisada para este pedido.
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4 mb-4">
+            <a href="{{ url_for('dashboard_usuario', cpf=session.get('cpf')) }}" class="btn btn-secondary btn-custom">
+                <i class="bi bi-arrow-left"></i> Voltar ao Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
