@@ -26,10 +26,13 @@ CREATE TABLE `imagens_pedido` (
   `id` int NOT NULL AUTO_INCREMENT,
   `pedido_id` int NOT NULL,
   `caminho` varchar(255) NOT NULL,
-  `tipo_imagem` varchar(50) DEFAULT NULL,
+  `novo_nome` varchar(20) NOT NULL DEFAULT 'rachadura',
+  `tipo_imagem` varchar(20) NOT NULL DEFAULT 'rachadura',
+  `data_upload` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `tem_rachadura` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `pedido_id` (`pedido_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -38,6 +41,7 @@ CREATE TABLE `imagens_pedido` (
 
 LOCK TABLES `imagens_pedido` WRITE;
 /*!40000 ALTER TABLE `imagens_pedido` DISABLE KEYS */;
+INSERT INTO `imagens_pedido` VALUES (21,69,'uploads/processed_1741117917_pexels-monstera-7794439-scaled.jpg','rachadura','rachadura','2025-03-04 19:51:57',0);
 /*!40000 ALTER TABLE `imagens_pedido` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -50,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-03-03 21:12:35
+-- Dump completed on 2025-03-04 17:10:05

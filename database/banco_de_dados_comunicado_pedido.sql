@@ -30,7 +30,7 @@ CREATE TABLE `comunicado_pedido` (
   `lido` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `pedido_id` (`pedido_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -39,7 +39,7 @@ CREATE TABLE `comunicado_pedido` (
 
 LOCK TABLES `comunicado_pedido` WRITE;
 /*!40000 ALTER TABLE `comunicado_pedido` DISABLE KEYS */;
-INSERT INTO `comunicado_pedido` VALUES (1,64,'teste de comunicado\r\n','2025-02-20 18:39:07',0),(2,66,'teste 00','2025-02-20 19:59:39',0),(3,66,'mensagem teste','2025-02-20 20:25:56',0),(4,67,'pedido teste','2025-02-20 20:27:47',0),(5,66,'ss','2025-02-20 21:45:32',0),(6,66,'dasdas','2025-02-23 21:02:26',0),(7,66,'kkk','2025-03-03 18:45:52',0);
+INSERT INTO `comunicado_pedido` VALUES (1,64,'teste de comunicado\r\n','2025-02-20 18:39:07',0),(2,66,'teste 00','2025-02-20 19:59:39',0),(3,66,'mensagem teste','2025-02-20 20:25:56',0),(4,67,'pedido teste','2025-02-20 20:27:47',0),(5,66,'ss','2025-02-20 21:45:32',0),(6,66,'dasdas','2025-02-23 21:02:26',0),(7,66,'kkk','2025-03-03 18:45:52',0),(8,67,'ds','2025-03-04 16:53:52',0),(9,70,'z\\','2025-03-04 16:55:11',0);
 /*!40000 ALTER TABLE `comunicado_pedido` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -52,4 +52,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-03-03 21:12:35
+-- Dump completed on 2025-03-04 17:10:05
