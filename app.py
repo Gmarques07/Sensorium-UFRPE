@@ -596,10 +596,5 @@ def detalhes_cisterna(cnpj):
                            nivel_atual=nivel_atual,
                            historico_nivel=historico_nivel)
 
-
-
-
-   
-   
 if __name__ == '__main__':
     app.run(debug=True)
