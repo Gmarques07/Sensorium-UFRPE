@@ -1,5 +1,3 @@
-CREATE DATABASE  IF NOT EXISTS `banco_de_dados` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `banco_de_dados`;
 -- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
 --
 -- Host: 127.0.0.1    Database: banco_de_dados
@@ -34,7 +32,7 @@ CREATE TABLE `usuarios` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `cpf` (`cpf`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=MyISAM AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -43,7 +41,7 @@ CREATE TABLE `usuarios` (
 
 LOCK TABLES `usuarios` WRITE;
 /*!40000 ALTER TABLE `usuarios` DISABLE KEYS */;
-INSERT INTO `usuarios` VALUES (1,'João Silva','12345678900','joao.silva@example.com','Rua das Flores, 123','senha1234'),(2,'Maria Oliveira','23456789012','maria.oliveira@example.com','Avenida Brasil, 456','senha456'),(3,'Pedro Souza','34567890123','pedro.souza@example.com','Praça da Sé, 789','senha789'),(4,'gabriel','11122233345','emailteste@hotmail.com','rua do teste','1234'),(5,'luis felipe de arruda gomes','12896523420','luis.agomes@ufrpe','rua santa cruz numero 85','futebbol'),(6,'gabriel','11111111111','testando12@hotmail.com','rua do teste12','1234');
+INSERT INTO `usuarios` VALUES (35,'Joao Victor','11111111111','emailteste@gmail.com','rua teste 00','senha00'),(36,'Joao Victor','22222222222','emailteste00@gmail.com','rua teste 01','senha01');
 /*!40000 ALTER TABLE `usuarios` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -56,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-08-26 23:22:15
+-- Dump completed on 2025-03-03 21:12:35

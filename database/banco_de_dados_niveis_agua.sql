@@ -16,33 +16,29 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `empresas`
+-- Table structure for table `niveis_agua`
 --
 
-DROP TABLE IF EXISTS `empresas`;
+DROP TABLE IF EXISTS `niveis_agua`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `empresas` (
+CREATE TABLE `niveis_agua` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `nome` varchar(100) DEFAULT NULL,
-  `email` varchar(100) DEFAULT NULL,
-  `senha` varchar(255) DEFAULT NULL,
-  `cnpj` char(14) DEFAULT NULL,
-  `endereco` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `email` (`email`),
-  UNIQUE KEY `cnpj` (`cnpj`)
-) ENGINE=MyISAM AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `boia` int DEFAULT NULL,
+  `status` varchar(10) DEFAULT NULL,
+  `data` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `empresas`
+-- Dumping data for table `niveis_agua`
 --
 
-LOCK TABLES `empresas` WRITE;
-/*!40000 ALTER TABLE `empresas` DISABLE KEYS */;
-INSERT INTO `empresas` VALUES (19,'empresa teste','emailempresa@hotmail.com','senha00','11111111111111',NULL),(23,'empresa teste 02','emailempresa2@hotmail.com','senha00','22222222222222',NULL);
-/*!40000 ALTER TABLE `empresas` ENABLE KEYS */;
+LOCK TABLES `niveis_agua` WRITE;
+/*!40000 ALTER TABLE `niveis_agua` DISABLE KEYS */;
+INSERT INTO `niveis_agua` VALUES (27,1,'ALTO','2025-02-24 03:08:20'),(26,0,'BAIXO','2025-02-24 03:04:52'),(25,1,'ALTO','2025-02-24 03:04:50'),(24,0,'BAIXO','2025-02-24 03:04:46'),(23,1,'ALTO','2025-02-24 03:04:44'),(22,0,'BAIXO','2025-02-24 03:04:42'),(21,1,'ALTO','2025-02-24 03:04:38');
+/*!40000 ALTER TABLE `niveis_agua` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -54,4 +50,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-03-03 21:12:34
+-- Dump completed on 2025-03-03 21:12:35

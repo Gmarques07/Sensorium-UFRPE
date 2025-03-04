@@ -16,33 +16,31 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `empresas`
+-- Table structure for table `comunicado_pedido`
 --
 
-DROP TABLE IF EXISTS `empresas`;
+DROP TABLE IF EXISTS `comunicado_pedido`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `empresas` (
+CREATE TABLE `comunicado_pedido` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `nome` varchar(100) DEFAULT NULL,
-  `email` varchar(100) DEFAULT NULL,
-  `senha` varchar(255) DEFAULT NULL,
-  `cnpj` char(14) DEFAULT NULL,
-  `endereco` varchar(255) DEFAULT NULL,
+  `pedido_id` int DEFAULT NULL,
+  `mensagem` text,
+  `data` datetime DEFAULT CURRENT_TIMESTAMP,
+  `lido` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `email` (`email`),
-  UNIQUE KEY `cnpj` (`cnpj`)
-) ENGINE=MyISAM AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `pedido_id` (`pedido_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `empresas`
+-- Dumping data for table `comunicado_pedido`
 --
 
-LOCK TABLES `empresas` WRITE;
-/*!40000 ALTER TABLE `empresas` DISABLE KEYS */;
-INSERT INTO `empresas` VALUES (19,'empresa teste','emailempresa@hotmail.com','senha00','11111111111111',NULL),(23,'empresa teste 02','emailempresa2@hotmail.com','senha00','22222222222222',NULL);
-/*!40000 ALTER TABLE `empresas` ENABLE KEYS */;
+LOCK TABLES `comunicado_pedido` WRITE;
+/*!40000 ALTER TABLE `comunicado_pedido` DISABLE KEYS */;
+INSERT INTO `comunicado_pedido` VALUES (1,64,'teste de comunicado\r\n','2025-02-20 18:39:07',0),(2,66,'teste 00','2025-02-20 19:59:39',0),(3,66,'mensagem teste','2025-02-20 20:25:56',0),(4,67,'pedido teste','2025-02-20 20:27:47',0),(5,66,'ss','2025-02-20 21:45:32',0),(6,66,'dasdas','2025-02-23 21:02:26',0),(7,66,'kkk','2025-03-03 18:45:52',0);
+/*!40000 ALTER TABLE `comunicado_pedido` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -54,4 +52,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-03-03 21:12:34
+-- Dump completed on 2025-03-03 21:12:35

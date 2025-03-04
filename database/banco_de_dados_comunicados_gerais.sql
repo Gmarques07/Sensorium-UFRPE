@@ -16,33 +16,28 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `empresas`
+-- Table structure for table `comunicados_gerais`
 --
 
-DROP TABLE IF EXISTS `empresas`;
+DROP TABLE IF EXISTS `comunicados_gerais`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `empresas` (
+CREATE TABLE `comunicados_gerais` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `nome` varchar(100) DEFAULT NULL,
-  `email` varchar(100) DEFAULT NULL,
-  `senha` varchar(255) DEFAULT NULL,
-  `cnpj` char(14) DEFAULT NULL,
-  `endereco` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `email` (`email`),
-  UNIQUE KEY `cnpj` (`cnpj`)
+  `assunto` varchar(255) NOT NULL,
+  `mensagem` text NOT NULL,
+  `data` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `empresas`
+-- Dumping data for table `comunicados_gerais`
 --
 
-LOCK TABLES `empresas` WRITE;
-/*!40000 ALTER TABLE `empresas` DISABLE KEYS */;
-INSERT INTO `empresas` VALUES (19,'empresa teste','emailempresa@hotmail.com','senha00','11111111111111',NULL),(23,'empresa teste 02','emailempresa2@hotmail.com','senha00','22222222222222',NULL);
-/*!40000 ALTER TABLE `empresas` ENABLE KEYS */;
+LOCK TABLES `comunicados_gerais` WRITE;
+/*!40000 ALTER TABLE `comunicados_gerais` DISABLE KEYS */;
+/*!40000 ALTER TABLE `comunicados_gerais` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
