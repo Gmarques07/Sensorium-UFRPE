@@ -295,6 +295,24 @@ def buscar_comunicados_usuario(cpf):
     conn.close()
     return comunicados
 
+def buscar_imagens_rachaduras(cnpj):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    query = """
+    SELECT i.id, i.caminho, i.data_upload, i.tem_rachadura
+    FROM imagens_pedido i
+    JOIN pedidos p ON i.pedido_id = p.id
+    JOIN empresas e ON p.cnpj_empresa = e.cnpj
+    WHERE e.cnpj = %s AND i.tipo_imagem = 'rachadura'
+    ORDER BY i.data_upload DESC
+    LIMIT 6
+    """
+    cursor.execute(query, (cnpj,))
+    imagens = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return imagens
+
 def buscar_comunicado_geral():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -351,6 +369,58 @@ def buscar_dados_cisterna(cnpj):
     conn.close()
     
     return ph_atual, historico_ph, nivel_atual, historico_nivel
+
+def criar_notificacao(pedido_id, mensagem):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    query = "INSERT INTO notificacoes (pedido_id, mensagem, data_criacao) VALUES (%s, %s, NOW())"
+    cursor.execute(query, (pedido_id, mensagem))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+def buscar_notificacoes(cnpj):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    query = """
+    SELECT n.* 
+    FROM notificacoes n
+    JOIN pedidos p ON n.pedido_id = p.id
+    WHERE EXISTS (
+        SELECT 1 
+        FROM empresas e 
+        WHERE e.cnpj = %s
+    )
+    ORDER BY n.data_criacao DESC
+    LIMIT 10
+    """
+    cursor.execute(query, (cnpj,))
+    notificacoes = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return notificacoes
+
+def criar_pedido(cpf_usuario, descricao, quantidade, data):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Criar o pedido
+    query_pedido = "INSERT INTO pedidos (cpf_usuario, descricao, quantidade, data, status) VALUES (%s, %s, %s, %s, 'pendente')"
+    cursor.execute(query_pedido, (cpf_usuario, descricao, quantidade, data))
+    pedido_id = cursor.lastrowid
+
+    # Criar notificações para todas as empresas relacionadas ao pedido
+    query_empresas = "SELECT cnpj FROM empresas"
+    cursor.execute(query_empresas)
+    empresas = cursor.fetchall()
+
+    for empresa in empresas:
+        mensagem = f"Novo pedido criado: {descricao}"
+        criar_notificacao(pedido_id, mensagem)
+
+    conn.commit()
+    cursor.close()
+    conn.close() 
 
 
 @app.route('/')
@@ -682,9 +752,7 @@ def detalhes_cisterna(cnpj):
         return "Empresa não encontrada", 404
     
     ph_atual, historico_ph, nivel_atual, historico_nivel = buscar_dados_cisterna(cnpj)
-    
-    # Buscar imagens de rachaduras
-    imagens_rachaduras = buscar_imagens_rachaduras(cnpj)
+    notificacoes = buscar_notificacoes(cnpj)  
     
     return render_template('detalhes_cisterna.html', 
                            empresa=empresa,
@@ -692,25 +760,7 @@ def detalhes_cisterna(cnpj):
                            historico_ph=historico_ph, 
                            nivel_atual=nivel_atual, 
                            historico_nivel=historico_nivel,
-                           imagens_rachaduras=imagens_rachaduras)
-
-def buscar_imagens_rachaduras(cnpj):
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    query = """
-    SELECT i.id, i.caminho, i.data_upload, i.tem_rachadura
-    FROM imagens_pedido i
-    JOIN pedidos p ON i.pedido_id = p.id
-    JOIN empresas e ON p.cnpj_empresa = e.cnpj
-    WHERE e.cnpj = %s AND i.tipo_imagem = 'rachadura'
-    ORDER BY i.data_upload DESC
-    LIMIT 6
-    """
-    cursor.execute(query, (cnpj,))
-    imagens = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return imagens
+                           notificacoes=notificacoes) 
 
 
 @app.route('/analisar_rachadura/<int:pedido_id>', methods=['POST'])
@@ -758,7 +808,9 @@ def analisar_rachadura(pedido_id):
         conn.close()
         
         if cracks_found:
-            flash('Rachaduras detectadas na imagem!', 'warning')
+         mensagem = f"Rachaduras detectadas no pedido #{pedido_id}"
+         criar_notificacao(pedido_id, mensagem)
+         flash('Rachaduras detectadas! Uma notificação foi enviada.', 'warning')
         else:
             flash('Nenhuma rachadura detectada', 'success')
             
