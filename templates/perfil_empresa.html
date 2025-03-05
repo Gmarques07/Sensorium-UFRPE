@@ -139,7 +139,7 @@
                         {{ pedido.descricao }} - Quantidade: {{ pedido.quantidade }} - Status: {{ pedido.status }}<br>
                         Usuário: {{ pedido.usuario_nome }}<br>
                         Data do Pedido: {{ pedido.data }}
-                        <a href="{{ url_for('visualizar_pedido', pedido_id=pedido.id) }}" class="btn btn-info btn-sm mt-2">Ver Detalhes</a>
+                        
                         <form action="{{ url_for('alterar_status', pedido_id=pedido.id, cnpj=empresa.cnpj) }}" method="POST" class="mt-2">
                             <select name="novo_status" class="form-select mb-2" required>
                                 <option value="pendente" {% if pedido.status == 'pendente' %}selected{% endif %}>Pendente</option>
