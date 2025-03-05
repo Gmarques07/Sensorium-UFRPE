@@ -248,7 +248,7 @@
                                                 <h6 class="mb-1">{{ notificacao.mensagem }}</h6>
                                                 <small class="text-muted">Data: {{ notificacao.data_criacao }}</small>
                                             </div>
-                                            <a href="{{ url_for('visualizar_pedido', pedido_id=notificacao.pedido_id) }}" class="btn btn-primary btn-sm">Ver Pedido</a>
+                                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#pedidoModal" data-pedido-id="{{ notificacao.pedido_id }}">Ver Pedido</button>
                                         </div>
                                     </li>
                                 {% endfor %}
@@ -260,6 +260,21 @@
                 </div>
             </div>
         </div>
+        <!-- Modal -->
+        <div class="modal fade" id="pedidoModal" tabindex="-1" aria-labelledby="pedidoModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="pedidoModalLabel">Detalhes do Pedido</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body" id="pedidoModalBody">
+                <!-- Conteúdo será carregado aqui -->
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="text-center mt-4 mb-5">
             <a href="{{ url_for('perfil_empresa', cnpj=empresa.cnpj) }}" class="btn btn-primary">Voltar para o Perfil da Empresa</a>
         </div>
@@ -355,5 +370,31 @@
         });
       });
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var pedidoModal = document.getElementById('pedidoModal')
+            pedidoModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget
+                var pedidoId = button.getAttribute('data-pedido-id')
+                var modalBody = pedidoModal.querySelector('.modal-body')
+                
+                fetch('/api/pedido/' + pedidoId)
+                    .then(response => response.json())
+                    .then(data => {
+                        modalBody.innerHTML = `
+                            <p><strong>Descrição:</strong> ${data.descricao}</p>
+                            <p><strong>Quantidade:</strong> ${data.quantidade}</p>
+                            <p><strong>Status:</strong> ${data.status}</p>
+                            <p><strong>Data:</strong> ${data.data}</p>
+                            <p><strong>Solicitante:</strong> ${data.usuario_nome}</p>
+                        `
+                    })
+                    .catch(error => {
+                        modalBody.innerHTML = '<p>Erro ao carregar detalhes do pedido.</p>'
+                    })
+            })
+        })
+        </script>
+        
 </body>
 </html>

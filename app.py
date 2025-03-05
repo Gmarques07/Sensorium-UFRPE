@@ -2,13 +2,12 @@ import os
 import re
 import mysql.connector
 from datetime import datetime
-from flask import Flask, request, session, redirect, url_for, render_template, flash
+from flask import Flask, jsonify, request, session, redirect, url_for, render_template, flash
 from werkzeug.security import generate_password_hash
 import cv2
 import numpy as np
 from werkzeug.utils import secure_filename
 from time import time
-
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -882,6 +881,29 @@ def excluir_imagem_view(imagem_id, pedido_id):
         flash(f'Erro ao excluir imagem: {str(e)}', 'danger')
         
     return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
+
+@app.route('/api/pedido/<int:pedido_id>')
+def api_pedido(pedido_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    query = """
+        SELECT p.id, p.descricao, p.quantidade, p.status, p.data, u.nome AS usuario_nome
+        FROM pedidos p
+        JOIN usuarios u ON p.cpf_usuario = u.cpf
+        WHERE p.id = %s
+    """
+    cursor.execute(query, (pedido_id,))
+    pedido = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    
+    if pedido:
+        
+        pedido['data'] = pedido['data'].strftime('%Y-%m-%d %H:%M:%S') if pedido['data'] else None
+        return jsonify(pedido)
+    else:
+        return jsonify({"error": "Pedido não encontrado"}), 404
+
 
 
 if __name__ == '__main__':
