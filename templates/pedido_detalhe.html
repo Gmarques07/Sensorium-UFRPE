@@ -126,42 +126,7 @@
 
                 {% if imagens %}
                 <div class="mt-4">
-                    <h4>Imagens Analisadas</h4>
-                    <div class="row">
-                        {% for imagem in imagens %}
-                            {% if imagem.tipo_imagem == 'rachadura' %}
-                                <div class="col-md-4 mb-3">
-                                    <div class="card h-100">
-                                        <div class="image-container">
-                                            <img src="{{ url_for('static', filename=imagem.caminho) }}" alt="Imagem de rachadura">
-                                        </div>
-                                        <div class="card-body">
-                                            <h5 class="card-title">Análise de Rachadura</h5>
-                                            <p class="card-text">
-                                                <small class="text-muted">ID: {{ imagem.id }}</small>
-                                            </p>
-                                            <div class="card-actions">
-                                                <a href="{{ url_for('static', filename=imagem.caminho) }}" target="_blank" class="btn btn-primary btn-sm">
-                                                    <i class="bi bi-zoom-in"></i> Ampliar
-                                                </a>
-                                                <form action="{{ url_for('excluir_imagem_view', imagem_id=imagem.id, pedido_id=pedido['id']) }}" method="post" onsubmit="return confirm('Tem certeza que deseja excluir esta imagem?');">
-                                                    <button type="submit" class="btn btn-danger btn-sm">
-                                                        <i class="bi bi-trash"></i> Excluir
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
-                {% else %}
-                <div class="mt-4">
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle"></i> Nenhuma imagem analisada para este pedido.
-                    </div>
+                
                 </div>
                 {% endif %}
             </div>
