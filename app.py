@@ -662,9 +662,6 @@ def dashboard_usuario(cpf):
     except Exception as e:
         return str(e), 500
 
-
-
-
 @app.route('/solicitar_pedido', methods=['GET', 'POST'])
 def solicitar_pedido():
     try:
@@ -951,16 +948,21 @@ def sobre():
     return render_template('sobre.html')
 
 @app.template_filter('dateformat')
-def dateformat(value, format="%d/%m/%Y"):
+def dateformat(value, format="%d/%m/%Y %H:%M"):
     """Filtro para formatar datas no Jinja2"""
     if value is None:
         return ""
     if isinstance(value, datetime):
         return value.strftime(format)
     try:
-        return datetime.strptime(value, "%Y-%m-%d").strftime(format)
-    except:
-        return value  
+        # Tenta converter assumindo que o valor inclui hora
+        return datetime.strptime(value, "%Y-%m-%d %H:%M:%S").strftime(format)
+    except ValueError:
+        try:
+            # Se falhar, tenta converter assumindo apenas a data
+            return datetime.strptime(value, "%Y-%m-%d").strftime(format)
+        except:
+            return value
         
 @app.route('/informacoes_cisterna/<cpf>')
 def informacoes_cisterna(cpf):
