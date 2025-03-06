@@ -421,6 +421,34 @@ def criar_pedido(cpf_usuario, descricao, quantidade, data):
     cursor.close()
     conn.close() 
 
+def buscar_dados_cisterna_usuario(usuario_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    # Buscar o pH mais recente
+    query_ph_atual = "SELECT ph, data FROM ph_niveis WHERE usuario_id = %s ORDER BY data DESC LIMIT 1"
+    cursor.execute(query_ph_atual, (usuario_id,))
+    ph_atual = cursor.fetchone()
+    
+    # Buscar o histórico de pH
+    query_historico_ph = "SELECT ph, data FROM ph_niveis WHERE usuario_id = %s ORDER BY data DESC LIMIT 10"
+    cursor.execute(query_historico_ph, (usuario_id,))
+    historico_ph = cursor.fetchall()
+    
+    # Buscar o nível de água mais recente
+    query_nivel_atual = "SELECT boia, status, data FROM niveis_agua WHERE usuario_id = %s ORDER BY data DESC LIMIT 1"
+    cursor.execute(query_nivel_atual, (usuario_id,))
+    nivel_atual = cursor.fetchone()
+    
+    # Buscar o histórico de níveis de água
+    query_historico_nivel = "SELECT boia, status, data FROM niveis_agua WHERE usuario_id = %s ORDER BY data DESC LIMIT 10"
+    cursor.execute(query_historico_nivel, (usuario_id,))
+    historico_nivel = cursor.fetchall()
+    
+    cursor.close()
+    conn.close()
+    
+    return ph_atual, historico_ph, nivel_atual, historico_nivel
 
 @app.route('/')
 def pagina_inicial():
@@ -617,11 +645,25 @@ def dashboard_usuario(cpf):
             pedidos = buscar_pedidos_usuarios(cpf)
             comunicados = buscar_comunicados_usuario(cpf)
             comunicados_gerais = buscar_comunicado_geral()
-            return render_template('dashboard_usuario.html', usuario=usuario, pedidos=pedidos, comunicados=comunicados, comunicados_gerais=comunicados_gerais)
+            
+            ph_atual, historico_ph, nivel_atual, historico_nivel = buscar_dados_cisterna_usuario(usuario['id'])
+            
+            return render_template('dashboard_usuario.html', 
+                                   usuario=usuario, 
+                                   pedidos=pedidos, 
+                                   comunicados=comunicados, 
+                                   comunicados_gerais=comunicados_gerais,
+                                   ph_atual=ph_atual,
+                                   nivel_atual=nivel_atual,
+                                   historico_ph=historico_ph,
+                                   historico_nivel=historico_nivel)
         else:
             return "Usuário não encontrado", 404
     except Exception as e:
         return str(e), 500
+
+
+
 
 @app.route('/solicitar_pedido', methods=['GET', 'POST'])
 def solicitar_pedido():
@@ -919,6 +961,43 @@ def dateformat(value, format="%d/%m/%Y"):
         return datetime.strptime(value, "%Y-%m-%d").strftime(format)
     except:
         return value  
+        
+@app.route('/informacoes_cisterna/<int:usuario_id>')
+def informacoes_cisterna(usuario_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Buscar dados do usuário
+        cursor.execute("SELECT * FROM usuarios WHERE id = %s", (usuario_id,))
+        usuario = cursor.fetchone()
+
+        # Buscar dados da cisterna
+        cursor.execute("SELECT boia, status, data FROM niveis_agua WHERE usuario_id = %s ORDER BY data DESC LIMIT 1", (usuario_id,))
+        nivel_atual = cursor.fetchone()
+
+        cursor.execute("SELECT ph, data FROM ph_niveis WHERE usuario_id = %s ORDER BY data DESC LIMIT 1", (usuario_id,))
+        ph_atual = cursor.fetchone()
+
+        cursor.execute("SELECT boia, status, data FROM niveis_agua WHERE usuario_id = %s ORDER BY data DESC LIMIT 10", (usuario_id,))
+        historico_nivel = cursor.fetchall()
+
+        cursor.execute("SELECT ph, data FROM ph_niveis WHERE usuario_id = %s ORDER BY data DESC LIMIT 10", (usuario_id,))
+        historico_ph = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return render_template('informacoes_cisterna.html',
+                               usuario=usuario,  # Adicionado aqui
+                               nivel_atual=nivel_atual,
+                               ph_atual=ph_atual,
+                               historico_nivel=historico_nivel,
+                               historico_ph=historico_ph)
+                               
+    except Exception as e:
+        return str(e), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)

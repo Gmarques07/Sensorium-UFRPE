@@ -144,7 +144,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="col-md-4">
                 <div class="summary-card">
                     <i class="bi bi-check-circle summary-icon"></i>
@@ -172,7 +171,7 @@
 
         <!-- Cards Interativos -->
         <div class="row g-4">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="dashboard-card text-center p-4">
                     <i class="bi bi-chat-dots-fill card-icon"></i>
                     <h5>Comunicados dos Pedidos</h5>
@@ -182,7 +181,7 @@
                 </div>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="dashboard-card text-center p-4">
                     <i class="bi bi-bell-fill card-icon"></i>
                     <h5>Avisos Gerais</h5>
@@ -192,13 +191,23 @@
                 </div>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="dashboard-card text-center p-4">
                     <i class="bi bi-box-seam-fill card-icon"></i>
                     <h5>Últimos Pedidos</h5>
                     <button class="btn btn-custom toggle-details" data-target="#pedidos">
                         Ver Detalhes
                     </button>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="dashboard-card text-center p-4">
+                    <i class="bi bi-info-circle-fill card-icon"></i>
+                    <h5>Informações da Cisterna</h5>
+                    <a href="{{ url_for('informacoes_cisterna', usuario_id=usuario['id']) }}" class="btn btn-custom">
+                        Ver Detalhes
+                    </a>
                 </div>
             </div>
         </div>
@@ -294,4 +303,4 @@
         });
     </script>
 </body>
-</html> 
+</html>
