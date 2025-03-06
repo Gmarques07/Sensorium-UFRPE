@@ -167,9 +167,30 @@
             </div>
         </div>
 
+        <!-- Notificações -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="summary-card">
+                    <h5><i class="bi bi-bell me-2"></i>Notificações</h5>
+                    <div class="historico-list">
+                        <ul class="list-group">
+                            {% for notificacao in notificacoes %}
+                                <li class="list-group-item">
+                                    {{ notificacao.mensagem }}
+                                    <small class="text-muted d-block">{{ notificacao.data|dateformat }}</small>
+                                </li>
+                            {% else %}
+                                <li class="list-group-item">Nenhuma notificação encontrada</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Botão de Voltar -->
         <div class="d-flex justify-content-center mt-4">
-            <a href="{{ url_for('dashboard_usuario', cpf=usuario['cpf']) }}" class="btn btn-custom">
+            <a href="{{ url_for('dashboard_usuario', cpf=usuario.cpf) }}" class="btn btn-custom">
                 <i class="bi bi-arrow-left me-2"></i>Voltar ao Dashboard
             </a>
         </div>

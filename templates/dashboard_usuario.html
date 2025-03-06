@@ -205,9 +205,9 @@
                 <div class="dashboard-card text-center p-4">
                     <i class="bi bi-info-circle-fill card-icon"></i>
                     <h5>Informações da Cisterna</h5>
-                    <a href="{{ url_for('informacoes_cisterna', usuario_id=usuario['id']) }}" class="btn btn-custom">
+                    <a href="{{ url_for('informacoes_cisterna', cpf=usuario['cpf']) }}" class="btn btn-custom">
                         Ver Detalhes
-                    </a>
+                    </a>                    
                 </div>
             </div>
         </div>

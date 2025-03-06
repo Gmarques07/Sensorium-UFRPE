@@ -962,41 +962,22 @@ def dateformat(value, format="%d/%m/%Y"):
     except:
         return value  
         
-@app.route('/informacoes_cisterna/<int:usuario_id>')
-def informacoes_cisterna(usuario_id):
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
-
-        # Buscar dados do usuário
-        cursor.execute("SELECT * FROM usuarios WHERE id = %s", (usuario_id,))
-        usuario = cursor.fetchone()
-
-        # Buscar dados da cisterna
-        cursor.execute("SELECT boia, status, data FROM niveis_agua WHERE usuario_id = %s ORDER BY data DESC LIMIT 1", (usuario_id,))
-        nivel_atual = cursor.fetchone()
-
-        cursor.execute("SELECT ph, data FROM ph_niveis WHERE usuario_id = %s ORDER BY data DESC LIMIT 1", (usuario_id,))
-        ph_atual = cursor.fetchone()
-
-        cursor.execute("SELECT boia, status, data FROM niveis_agua WHERE usuario_id = %s ORDER BY data DESC LIMIT 10", (usuario_id,))
-        historico_nivel = cursor.fetchall()
-
-        cursor.execute("SELECT ph, data FROM ph_niveis WHERE usuario_id = %s ORDER BY data DESC LIMIT 10", (usuario_id,))
-        historico_ph = cursor.fetchall()
-
-        cursor.close()
-        conn.close()
-
-        return render_template('informacoes_cisterna.html',
-                               usuario=usuario,  # Adicionado aqui
-                               nivel_atual=nivel_atual,
-                               ph_atual=ph_atual,
-                               historico_nivel=historico_nivel,
-                               historico_ph=historico_ph)
-                               
-    except Exception as e:
-        return str(e), 500
+@app.route('/informacoes_cisterna/<cpf>')
+def informacoes_cisterna(cpf):
+    usuario = encontrar_usuario(cpf)
+    if not usuario:
+        return "Usuário não encontrado", 404
+    
+    ph_atual, historico_ph, nivel_atual, historico_nivel = buscar_dados_cisterna(cpf)
+    notificacoes = buscar_notificacoes(cpf)  
+    
+    return render_template('informacoes_cisterna.html', 
+                           usuario=usuario,
+                           ph_atual=ph_atual, 
+                           historico_ph=historico_ph, 
+                           nivel_atual=nivel_atual, 
+                           historico_nivel=historico_nivel,
+                           notificacoes=notificacoes)
 
 
 if __name__ == '__main__':
