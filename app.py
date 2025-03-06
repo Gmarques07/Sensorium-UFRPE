@@ -904,6 +904,9 @@ def api_pedido(pedido_id):
     else:
         return jsonify({"error": "Pedido não encontrado"}), 404
 
+@app.route('/sobre')
+def sobre():
+    return render_template('sobre.html')
 
 
 if __name__ == '__main__':
