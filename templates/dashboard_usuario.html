@@ -4,207 +4,253 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard do Usuário - Água em Ação</title>
+    
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    
     <style>
-        /* Fundo sólido */
+        :root {
+            --primary-blue: #1565C0;
+            --secondary-blue: #4FC3F7;
+            --dark-blue: #003366;
+            --light-bg: #f5f9ff;
+        }
+
         body {
-            background-color: #F8F9FA; /* Cinza claro */
             font-family: 'Poppins', sans-serif;
-            margin: 0;
-            padding: 0;
+            background-color: var(--light-bg);
         }
 
-        /* Barra superior */
         .topBar {
-            background-color: #1565C0; /* Azul escuro */
+            background-color: var(--primary-blue);
             color: white;
-            font-size: 2rem;
-            font-weight: bold;
+            padding: 1.5rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             text-align: center;
-            padding: 1rem 0;
         }
 
-        h1 {
-            font-size: 2rem;
-            font-weight: bold;
+        .summary-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
             text-align: center;
-            margin-top: 2rem;
-            color: #003366; /* Azul escuro */
+            margin-bottom: 1.5rem;
         }
 
-        .dashboard-section {
-            margin-top: 2rem;
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
         }
 
-        .card {
-            border-radius: 15px; /* Bordas arredondadas */
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Sombra leve */
+        .summary-icon {
+            font-size: 2rem;
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+        }
+
+        .summary-number {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--dark-blue);
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 15px;
             border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
         }
 
-        .card-body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .icon-container {
-            font-size: 3rem;
-            color: #1565C0; /* Azul escuro */
+        .card-icon {
+            font-size: 2.5rem;
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
         }
 
         .btn-custom {
-            padding: 0.75rem 1.5rem;
-            font-size: 1rem;
-            border-radius: 25px; /* Bordas arredondadas */
-            background-color: #1565C0; /* Azul escuro */
+            background-color: var(--primary-blue);
             color: white;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
             border: none;
         }
 
         .btn-custom:hover {
-            background-color: #4FC3F7; /* Azul claro no hover */
+            background-color: var(--secondary-blue);
+            transform: translateY(-2px);
         }
 
         .details-section {
-            display: none; /* Oculta as seções inicialmente */
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            display: none;
         }
-        
+
         .pedido-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 15px;
+            border-left: 3px solid var(--primary-blue);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: rgba(21, 101, 192, 0.05);
+            border-radius: 8px;
+            transition: all 0.3s ease;
         }
-        
-        .pedido-info {
-            flex-grow: 1;
+
+        .pedido-item:hover {
+            transform: translateX(5px);
         }
-        
+
         .badge-status {
-            padding: 5px 10px;
+            padding: 0.5rem 1rem;
             border-radius: 20px;
-            font-size: 0.8rem;
-            margin-right: 10px;
+            font-size: 0.85rem;
         }
-        
-        .badge-pendente {
-            background-color: #FFC107;
-            color: #212529;
-        }
-        
-        .badge-aceito {
-            background-color: #28A745;
-            color: white;
-        }
-        
-        .badge-cancelado {
-            background-color: #DC3545;
-            color: white;
-        }
+
+        .badge-pendente { background-color: #FFECB3; color: #FFA000; }
+        .badge-aceito { background-color: #C8E6C9; color: #2E7D32; }
+        .badge-cancelado { background-color: #FFCDD2; color: #C62828; }
     </style>
 </head>
 <body>
     <!-- Barra Superior -->
-    <div class="topBar">Água em Ação</div>
+    <div class="topBar">
+        <h2 class="mb-0">Água em Ação</h2>
+    </div>
 
-    <!-- Título principal -->
-    <h1>Bem-vindo(a) ao seu Dashboard</h1>
+    <!-- Conteúdo Principal -->
+    <div class="container mt-4">
+        <h3 class="text-center text-dark mb-4">Bem-vindo(a) ao seu Dashboard</h3>
 
-    <!-- Conteúdo principal -->
-    <main class="container dashboard-section">
+        <!-- Cards de Resumo -->
         <div class="row g-4">
-            
-            <!-- Comunicados dos Pedidos -->
             <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <div class="icon-container mb-3"><i class="bi bi-chat-dots-fill"></i></div>
-                        <h5 class="card-title">Comunicados dos Pedidos</h5>
-                        <p class="card-text">Veja as atualizações sobre seus pedidos.</p>
-                        <button class="btn btn-custom toggle-details" data-target="#comunicados">Ver Detalhes</button>
+                <div class="summary-card">
+                    <i class="bi bi-truck summary-icon"></i>
+                    <h5>Pedidos Realizados</h5>
+                    <div class="summary-number">
+                        {{ pedidos|length }}
                     </div>
                 </div>
             </div>
 
-            <!-- Avisos Gerais -->
             <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <div class="icon-container mb-3"><i class="bi bi-bell-fill"></i></div>
-                        <h5 class="card-title">Avisos Gerais</h5>
-                        <p class="card-text">Fique por dentro das últimas notícias.</p>
-                        <button class="btn btn-custom toggle-details" data-target="#avisos">Ver Detalhes</button>
+                <div class="summary-card">
+                    <i class="bi bi-check-circle summary-icon"></i>
+                    <h5>Pedidos Concluídos</h5>
+                    <div class="summary-number">
+                        {{ pedidos|selectattr('status','equalto','concluído')|list|length }}
                     </div>
                 </div>
             </div>
 
-            <!-- Últimos Pedidos -->
             <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <div class="icon-container mb-3"><i class="bi bi-box-seam"></i></div>
-                        <h5 class="card-title">Últimos Pedidos</h5>
-                        <p class="card-text">Confira o status dos seus pedidos recentes.</p>
-                        <button class="btn btn-custom toggle-details" data-target="#pedidos">Ver Detalhes</button>
+                <div class="summary-card">
+                    <i class="bi bi-clock-history summary-icon"></i>
+                    <h5>Último Pedido</h5>
+                    <div class="summary-number" style="font-size: 1.2rem;">
+                        {% if pedidos %}
+                            {{ pedidos[0].data|dateformat }}
+                        {% else %}
+                            Nenhum pedido
+                        {% endif %}
                     </div>
                 </div>
             </div>
+        </div>
 
+        <!-- Cards Interativos -->
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="dashboard-card text-center p-4">
+                    <i class="bi bi-chat-dots-fill card-icon"></i>
+                    <h5>Comunicados dos Pedidos</h5>
+                    <button class="btn btn-custom toggle-details" data-target="#comunicados">
+                        Ver Detalhes
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="dashboard-card text-center p-4">
+                    <i class="bi bi-bell-fill card-icon"></i>
+                    <h5>Avisos Gerais</h5>
+                    <button class="btn btn-custom toggle-details" data-target="#avisos">
+                        Ver Detalhes
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="dashboard-card text-center p-4">
+                    <i class="bi bi-box-seam-fill card-icon"></i>
+                    <h5>Últimos Pedidos</h5>
+                    <button class="btn btn-custom toggle-details" data-target="#pedidos">
+                        Ver Detalhes
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Seções Detalhadas -->
-        <section id="comunicados" class="mt-5 dashboard-section details-section">
-            <h3>Comunicados dos Pedidos</h3>
+        <div id="comunicados" class="details-section">
+            <h4><i class="bi bi-chat-dots me-2"></i>Comunicados dos Pedidos</h4>
             <ul class="list-group mt-3">
                 {% for comunicado in comunicados %}
-                    <li class="list-group-item">
-                        <h5>{{ comunicado.mensagem }}</h5>
-                        <small>{{ comunicado.data }}</small>
+                    <li class="list-group-item pedido-item">
+                        <h6>{{ comunicado.mensagem }}</h6>
+                        <small class="text-muted">{{ comunicado.data }}</small>
                     </li>
                 {% else %}
                     <li class="list-group-item">Nenhum comunicado encontrado.</li>
                 {% endfor %}
             </ul>
-        </section>
+        </div>
 
-        <section id="avisos" class="mt-5 dashboard-section details-section">
-            <h3>Avisos Gerais</h3>
+        <div id="avisos" class="details-section">
+            <h4><i class="bi bi-bell me-2"></i>Avisos Gerais</h4>
             <ul class="list-group mt-3">
                 {% for aviso in comunicados_gerais %}
-                    <li class="list-group-item">
-                        <h5>{{ aviso.assunto }}</h5>
-                        <p>{{ aviso.mensagem }}</p>
-                        <small>{{ aviso.data }}</small>
+                    <li class="list-group-item pedido-item">
+                        <h6>{{ aviso.assunto }}</h6>
+                        <p class="mb-1">{{ aviso.mensagem }}</p>
+                        <small class="text-muted">{{ aviso.data }}</small>
                     </li>
                 {% else %}
                     <li class="list-group-item">Nenhum aviso encontrado.</li>
                 {% endfor %}
             </ul>
-        </section>
+        </div>
 
-        <section id="pedidos" class="mt-5 dashboard-section details-section">
-            <h3>Últimos Pedidos</h3>
+        <div id="pedidos" class="details-section">
+            <h4><i class="bi bi-box-seam me-2"></i>Últimos Pedidos</h4>
             <div class="list-group mt-3">
                 {% for pedido in pedidos %}
                     <div class="list-group-item pedido-item">
-                        <div class="pedido-info">
-                            <h5>{{ pedido.descricao }}</h5>
-                            <p>Quantidade: {{ pedido.quantidade }}</p>
-                            <p>
-                                <span class="badge badge-status badge-{{ pedido.status }}">{{ pedido.status }}</span>
-                                <small>{{ pedido.data }}</small>
-                            </p>
-                        </div>
-                        <div>
-                            <a href="{{ url_for('visualizar_pedido', pedido_id=pedido['id']) }}" class="btn btn-sm btn-primary">
-                                <i class="bi bi-eye"></i> Análise sua cisterna
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="pedido-info">
+                                <h6>{{ pedido.descricao }}</h6>
+                                <div class="d-flex align-items-center mt-2">
+                                    <span class="badge-status badge-{{ pedido.status }}">
+                                        {{ pedido.status }}
+                                    </span>
+                                    <small class="text-muted ms-2">{{ pedido.data }}</small>
+                                </div>
+                            </div>
+                            <a href="{{ url_for('visualizar_pedido', pedido_id=pedido['id']) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye me-2"></i>Análise sua cisterna
                             </a>
                         </div>
                     </div>
@@ -212,37 +258,40 @@
                     <div class="list-group-item">Nenhum pedido encontrado.</div>
                 {% endfor %}
             </div>
-        </section>
-        
-        <!-- Botões de Ação -->
-        <br />
-        <div class="d-flex justify-content-center gap-3 mt-4">
-            <a href="{{ url_for('solicitar_pedido') }}" class="btn btn-primary btn-custom">
-                <i class="bi bi-plus-circle"></i> Solicitar Pedido
-            </a>
-            <a href="{{ url_for('editar_usuario_perfil', cpf=usuario['cpf']) }}" class="btn btn-secondary btn-custom">
-                <i class="bi bi-pencil"></i> Editar Perfil
-            </a>
-            <a href="{{ url_for('pagina_inicial') }}" class="btn btn-secondary btn-custom">
-                <i class="bi bi-house"></i> Página Inicial
-            </a>
         </div>
 
-    </main>
+        <!-- Botões de Ação -->
+        <div class="d-flex justify-content-center gap-3 my-5">
+            <a href="{{ url_for('solicitar_pedido') }}" class="btn btn-custom">
+                <i class="bi bi-plus-circle me-2"></i>Solicitar Pedido
+            </a>
+            <a href="{{ url_for('editar_usuario_perfil', cpf=usuario['cpf']) }}" class="btn btn-custom">
+                <i class="bi bi-pencil me-2"></i>Editar Perfil
+            </a>
+            <a href="{{ url_for('pagina_inicial') }}" class="btn btn-custom">
+                <i class="bi bi-house me-2"></i>Página Inicial
+            </a>
+        </div>
+    </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Script para alternar visibilidade das seções -->
+    <!-- Script para alternar visibilidade -->
     <script>
         document.querySelectorAll('.toggle-details').forEach(button => {
-            button.addEventListener('click', function () {
+            button.addEventListener('click', function() {
                 const target = document.querySelector(this.dataset.target);
-                target.style.display = target.style.display === 'none' || target.style.display === '' ? 'block' : 'none';
-                this.textContent = target.style.display === 'block' ? 'Ocultar Detalhes' : 'Ver Detalhes';
+                const isVisible = target.style.display === 'block';
+                
+                target.style.display = isVisible ? 'none' : 'block';
+                this.textContent = isVisible ? 'Ver Detalhes' : 'Ocultar Detalhes';
+                
+                if(!isVisible) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
             });
         });
     </script>
-
 </body>
-</html>
+</html> 

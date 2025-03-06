@@ -908,6 +908,17 @@ def api_pedido(pedido_id):
 def sobre():
     return render_template('sobre.html')
 
+@app.template_filter('dateformat')
+def dateformat(value, format="%d/%m/%Y"):
+    """Filtro para formatar datas no Jinja2"""
+    if value is None:
+        return ""
+    if isinstance(value, datetime):
+        return value.strftime(format)
+    try:
+        return datetime.strptime(value, "%Y-%m-%d").strftime(format)
+    except:
+        return value  
 
 if __name__ == '__main__':
     app.run(debug=True)
