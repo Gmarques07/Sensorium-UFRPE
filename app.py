@@ -955,11 +955,11 @@ def dateformat(value, format="%d/%m/%Y %H:%M"):
     if isinstance(value, datetime):
         return value.strftime(format)
     try:
-        # Tenta converter assumindo que o valor inclui hora
+        
         return datetime.strptime(value, "%Y-%m-%d %H:%M:%S").strftime(format)
     except ValueError:
         try:
-            # Se falhar, tenta converter assumindo apenas a data
+            
             return datetime.strptime(value, "%Y-%m-%d").strftime(format)
         except:
             return value
