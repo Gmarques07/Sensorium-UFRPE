@@ -37,19 +37,97 @@ def allowed_file(filename):
 
 def detect_cracks(image):
     """Processa a imagem para detectar rachaduras."""
+    # Converte para escala de cinza
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    
+    # Aplica um filtro Gaussiano para suavizar a imagem
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    
+    # Aplica o detector de bordas Canny
     edges = cv2.Canny(blurred, 50, 150)
+    
+    # Aplica operações morfológicas para destacar rachaduras finas
+    kernel = np.ones((3, 3), np.uint8)
+    edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel, iterations=2)
+    
+    # Encontra contornos na imagem
     contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
     cracks_found = False
     for contour in contours:
+        # Filtra contornos pequenos
         if cv2.contourArea(contour) > 50:
-            cv2.drawContours(image, [contour], -1, (0, 255, 0), 2)
-            cracks_found = True
+            # Calcula a razão de aspecto do contorno
+            x, y, w, h = cv2.boundingRect(contour)
+            aspect_ratio = float(w) / h if h != 0 else 0
+            
+            # Calcula a compacidade do contorno
+            perimeter = cv2.arcLength(contour, True)
+            area = cv2.contourArea(contour)
+            compactness = (perimeter ** 2) / (4 * np.pi * area) if area != 0 else 0
+            
+            # Rachaduras tendem a ter alta razão de aspecto e baixa compacidade
+            if aspect_ratio > 5 or compactness > 10:  # Ajuste esses valores conforme necessário
+                cv2.drawContours(image, [contour], -1, (0, 255, 0), 2)  # Desenha contornos em verde
+                cracks_found = True
     
     return image, cracks_found
 
+def detect_objects(image):
+    """Detecta objetos na imagem e desenha retângulos ao redor deles."""
+    # Converte para escala de cinza
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    
+    # Aplica um filtro Gaussiano para suavizar a imagem
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    
+    # Aplica um threshold adaptativo para melhorar a detecção de objetos
+    _, threshold = cv2.threshold(blurred, 120, 255, cv2.THRESH_BINARY_INV)
+    
+    # Aplica operações morfológicas para remover ruídos e preencher buracos
+    kernel = np.ones((3, 3), np.uint8)
+    threshold = cv2.morphologyEx(threshold, cv2.MORPH_OPEN, kernel, iterations=2)
+    threshold = cv2.morphologyEx(threshold, cv2.MORPH_CLOSE, kernel, iterations=2)
+    
+    # Encontra contornos na imagem
+    contours, _ = cv2.findContours(threshold, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    objects_found = False
+    for contour in contours:
+        area = cv2.contourArea(contour)
+        if 500 < area < 10000:  # Filtra contornos pequenos e grandes
+            # Calcula a razão de aspecto e a compacidade
+            x, y, w, h = cv2.boundingRect(contour)
+            aspect_ratio = float(w) / h if h != 0 else 0
+            perimeter = cv2.arcLength(contour, True)
+            compactness = (perimeter ** 2) / (4 * np.pi * area) if area != 0 else 0
+            
+            # Objetos tendem a ter baixa razão de aspecto e alta compacidade
+            if aspect_ratio < 5 and compactness < 10:  # Ajuste esses valores conforme necessário
+                # Desenha o retângulo em vermelho (BGR: 0, 0, 255)
+                cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
+                # Adiciona o texto "Objeto" em vermelho
+                cv2.putText(image, "Objeto", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                objects_found = True
+    
+    return image, objects_found
+
+def detect_cracks_or_objects(image):
+    """Detecta rachaduras ou objetos na imagem."""
+    # Detecta objetos primeiro
+    processed_image_objects, objects_found = detect_objects(image.copy())
+    
+    # Detecta rachaduras
+    processed_image_cracks, cracks_found = detect_cracks(image.copy())
+    
+    # Prioriza rachaduras sobre objetos
+    if cracks_found:
+        return processed_image_cracks, "rachadura"
+    elif objects_found:
+        return processed_image_objects, "objeto"
+    else:
+        return image.copy(), "nenhum"
+    
 def salvar_imagem_pedido(pedido_id, tipo_imagem, caminho_imagem, tem_rachadura):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -799,7 +877,6 @@ def detalhes_cisterna(cnpj):
                            historico_nivel=historico_nivel,
                            notificacoes=notificacoes) 
 
-
 @app.route('/analisar_rachadura/<int:pedido_id>', methods=['POST'])
 def analisar_rachadura(pedido_id):
     try:
@@ -827,7 +904,7 @@ def analisar_rachadura(pedido_id):
             flash('Erro ao processar a imagem', 'danger')
             return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
             
-        processed_image, cracks_found = detect_cracks(image)
+        processed_image, tipo_detectado = detect_cracks_or_objects(image)
         
         # Salva a imagem processada
         processed_filename = f"processed_{filename}"
@@ -838,29 +915,26 @@ def analisar_rachadura(pedido_id):
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # Caminho relativo ao diretório static
         db_filepath = f"uploads/{processed_filename}"
         
         query = "INSERT INTO imagens_pedido (pedido_id, caminho, tipo_imagem) VALUES (%s, %s, %s)"
-        cursor.execute(query, (pedido_id, db_filepath, 'rachadura'))
+        cursor.execute(query, (pedido_id, db_filepath, tipo_detectado))
         conn.commit()
         
         cursor.close()
         conn.close()
         
-        if cracks_found:
-            mensagem = f"Rachaduras detectadas no pedido #{pedido_id}"
-            criar_notificacao(pedido_id, mensagem)
-            flash('Rachaduras detectadas! Uma notificação foi enviada.', 'warning')
-        else:
-            flash('Nenhuma rachadura detectada', 'success')
+        mensagem = f"{tipo_detectado.capitalize()} detectado no pedido #{pedido_id}"
+        
+        criar_notificacao(pedido_id, mensagem)
+        
+        flash(f"{tipo_detectado.capitalize()} detectado na imagem!", 'success')
             
         return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
     except Exception as e:
         print(f"Erro ao analisar rachadura: {e}")
         flash(f"Erro ao processar a imagem: {str(e)}", 'danger')
         return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
-
 
 @app.route('/upload_rachadura/<int:pedido_id>', methods=['POST'])
 def upload_rachadura(pedido_id):
