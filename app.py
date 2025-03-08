@@ -118,6 +118,23 @@ def notificar_rachadura(pedido_id, imagem_id, mensagem):
         print(f"Erro ao notificar rachadura: {e}")
         return False
 
+def buscar_imagens_rachaduras(cnpj):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    query = """
+    SELECT i.id, i.caminho, i.data_upload, i.tem_rachadura
+    FROM imagens_pedido i
+    JOIN pedidos p ON i.pedido_id = p.id
+    JOIN empresas e ON p.cnpj_empresa = e.cnpj
+    WHERE e.cnpj = %s AND i.tipo_imagem = 'rachadura'
+    ORDER BY i.data_upload DESC
+    LIMIT 6
+    """
+    cursor.execute(query, (cnpj,))
+    imagens = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return imagens
 
 def alterar_status_pedido(pedido_id, novo_status):
     conn = get_db_connection()
@@ -293,24 +310,6 @@ def buscar_comunicados_usuario(cpf):
     cursor.close()
     conn.close()
     return comunicados
-
-def buscar_imagens_rachaduras(cnpj):
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    query = """
-    SELECT i.id, i.caminho, i.data_upload, i.tem_rachadura
-    FROM imagens_pedido i
-    JOIN pedidos p ON i.pedido_id = p.id
-    JOIN empresas e ON p.cnpj_empresa = e.cnpj
-    WHERE e.cnpj = %s AND i.tipo_imagem = 'rachadura'
-    ORDER BY i.data_upload DESC
-    LIMIT 6
-    """
-    cursor.execute(query, (cnpj,))
-    imagens = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return imagens
 
 def buscar_comunicado_geral():
     conn = get_db_connection()
@@ -838,17 +837,21 @@ def analisar_rachadura(pedido_id):
         # Salva no banco de dados
         conn = get_db_connection()
         cursor = conn.cursor()
+        
+        # Caminho relativo ao diretório static
         db_filepath = f"uploads/{processed_filename}"
+        
         query = "INSERT INTO imagens_pedido (pedido_id, caminho, tipo_imagem) VALUES (%s, %s, %s)"
         cursor.execute(query, (pedido_id, db_filepath, 'rachadura'))
         conn.commit()
+        
         cursor.close()
         conn.close()
         
         if cracks_found:
-         mensagem = f"Rachaduras detectadas no pedido #{pedido_id}"
-         criar_notificacao(pedido_id, mensagem)
-         flash('Rachaduras detectadas! Uma notificação foi enviada.', 'warning')
+            mensagem = f"Rachaduras detectadas no pedido #{pedido_id}"
+            criar_notificacao(pedido_id, mensagem)
+            flash('Rachaduras detectadas! Uma notificação foi enviada.', 'warning')
         else:
             flash('Nenhuma rachadura detectada', 'success')
             
@@ -857,7 +860,6 @@ def analisar_rachadura(pedido_id):
         print(f"Erro ao analisar rachadura: {e}")
         flash(f"Erro ao processar a imagem: {str(e)}", 'danger')
         return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
-
 
 
 @app.route('/upload_rachadura/<int:pedido_id>', methods=['POST'])

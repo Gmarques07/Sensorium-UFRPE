@@ -125,12 +125,35 @@
                 </form>
 
                 {% if imagens %}
-                <div class="mt-4">
-                
+<div class="mt-4">
+    <h5>Imagens Processadas:</h5>
+    <div class="row">
+        {% for imagem in imagens %}
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="image-container">
+                    <img src="{{ url_for('static', filename=imagem.caminho) }}" alt="Imagem Processada" class="img-fluid">
                 </div>
-                {% endif %}
+                <div class="card-body">
+                    <p><strong>Tipo:</strong> {{ imagem.tipo_imagem }}</p>
+                    {% if imagem.tem_rachadura %}
+                        <p class="text-danger"><strong>Rachaduras detectadas!</strong></p>
+                    {% else %}
+                        <p class="text-success"><strong>Nenhuma rachadura detectada.</strong></p>
+                    {% endif %}
+                    <!-- Botão para excluir a imagem -->
+                    <form action="{{ url_for('excluir_imagem_view', imagem_id=imagem.id, pedido_id=pedido.id) }}" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                    </form>
+                </div>
             </div>
         </div>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<p>Nenhuma imagem processada disponível.</p>
+{% endif %}
 
         <div class="d-flex justify-content-between mt-4 mb-4">
             <a href="{{ url_for('dashboard_usuario', cpf=session.get('cpf')) }}" class="btn btn-secondary btn-custom">
