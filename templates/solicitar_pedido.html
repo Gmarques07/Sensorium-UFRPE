@@ -100,6 +100,17 @@
             <!-- Formulário -->
             <form method="POST" action="{{ url_for('solicitar_pedido') }}">
                 <input type="hidden" name="cpf" value="{{ session.get('cpf') }}">
+                
+                <div class="mb-3">
+                    <label for="empresa" class="form-label">Selecione a Empresa:</label>
+                    <select class="form-control" id="empresa" name="cnpj_empresa" required>
+                        <option value="">Selecione uma empresa</option>
+                        {% for empresa in empresas %}
+                            <option value="{{ empresa.cnpj }}">{{ empresa.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>                
+
                 <div class="mb-3">
                     <label for="descricao">Descrição:</label>
                     <textarea class="form-control p-2" id="descricao" name="descricao"

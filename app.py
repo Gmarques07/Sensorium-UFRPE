@@ -279,7 +279,6 @@ def editar_empresa(cnpj, nome=None, endereco=None, telefone=None, senha=None):
     cursor.close()
     conn.close()
 
-
 def aceitar_pedido(pedido_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -426,45 +425,55 @@ def criar_notificacao(pedido_id, mensagem):
     conn.close()
 
 def buscar_notificacoes(cnpj):
+    """
+    Busca as notificações e as imagens processadas associadas aos pedidos da empresa.
+    
+    :param cnpj: CNPJ da empresa.
+    :return: Lista de dicionários contendo notificações e imagens processadas.
+    """
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    query = """
-    SELECT n.* 
-    FROM notificacoes n
-    JOIN pedidos p ON n.pedido_id = p.id
-    WHERE EXISTS (
-        SELECT 1 
-        FROM empresas e 
-        WHERE e.cnpj = %s
-    )
-    ORDER BY n.data_criacao DESC
-    LIMIT 10
+    
+    query_notificacoes = """
+        SELECT n.* 
+        FROM notificacoes n
+        JOIN pedidos p ON n.pedido_id = p.id
+        WHERE p.cnpj_empresa = %s
+        ORDER BY n.data_criacao DESC
+        LIMIT 10
     """
-    cursor.execute(query, (cnpj,))
+    cursor.execute(query_notificacoes, (cnpj,))
     notificacoes = cursor.fetchall()
+    
+    for notificacao in notificacoes:
+        query_imagens = """
+            SELECT caminho, tipo_imagem, tem_rachadura
+            FROM imagens_pedido
+            WHERE pedido_id = %s
+        """
+        cursor.execute(query_imagens, (notificacao['pedido_id'],))
+        notificacao['imagens'] = cursor.fetchall()
+    
     cursor.close()
     conn.close()
+    
     return notificacoes
 
-def criar_pedido(cpf_usuario, descricao, quantidade, data):
+def criar_pedido(cpf_usuario, descricao, quantidade, data, cnpj_empresa):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    query_pedido = "INSERT INTO pedidos (cpf_usuario, descricao, quantidade, data, status) VALUES (%s, %s, %s, %s, 'pendente')"
-    cursor.execute(query_pedido, (cpf_usuario, descricao, quantidade, data))
+    query_pedido = """
+        INSERT INTO pedidos (cpf_usuario, descricao, quantidade, data, status, cnpj_empresa)
+        VALUES (%s, %s, %s, %s, 'pendente', %s)
+    """
+    cursor.execute(query_pedido, (cpf_usuario, descricao, quantidade, data, cnpj_empresa))
     pedido_id = cursor.lastrowid
-
-    query_empresas = "SELECT cnpj FROM empresas"
-    cursor.execute(query_empresas)
-    empresas = cursor.fetchall()
-
-    for empresa in empresas:
-        mensagem = f"Novo pedido criado: {descricao}"
-        criar_notificacao(pedido_id, mensagem)
 
     conn.commit()
     cursor.close()
-    conn.close() 
+    conn.close()
+    return pedido_id
 
 def buscar_dados_cisterna_usuario(usuario_id):
     conn = get_db_connection()
@@ -736,27 +745,46 @@ def solicitar_pedido():
             descricao = request.form['descricao']
             quantidade = request.form['quantidade']
             data = request.form['data']
-            hora_atual = datetime.now().strftime('%H:%M:%S')
-            data_hora = f"{data} {hora_atual}"
+            cnpj_empresa = request.form['cnpj_empresa'] 
 
-            if not encontrar_usuario(cpf):
-                flash('Usuário não encontrado', 'danger')
+            if not descricao.strip():
+                flash('A descrição não pode estar vazia', 'danger')
+                return redirect(url_for('solicitar_pedido'))
+
+            if not data:
+                flash('A data de entrega é obrigatória', 'danger')
+                return redirect(url_for('solicitar_pedido'))
+
+            if int(quantidade) < 1000:
+                flash('A quantidade mínima é 1000 litros', 'danger')
                 return redirect(url_for('solicitar_pedido'))
 
             conn = get_db_connection()
             cursor = conn.cursor()
-            query = "INSERT INTO pedidos (cpf_usuario, descricao, quantidade, data, status) VALUES (%s, %s, %s, %s, %s)"
-            cursor.execute(query, (cpf, descricao, quantidade, data_hora, 'pendente'))
+            query = """
+                INSERT INTO pedidos (cpf_usuario, descricao, quantidade, data, status, cnpj_empresa)
+                VALUES (%s, %s, %s, %s, 'pendente', %s)
+            """
+            cursor.execute(query, (cpf, descricao, quantidade, data, cnpj_empresa))
             conn.commit()
             cursor.close()
             conn.close()
-            flash('Pedido realizado com sucesso!', 'success')
+
+            flash('Pedido solicitado com sucesso!', 'success')
             return redirect(url_for('dashboard_usuario', cpf=cpf))
 
-        return render_template('solicitar_pedido.html')
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        query = "SELECT cnpj, nome FROM empresas"
+        cursor.execute(query)
+        empresas = cursor.fetchall()
+        cursor.close()
+        conn.close()
+
+        return render_template('solicitar_pedido.html', empresas=empresas)
     except Exception as e:
-        flash('Ocorreu um erro ao processar o pedido. Tente novamente.', 'danger')
-        return str(e), 500
+        flash(f'Ocorreu um erro ao processar o pedido: {str(e)}', 'danger')
+        return redirect(url_for('solicitar_pedido'))
 
 @app.route('/cancelar_pedido/<pedido_id>', methods=['POST'])
 def cancelar_pedido(pedido_id):
@@ -853,24 +881,11 @@ def detalhes_cisterna(cnpj):
     empresa = encontrar_empresa(cnpj)
     if not empresa:
         return "Empresa não encontrada", 404
-    
+
     ph_atual, historico_ph, nivel_atual, historico_nivel = buscar_dados_cisterna(cnpj)
+    
     notificacoes = buscar_notificacoes(cnpj)
-
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    query_imagens = """
-        SELECT i.caminho, i.tipo_imagem, i.tem_rachadura, n.pedido_id
-        FROM imagens_pedido i
-        JOIN notificacoes n ON i.pedido_id = n.pedido_id
-        JOIN empresas e ON n.pedido_id = e.id
-        WHERE e.cnpj = %s
-    """
-    cursor.execute(query_imagens, (cnpj,))
-    imagens_notificacoes = cursor.fetchall()
-    cursor.close()
-    conn.close()
-
+    
     return render_template(
         'detalhes_cisterna.html',
         empresa=empresa,
@@ -878,10 +893,9 @@ def detalhes_cisterna(cnpj):
         historico_ph=historico_ph,
         nivel_atual=nivel_atual,
         historico_nivel=historico_nivel,
-        notificacoes=notificacoes,
-        imagens_notificacoes=imagens_notificacoes
+        notificacoes=notificacoes
     )
-
+    
 @app.route('/analisar_rachadura/<int:pedido_id>', methods=['POST'])
 def analisar_rachadura(pedido_id):
     try:
@@ -918,8 +932,8 @@ def analisar_rachadura(pedido_id):
         
         db_filepath = f"uploads/{processed_filename}"
         
-        query = "INSERT INTO imagens_pedido (pedido_id, caminho, tipo_imagem) VALUES (%s, %s, %s)"
-        cursor.execute(query, (pedido_id, db_filepath, tipo_detectado))
+        query = "INSERT INTO imagens_pedido (pedido_id, caminho, tipo_imagem, tem_rachadura)VALUES (%s, %s, %s, %s)"
+        cursor.execute(query, (pedido_id, db_filepath, tipo_detectado, 1 if tipo_detectado == "rachadura" else 0))
         conn.commit()
         
         cursor.close()
@@ -1058,6 +1072,49 @@ def informacoes_cisterna(cpf):
                            historico_nivel=historico_nivel,
                            notificacoes=notificacoes)
 
+@app.route('/rachaduras/<int:pedido_id>')
+def rachaduras(pedido_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        query_pedido = """
+            SELECT p.id, p.descricao, p.quantidade, p.status, p.data, u.nome AS usuario_nome, p.cnpj_empresa
+            FROM pedidos p
+            JOIN usuarios u ON p.cpf_usuario = u.cpf
+            WHERE p.id = %s
+        """
+        cursor.execute(query_pedido, (pedido_id,))
+        pedido = cursor.fetchone()
+        
+        if not pedido:
+            cursor.close()
+            conn.close()
+            return "Pedido não encontrado", 404
+        
+        query_imagens = """
+            SELECT caminho, tipo_imagem, tem_rachadura
+            FROM imagens_pedido
+            WHERE pedido_id = %s
+        """
+        cursor.execute(query_imagens, (pedido_id,))
+        imagens = cursor.fetchall()
+        
+        query_empresa = """
+            SELECT cnpj, nome
+            FROM empresas
+            WHERE cnpj = %s
+        """
+        cursor.execute(query_empresa, (pedido['cnpj_empresa'],))
+        empresa = cursor.fetchone()
+        
+        cursor.close()
+        conn.close()
+        
+        return render_template('rachaduras.html', pedido=pedido, imagens=imagens, empresa=empresa)
+    except Exception as e:
+        return str(e), 500
+    
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -238,38 +238,38 @@
                     <div class="card-header">Notificações de Manutenção</div>
                     <div class="card-body">
                         {% if notificacoes %}
-                            <ul class="list-group">
-                                {% for notificacao in notificacoes %}
-                                    <li class="list-group-item">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <h6 class="mb-1">{{ notificacao.mensagem }}</h6>
-                                                <small class="text-muted">Data: {{ notificacao.data_criacao }}</small>
-                                            </div>
-                                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#pedidoModal" data-pedido-id="{{ notificacao.pedido_id }}">Ver Pedido</button>
+                        <ul class="list-group">
+                            {% for notificacao in notificacoes %}
+                                <li class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">{{ notificacao.mensagem }}</h6>
+                                            <small class="text-muted">Data: {{ notificacao.data_criacao }}</small>
                                         </div>
-
-                                        {% for imagem in imagens_notificacoes if imagem.pedido_id == notificacao.pedido_id %}
-                                            <div class="mt-3">
-                                                <img src="{{ url_for('static', filename=imagem.caminho) }}" alt="Imagem Processada" style="max-width: 100%; height: auto;">
-                                                <p><strong>Tipo:</strong> {{ imagem.tipo_imagem }}</p>
-                                                {% if imagem.tipo_imagem == "rachadura" %}
-                                                    {% if imagem.tem_rachadura %}
-                                                        <p class="text-danger"><strong>Rachaduras detectadas!</strong></p>
-                                                    {% else %}
-                                                        <p class="text-success"><strong>Nenhuma rachadura detectada.</strong></p>
-                                                    {% endif %}
-                                                {% elif imagem.tipo_imagem == "objeto" %}
-                                                    <p class="text-info"><strong>Objeto detectado!</strong></p>
+                                        <button class="btn btn-primary btn-sm" onclick="window.location.href='{{ url_for('rachaduras', pedido_id=notificacao.pedido_id) }}'">Ver Pedido</button>
+                                    </div>
+                    
+                                    {% for imagem in imagens_notificacoes if imagem.pedido_id == notificacao.pedido_id %}
+                                        <div class="mt-3">
+                                            <img src="{{ url_for('static', filename=imagem.caminho) }}" alt="Imagem Processada" style="max-width: 100%; height: auto;">
+                                            <p><strong>Tipo:</strong> {{ imagem.tipo_imagem }}</p>
+                                            {% if imagem.tipo_imagem == "rachadura" %}
+                                                {% if imagem.tem_rachadura %}
+                                                    <p class="text-danger"><strong>Rachaduras detectadas!</strong></p>
+                                                {% else %}
+                                                    <p class="text-success"><strong>Nenhuma rachadura detectada.</strong></p>
                                                 {% endif %}
-                                            </div>
-                                        {% endfor %}
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        {% else %}
-                            <p class="text-center">Nenhuma notificação de manutenção no momento.</p>
-                        {% endif %}
+                                            {% elif imagem.tipo_imagem == "objeto" %}
+                                                <p class="text-info"><strong>Objeto detectado!</strong></p>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-center">Nenhuma notificação de manutenção no momento.</p>
+                    {% endif %}
                     </div>
                 </div>
             </div>
