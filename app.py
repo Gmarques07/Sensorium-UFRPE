@@ -558,16 +558,28 @@ def cadastro():
 
             conn = get_db_connection()
             cursor = conn.cursor()
+            query = "SELECT cpf FROM usuarios WHERE cpf = %s"
+            cursor.execute(query, (cpf,))
+            resultado = cursor.fetchone()
+
+            if resultado:
+                flash('CPF já cadastrado. Tente novamente com outro CPF.', 'danger')
+                cursor.close()
+                conn.close()
+                return redirect(url_for('cadastro'))
+
             query = "INSERT INTO usuarios (nome, cpf, email, endereco, senha) VALUES (%s, %s, %s, %s, %s)"
             cursor.execute(query, (nome, cpf, email, endereco, senha))
             conn.commit()
             cursor.close()
             conn.close()
+
             flash('Cadastro realizado com sucesso', 'success')
             return redirect(url_for('login_usuario', cadastro_sucesso=True))
 
         return render_template('cadastro.html')
     except Exception as e:
+        flash('Ocorreu um erro ao processar o cadastro. Tente novamente.', 'danger')
         return str(e), 500
 
 @app.route('/cadastro_empresa', methods=['GET', 'POST'])
@@ -581,7 +593,6 @@ def cadastro_empresa():
             senha_empresa = request.form['senha_empresa']
             confirmacao_senha_empresa = request.form['confirmacao_senha_empresa']
 
-            # Validação do endereço
             if not endereco_empresa.strip():
                 flash('O endereço não pode estar vazio', 'danger')
                 return redirect(url_for('cadastro_empresa'))
@@ -600,18 +611,29 @@ def cadastro_empresa():
 
             conn = get_db_connection()
             cursor = conn.cursor()
+            query = "SELECT cnpj FROM empresas WHERE cnpj = %s"
+            cursor.execute(query, (cnpj,))
+            resultado = cursor.fetchone()
+
+            if resultado:
+                flash('CNPJ já cadastrado. Tente novamente com outro CNPJ.', 'danger')
+                cursor.close()
+                conn.close()
+                return redirect(url_for('cadastro_empresa'))
+
             query = "INSERT INTO empresas (nome, cnpj, email, endereco, senha) VALUES (%s, %s, %s, %s, %s)"
             cursor.execute(query, (nome_empresa, cnpj, email_empresa, endereco_empresa, senha_empresa))
             conn.commit()
             cursor.close()
             conn.close()
+
             flash('Cadastro realizado com sucesso. Faça o login abaixo.', 'success')
             return redirect(url_for('login_empresa'))
 
         return render_template('cadastro_empresa.html')
     except Exception as e:
+        flash('Ocorreu um erro ao processar o cadastro. Tente novamente.', 'danger')
         return str(e), 500
-
 
 @app.route('/editar_usuario/<cpf>', methods=['GET', 'POST'])
 def editar_usuario_perfil(cpf):
