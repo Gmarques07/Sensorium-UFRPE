@@ -251,9 +251,16 @@
                 const password = senhaInput.value;
                 const confirmPassword = confirmSenhaInput.value;
 
-                if(password && confirmPassword) {
-                    passwordMatch.textContent = password === confirmPassword ? 
-                        '✓ As senhas coincidem' : '✗ As senhas não coincidem';
+                if (password && confirmPassword) {
+                    if (password === confirmPassword) {
+                        passwordMatch.textContent = '✓ As senhas coincidem';
+                        passwordMatch.classList.remove('text-danger');
+                        passwordMatch.classList.add('text-success');
+                    } else {
+                        passwordMatch.textContent = '✗ As senhas não coincidem';
+                        passwordMatch.classList.remove('text-success');
+                        passwordMatch.classList.add('text-danger');
+                    }
                 }
 
                 const strength = Math.min(password.length * 10, 100);
@@ -261,6 +268,7 @@
                 strengthBar.style.backgroundColor = strength >= 80 ? 'green' : 
                                                     strength >= 50 ? 'orange' : 'red';
             }
+
 
             senhaInput.addEventListener('input', checkPassword);
             confirmSenhaInput.addEventListener('input', checkPassword);

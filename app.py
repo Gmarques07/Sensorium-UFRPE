@@ -253,7 +253,6 @@ def editar_empresa(cnpj, nome=None, endereco=None, telefone=None, senha=None):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    
     set_values = []
     query = "UPDATE empresas SET "
 
@@ -279,6 +278,7 @@ def editar_empresa(cnpj, nome=None, endereco=None, telefone=None, senha=None):
     conn.commit()
     cursor.close()
     conn.close()
+
 
 def aceitar_pedido(pedido_id):
     conn = get_db_connection()
@@ -577,8 +577,18 @@ def cadastro_empresa():
             nome_empresa = request.form['nome_empresa']
             cnpj = request.form['cnpj'].replace('.', '').replace('/', '').replace('-', '')
             email_empresa = request.form['email_empresa']
+            endereco_empresa = request.form['endereco_empresa']
             senha_empresa = request.form['senha_empresa']
             confirmacao_senha_empresa = request.form['confirmacao_senha_empresa']
+
+            # Validação do endereço
+            if not endereco_empresa.strip():
+                flash('O endereço não pode estar vazio', 'danger')
+                return redirect(url_for('cadastro_empresa'))
+
+            if len(endereco_empresa) > 255:
+                flash('O endereço é muito longo', 'danger')
+                return redirect(url_for('cadastro_empresa'))
 
             if senha_empresa != confirmacao_senha_empresa:
                 flash('As senhas não coincidem', 'danger')
@@ -590,8 +600,8 @@ def cadastro_empresa():
 
             conn = get_db_connection()
             cursor = conn.cursor()
-            query = "INSERT INTO empresas (nome, cnpj, email, senha) VALUES (%s, %s, %s, %s)"
-            cursor.execute(query, (nome_empresa, cnpj, email_empresa, senha_empresa))
+            query = "INSERT INTO empresas (nome, cnpj, email, endereco, senha) VALUES (%s, %s, %s, %s, %s)"
+            cursor.execute(query, (nome_empresa, cnpj, email_empresa, endereco_empresa, senha_empresa))
             conn.commit()
             cursor.close()
             conn.close()
@@ -608,61 +618,53 @@ def editar_usuario_perfil(cpf):
     try:
         usuario = encontrar_usuario(cpf)
         if not usuario:
-            return "Usuário não encontrado", 404
+            flash('Usuário não encontrado!', 'danger')
+            return redirect(url_for('dashboard_usuario', cpf=cpf))
 
         if request.method == 'POST':
-            nome = request.form['nome']
-            novo_cpf = request.form['cpf'].replace('.', '').replace('-', '')
-            email = request.form['email']
-            endereco = request.form['endereco']
-            senha = request.form['senha']
+            nome = request.form.get('nome')
+            email = request.form.get('email')
+            endereco = request.form.get('endereco')
+            senha = request.form.get('senha', None)  # Evita erro se senha não for enviada
 
-            if not re.match(r'^\d{11}$', novo_cpf):
-                flash('O CPF deve conter apenas 11 dígitos numéricos', 'danger')
-                return redirect(url_for('editar_usuario_perfil', cpf=cpf))
-
-            editar_usuario(cpf, nome, email, endereco, senha)
-            flash('Perfil atualizado com sucesso', 'success')
-            return redirect(url_for('login_usuario'))
+            editar_usuario(cpf, nome, email, endereco, senha)  # CPF permanece inalterado
+            flash('Perfil atualizado com sucesso!', 'success')
+            return redirect(url_for('dashboard_usuario', cpf=cpf))  # Mantém o CPF atual
 
         return render_template('editar_usuario.html', usuario=usuario)
     except Exception as e:
-        return str(e), 500
+        return f"Erro interno: {str(e)}", 500
+
 
 @app.route('/editar_empresa/<cnpj>', methods=['GET', 'POST'])
 def editar_empresa_perfil(cnpj):
     try:
-       
         empresa = encontrar_empresa(cnpj)
         if not empresa:
             return "Empresa não encontrada", 404
 
         if request.method == 'POST':
-           
             nome = request.form['nome']
             endereco = request.form['endereco']
-            telefone = request.form['telefone']
             senha = request.form['senha'] if 'senha' in request.form else None
 
-           
-            if not nome or not endereco or not telefone:
+            if not nome or not endereco:
                 flash('Todos os campos são obrigatórios!', 'error')
                 return redirect(request.url)
 
-            
             if senha: 
-                editar_empresa(cnpj, nome, endereco, telefone, senha)
+                editar_empresa(cnpj, nome, endereco, senha)
             else: 
-                editar_empresa(cnpj, nome, endereco, telefone)
+                editar_empresa(cnpj, nome, endereco)
 
             flash('Perfil atualizado com sucesso', 'success')
             return redirect(url_for('perfil_empresa', cnpj=cnpj))  
 
-        
         return render_template('editar_empresa.html', empresa=empresa)
 
     except Exception as e:
         return str(e), 500
+
 
 @app.route('/perfil_empresa/<cnpj>', methods=['GET'])
 def perfil_empresa(cnpj):
