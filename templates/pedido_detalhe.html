@@ -55,29 +55,6 @@
             background-color: #DC3545;
             color: white;
         }
-        .btn-danger {
-            background-color: #dc3545;
-            color: white;
-        }
-        .btn-danger:hover {
-            background-color: #c82333;
-        }
-        .image-container {
-            position: relative;
-            overflow: hidden;
-            border-radius: 10px 10px 0 0;
-            height: 200px;
-        }
-        .image-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .card-actions {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-        }
     </style>
 </head>
 <body>
@@ -93,6 +70,7 @@
             {% endif %}
         {% endwith %}
 
+        <!-- Detalhes do Pedido -->
         <div class="card">
             <div class="card-header">
                 <h2>Detalhes do Pedido</h2>
@@ -106,9 +84,10 @@
             </div>
         </div>
 
+        <!-- Formulário para Envio de Imagens -->
         <div class="card">
             <div class="card-header">
-                <h3>Análise de Cisterna</h3>
+                <h3>Enviar Imagem para Análise</h3>
             </div>
             <div class="card-body">
                 <form action="{{ url_for('analisar_rachadura', pedido_id=pedido['id']) }}" method="post" enctype="multipart/form-data">
@@ -117,48 +96,13 @@
                         <input type="file" class="form-control" id="imagem" name="imagem" accept=".jpg,.jpeg,.png,.gif" required>
                     </div>
                     <button type="submit" class="btn btn-custom">
-                        <i class="bi bi-camera"></i> Analisar Imagem
+                        <i class="bi bi-camera"></i> Enviar Imagem
                     </button>
                 </form>
-
-                {% if imagens %}
-                <div class="mt-4">
-                    <h5>Imagens Processadas:</h5>
-                    <div class="row">
-                        {% for imagem in imagens %}
-                        <div class="col-md-4 mb-3">
-                            <div class="card">
-                                <div class="image-container">
-                                    <img src="{{ url_for('static', filename=imagem.caminho) }}" alt="Imagem Processada" class="img-fluid">
-                                </div>
-                                <div class="card-body">
-                                    <p><strong>Tipo:</strong> {{ imagem.tipo_imagem }}</p>
-                                    {% if imagem.tipo_imagem == "rachadura" %}
-                                        {% if imagem.tem_rachadura %}
-                                            <p class="text-danger"><strong>Rachaduras detectadas!</strong></p>
-                                        {% else %}
-                                            <p class="text-success"><strong>Nenhuma rachadura detectada.</strong></p>
-                                        {% endif %}
-                                    {% elif imagem.tipo_imagem == "objeto" %}
-                                        <p class="text-info"><strong>Objeto detectado!</strong></p>
-                                    {% else %}
-                                        <p class="text-muted"><strong>Nenhum problema encontrado.</strong></p>
-                                    {% endif %}
-                                    <form action="{{ url_for('excluir_imagem_view', imagem_id=imagem.id, pedido_id=pedido.id) }}" method="post" style="display:inline;">
-                                        <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% else %}
-                <p>Nenhuma imagem processada disponível.</p>
-                {% endif %}
             </div>
         </div>
 
+        <!-- Botão de Voltar -->
         <div class="d-flex justify-content-between mt-4 mb-4">
             <a href="{{ url_for('dashboard_usuario', cpf=session.get('cpf')) }}" class="btn btn-secondary btn-custom">
                 <i class="bi bi-arrow-left"></i> Voltar ao Dashboard

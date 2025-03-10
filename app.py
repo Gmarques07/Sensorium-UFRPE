@@ -38,9 +38,7 @@ def allowed_file(filename):
 def detect_cracks(image):
     """Processa a imagem para detectar rachaduras."""
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-    
     edges = cv2.Canny(blurred, 50, 150)
     
     kernel = np.ones((3, 3), np.uint8)
@@ -67,8 +65,6 @@ def detect_cracks(image):
 def detect_objects(image):
     """Detecta objetos na imagem e desenha retângulos ao redor deles."""
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    
-
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     
     _, threshold = cv2.threshold(blurred, 120, 255, cv2.THRESH_BINARY_INV)
@@ -77,7 +73,6 @@ def detect_objects(image):
     threshold = cv2.morphologyEx(threshold, cv2.MORPH_OPEN, kernel, iterations=2)
     threshold = cv2.morphologyEx(threshold, cv2.MORPH_CLOSE, kernel, iterations=2)
     
-
     contours, _ = cv2.findContours(threshold, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
     objects_found = False
@@ -90,7 +85,6 @@ def detect_objects(image):
             compactness = (perimeter ** 2) / (4 * np.pi * area) if area != 0 else 0
             
             if aspect_ratio < 5 and compactness < 10:  
-               
                 cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
                 cv2.putText(image, "Objeto", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
                 objects_found = True
@@ -99,9 +93,7 @@ def detect_objects(image):
 
 def detect_cracks_or_objects(image):
     """Detecta rachaduras ou objetos na imagem."""
-
     processed_image_objects, objects_found = detect_objects(image.copy())
-    
     processed_image_cracks, cracks_found = detect_cracks(image.copy())
     
     if cracks_found:
@@ -904,23 +896,24 @@ def analisar_rachadura(pedido_id):
             return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
             
         file = request.files['imagem']
+        
         if file.filename == '':
             flash('Nenhum arquivo selecionado', 'danger')
             return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
-            
+
         if not allowed_file(file.filename):
             flash('Tipo de arquivo não permitido', 'danger')
             return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
-            
+
         filename = f"{int(time())}_{secure_filename(file.filename)}"
         filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
         file.save(filepath)
-        
+
         image = cv2.imread(filepath)
         if image is None:
             flash('Erro ao processar a imagem', 'danger')
             return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
-            
+
         processed_image, tipo_detectado = detect_cracks_or_objects(image)
         
         processed_filename = f"processed_{filename}"
@@ -932,73 +925,29 @@ def analisar_rachadura(pedido_id):
         
         db_filepath = f"uploads/{processed_filename}"
         
-        query = "INSERT INTO imagens_pedido (pedido_id, caminho, tipo_imagem, tem_rachadura)VALUES (%s, %s, %s, %s)"
+        query = "INSERT INTO imagens_pedido (pedido_id, caminho, tipo_imagem, tem_rachadura) VALUES (%s, %s, %s, %s)"
         cursor.execute(query, (pedido_id, db_filepath, tipo_detectado, 1 if tipo_detectado == "rachadura" else 0))
         conn.commit()
         
         cursor.close()
         conn.close()
         
-        mensagem = f"{tipo_detectado.capitalize()} detectado no pedido #{pedido_id}"
-        
+        if tipo_detectado in ["rachadura", "objeto"]:
+            mensagem = f"{tipo_detectado.capitalize()} detectado no pedido #{pedido_id}"
+        else:
+            mensagem = f"Imagem recebida para análise no pedido #{pedido_id}"
         criar_notificacao(pedido_id, mensagem)
-        
-        flash(f"{tipo_detectado.capitalize()} detectado na imagem!", 'success')
+
+        flash("Imagem enviada com sucesso! Será analisada pela empresa.", "success")
+            
+        os.remove(filepath)
             
         return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
     except Exception as e:
         print(f"Erro ao analisar rachadura: {e}")
         flash(f"Erro ao processar a imagem: {str(e)}", 'danger')
         return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
-
-@app.route('/upload_rachadura/<int:pedido_id>', methods=['POST'])
-def upload_rachadura(pedido_id):
-    try:
-        if "imagem" not in request.files:
-            flash("Nenhum arquivo enviado", "danger")
-            return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
-        
-        file = request.files["imagem"]
-        if file.filename == "":
-            flash("Nenhum arquivo selecionado", "danger")
-            return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
-        
-        if not allowed_file(file.filename):
-            flash("Tipo de arquivo não permitido", "danger")
-            return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
-        
-        filename = f"{int(time())}_{secure_filename(file.filename)}"
-        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-        file.save(filepath)
-        
-        image = cv2.imread(filepath)
-        if image is None:
-            flash("Erro ao carregar a imagem", "danger")
-            return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
-        
-        processed_image, cracks_found = detect_cracks(image)
-        
-        processed_filename = f"processed_{filename}"
-        processed_filepath = os.path.join(app.config["UPLOAD_FOLDER"], processed_filename)
-        cv2.imwrite(processed_filepath, processed_image)
-
-        db_filepath = f"uploads/{processed_filename}"
-        
-        salvar_imagem_pedido(pedido_id, 'rachadura', db_filepath, cracks_found)
-
-        if cracks_found:
-            flash("Rachaduras detectadas na imagem!", "warning")
-            notificar_rachadura(pedido_id, db_filepath, "Rachaduras detectadas em nova imagem")
-        else:
-            flash("Nenhuma rachadura detectada na imagem", "success")
-            
-        return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
-
-    except Exception as e:
-        print(f"Erro inesperado: {e}")
-        flash(f"Erro ao processar a imagem: {str(e)}", "danger")
-        return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
-
+ 
 @app.route('/excluir_imagem/<int:imagem_id>/<int:pedido_id>', methods=['POST'])
 def excluir_imagem_view(imagem_id, pedido_id):
     """Rota para excluir uma imagem"""
