@@ -1064,6 +1064,24 @@ def rachaduras(pedido_id):
     except Exception as e:
         return str(e), 500
     
+@app.route('/limpar_notificacao/<int:notificacao_id>', methods=['POST'])
+def limpar_notificacao(notificacao_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Exclui a notificação específica
+        query = "DELETE FROM notificacoes WHERE id = %s"
+        cursor.execute(query, (notificacao_id,))
+        conn.commit()
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({"success": True})
+    except Exception as e:
+        print(f"Erro ao limpar notificação: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

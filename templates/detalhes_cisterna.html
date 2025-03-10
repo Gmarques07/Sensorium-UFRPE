@@ -235,7 +235,9 @@
         <div class="row mt-4">
             <div class="col-12">
                 <div class="card">
-                    <div class="card-header">Notificações de Manutenção</div>
+                    <div class="card-header">
+                        Notificações de Manutenção
+                    </div>
                     <div class="card-body">
                         {% if notificacoes %}
                         <ul class="list-group">
@@ -246,7 +248,10 @@
                                             <h6 class="mb-1">{{ notificacao.mensagem }}</h6>
                                             <small class="text-muted">Data: {{ notificacao.data_criacao }}</small>
                                         </div>
-                                        <button class="btn btn-primary btn-sm" onclick="window.location.href='{{ url_for('rachaduras', pedido_id=notificacao.pedido_id) }}'">Ver Pedido</button>
+                                        <div>
+                                            <button class="btn btn-primary btn-sm me-2" onclick="window.location.href='{{ url_for('rachaduras', pedido_id=notificacao.pedido_id) }}'">Ver Pedido</button>
+                                            <button class="btn btn-danger btn-sm" onclick="limparNotificacao({{ notificacao.id }})">Limpar</button>
+                                        </div>
                                     </div>
                     
                                     {% for imagem in imagens_notificacoes if imagem.pedido_id == notificacao.pedido_id %}
@@ -267,14 +272,14 @@
                                 </li>
                             {% endfor %}
                         </ul>
-                    {% else %}
-                        <p class="text-center">Nenhuma notificação de manutenção no momento.</p>
-                    {% endif %}
+                        {% else %}
+                            <p class="text-center">Nenhuma notificação de manutenção no momento.</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <!-- Modal -->
         <div class="modal fade" id="pedidoModal" tabindex="-1" aria-labelledby="pedidoModalLabel" aria-hidden="true">
           <div class="modal-dialog">
@@ -407,6 +412,30 @@
                     })
             })
         })
+        </script>
+        <script>
+            function limparNotificacao(notificacaoId) {
+                if (confirm("Tem certeza que deseja limpar esta notificação?")) {
+                    fetch("{{ url_for('limpar_notificacao', notificacao_id=0) }}".replace("0", notificacaoId), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.reload();
+                        } else {
+                            alert("Erro ao limpar notificação: " + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro:', error);
+                        alert("Erro ao limpar notificação.");
+                    });
+                }
+            }
         </script>
         
 </body>
