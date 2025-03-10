@@ -713,10 +713,10 @@ def solicitar_pedido():
             cpf = request.form['cpf']
             descricao = request.form['descricao']
             quantidade = request.form['quantidade']
-            data = request.form['data']  
+            data = request.form['data']
             hora_atual = datetime.now().strftime('%H:%M:%S')
             data_hora = f"{data} {hora_atual}"
-    
+
             if not encontrar_usuario(cpf):
                 flash('Usuário não encontrado', 'danger')
                 return redirect(url_for('solicitar_pedido'))
@@ -728,10 +728,12 @@ def solicitar_pedido():
             conn.commit()
             cursor.close()
             conn.close()
+            flash('Pedido realizado com sucesso!', 'success')
             return redirect(url_for('dashboard_usuario', cpf=cpf))
 
         return render_template('solicitar_pedido.html')
     except Exception as e:
+        flash('Ocorreu um erro ao processar o pedido. Tente novamente.', 'danger')
         return str(e), 500
 
 @app.route('/cancelar_pedido/<pedido_id>', methods=['POST'])
