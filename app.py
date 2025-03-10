@@ -647,11 +647,11 @@ def editar_usuario_perfil(cpf):
             nome = request.form.get('nome')
             email = request.form.get('email')
             endereco = request.form.get('endereco')
-            senha = request.form.get('senha', None)  # Evita erro se senha não for enviada
+            senha = request.form.get('senha', None) 
 
-            editar_usuario(cpf, nome, email, endereco, senha)  # CPF permanece inalterado
+            editar_usuario(cpf, nome, email, endereco, senha)  
             flash('Perfil atualizado com sucesso!', 'success')
-            return redirect(url_for('dashboard_usuario', cpf=cpf))  # Mantém o CPF atual
+            return redirect(url_for('dashboard_usuario', cpf=cpf)) 
 
         return render_template('editar_usuario.html', usuario=usuario)
     except Exception as e:
@@ -799,7 +799,7 @@ def criar_comunicado():
         assunto = request.form['assunto']
         mensagem = request.form['mensagem']
         enviar_comunicado_geral(assunto, mensagem)
-        flash('Comunicado criado com sucesso!', 'success')
+        flash('Aviso enviado com sucesso!', 'success')
 
         cnpj_empresa = session.get('cnpj_empresa')
         if not cnpj_empresa:
@@ -813,7 +813,7 @@ def criar_comunicado():
 @app.route('/excluir_comunicado_geral/<int:comunicado_id>', methods=['POST'])
 def excluir_comunicado_geral_view(comunicado_id):
     excluir_comunicado_geral(comunicado_id)
-    flash('Comunicado excluído com sucesso', 'success')
+    flash('Aviso excluído com sucesso', 'success')
     return redirect(url_for('perfil_empresa', cnpj=session.get('cnpj_empresa')))
     
 @app.route('/pedido/<int:pedido_id>', methods=['GET'])
