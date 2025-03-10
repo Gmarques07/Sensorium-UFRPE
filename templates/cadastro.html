@@ -106,7 +106,6 @@
             </a>
         </div>
 
-        <!-- Mensagens Flash -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <div class="alert-container">
@@ -120,9 +119,7 @@
             {% endif %}
         {% endwith %}
 
-        <!-- Formulário -->
         <form id="cadastroForm" action="{{ url_for('cadastro') }}" method="post">
-            <!-- Nome -->
             <div class="mb-4">
                 <label for="nome" class="form-label">Nome Completo</label>
                 <div class="input-group">
@@ -136,7 +133,6 @@
                 </div>
             </div>
 
-            <!-- CPF -->
             <div class="mb-4">
                 <label for="cpf" class="form-label">CPF</label>
                 <div class="input-group">
@@ -153,7 +149,6 @@
                 </div>
             </div>
 
-            <!-- Email -->
             <div class="mb-4">
                 <label for="email" class="form-label">E-mail</label>
                 <div class="input-group">
@@ -167,7 +162,6 @@
                 </div>
             </div>
 
-            <!-- Endereço -->
             <div class="mb-4">
                 <label for="endereco" class="form-label">Endereço</label>
                 <div class="input-group">
@@ -181,7 +175,6 @@
                 </div>
             </div>
 
-            <!-- Senha -->
             <div class="mb-4">
                 <label for="senha" class="form-label">Senha</label>
                 <div class="input-group">
@@ -197,7 +190,6 @@
                 <div class="password-strength" id="passwordStrength"></div>
             </div>
 
-            <!-- Confirmação de Senha -->
             <div class="mb-4">
                 <label for="confirmacao_senha" class="form-label">Confirme sua Senha</label>
                 <div class="input-group">
@@ -212,12 +204,10 @@
                 <div class="text-danger small mt-1" id="passwordMatch"></div>
             </div>
 
-            <!-- Botão de Cadastro -->
             <button type="submit" class="btn btn-primary w-100 mb-3">
                 <i class="bi bi-person-plus me-2"></i>Criar Conta
             </button>
 
-            <!-- Link para Login -->
             <div class="text-center">
                 <span>Já tem uma conta?</span>
                 <a href="{{ url_for('login_usuario') }}" class="link-secondary ms-2">Faça login aqui</a>
@@ -225,7 +215,6 @@
         </form>
     </div>
 
-    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
     <script>
@@ -234,7 +223,6 @@
             once: true
         });
 
-        // Formatação e validação do CPF
         document.addEventListener('DOMContentLoaded', function() {
             const cpfInput = document.getElementById('cpf');
 
@@ -254,7 +242,6 @@
                 this.setSelectionRange(newCursorPosition, newCursorPosition);
             });
 
-            // Validação de senha em tempo real
             const senhaInput = document.getElementById('senha');
             const confirmSenhaInput = document.getElementById('confirmacao_senha');
             const passwordMatch = document.getElementById('passwordMatch');
@@ -264,13 +251,11 @@
                 const password = senhaInput.value;
                 const confirmPassword = confirmSenhaInput.value;
 
-                // Verificar correspondência
                 if(password && confirmPassword) {
                     passwordMatch.textContent = password === confirmPassword ? 
                         '✓ As senhas coincidem' : '✗ As senhas não coincidem';
                 }
 
-                
                 const strength = Math.min(password.length * 10, 100);
                 strengthBar.style.width = strength + '%';
                 strengthBar.style.backgroundColor = strength >= 80 ? 'green' : 
@@ -279,8 +264,6 @@
 
             senhaInput.addEventListener('input', checkPassword);
             confirmSenhaInput.addEventListener('input', checkPassword);
-
-            
             document.querySelector('form').addEventListener('submit', function(e) {
 
                 const rawCPF = cpfInput.value.replace(/\D/g, '');

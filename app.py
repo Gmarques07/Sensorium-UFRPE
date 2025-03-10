@@ -37,76 +37,61 @@ def allowed_file(filename):
 
 def detect_cracks(image):
     """Processa a imagem para detectar rachaduras."""
-    # Converte para escala de cinza
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    
-    # Aplica um filtro Gaussiano para suavizar a imagem
+
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     
-    # Aplica o detector de bordas Canny
     edges = cv2.Canny(blurred, 50, 150)
     
-    # Aplica operações morfológicas para destacar rachaduras finas
     kernel = np.ones((3, 3), np.uint8)
     edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel, iterations=2)
     
-    # Encontra contornos na imagem
     contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
     cracks_found = False
     for contour in contours:
-        # Filtra contornos pequenos
         if cv2.contourArea(contour) > 50:
-            # Calcula a razão de aspecto do contorno
             x, y, w, h = cv2.boundingRect(contour)
             aspect_ratio = float(w) / h if h != 0 else 0
             
-            # Calcula a compacidade do contorno
             perimeter = cv2.arcLength(contour, True)
             area = cv2.contourArea(contour)
             compactness = (perimeter ** 2) / (4 * np.pi * area) if area != 0 else 0
-            
-            # Rachaduras tendem a ter alta razão de aspecto e baixa compacidade
-            if aspect_ratio > 5 or compactness > 10:  # Ajuste esses valores conforme necessário
-                cv2.drawContours(image, [contour], -1, (0, 255, 0), 2)  # Desenha contornos em verde
+
+            if aspect_ratio > 5 or compactness > 10: 
+                cv2.drawContours(image, [contour], -1, (0, 255, 0), 2) 
                 cracks_found = True
     
     return image, cracks_found
 
 def detect_objects(image):
     """Detecta objetos na imagem e desenha retângulos ao redor deles."""
-    # Converte para escala de cinza
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     
-    # Aplica um filtro Gaussiano para suavizar a imagem
+
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     
-    # Aplica um threshold adaptativo para melhorar a detecção de objetos
     _, threshold = cv2.threshold(blurred, 120, 255, cv2.THRESH_BINARY_INV)
     
-    # Aplica operações morfológicas para remover ruídos e preencher buracos
     kernel = np.ones((3, 3), np.uint8)
     threshold = cv2.morphologyEx(threshold, cv2.MORPH_OPEN, kernel, iterations=2)
     threshold = cv2.morphologyEx(threshold, cv2.MORPH_CLOSE, kernel, iterations=2)
     
-    # Encontra contornos na imagem
+
     contours, _ = cv2.findContours(threshold, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
     objects_found = False
     for contour in contours:
         area = cv2.contourArea(contour)
-        if 500 < area < 10000:  # Filtra contornos pequenos e grandes
-            # Calcula a razão de aspecto e a compacidade
+        if 500 < area < 10000:  
             x, y, w, h = cv2.boundingRect(contour)
             aspect_ratio = float(w) / h if h != 0 else 0
             perimeter = cv2.arcLength(contour, True)
             compactness = (perimeter ** 2) / (4 * np.pi * area) if area != 0 else 0
             
-            # Objetos tendem a ter baixa razão de aspecto e alta compacidade
-            if aspect_ratio < 5 and compactness < 10:  # Ajuste esses valores conforme necessário
-                # Desenha o retângulo em vermelho (BGR: 0, 0, 255)
+            if aspect_ratio < 5 and compactness < 10:  
+               
                 cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
-                # Adiciona o texto "Objeto" em vermelho
                 cv2.putText(image, "Objeto", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
                 objects_found = True
     
@@ -114,13 +99,11 @@ def detect_objects(image):
 
 def detect_cracks_or_objects(image):
     """Detecta rachaduras ou objetos na imagem."""
-    # Detecta objetos primeiro
+
     processed_image_objects, objects_found = detect_objects(image.copy())
     
-    # Detecta rachaduras
     processed_image_cracks, cracks_found = detect_cracks(image.copy())
     
-    # Prioriza rachaduras sobre objetos
     if cracks_found:
         return processed_image_cracks, "rachadura"
     elif objects_found:
@@ -140,7 +123,6 @@ def salvar_imagem_pedido(pedido_id, tipo_imagem, caminho_imagem, tem_rachadura):
 def excluir_imagem(imagem_id):
     """Exclui uma imagem do banco de dados e do sistema de arquivos"""
     try:
-        # Primeiro, obtém o caminho da imagem
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         query = "SELECT caminho FROM imagens_pedido WHERE id = %s"
@@ -152,14 +134,12 @@ def excluir_imagem(imagem_id):
             conn.close()
             return False
             
-        # Exclui do banco de dados
         query_delete = "DELETE FROM imagens_pedido WHERE id = %s"
         cursor.execute(query_delete, (imagem_id,))
         conn.commit()
         cursor.close()
         conn.close()
         
-        # Exclui o arquivo físico
         caminho_completo = os.path.join('static', imagem['caminho'])
         if os.path.exists(caminho_completo):
             os.remove(caminho_completo)
@@ -175,16 +155,13 @@ def notificar_rachadura(pedido_id, imagem_id, mensagem):
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # Obter informações do pedido para incluir na notificação
         query_pedido = "SELECT cpf_usuario, descricao FROM pedidos WHERE id = %s"
         cursor.execute(query_pedido, (pedido_id,))
         pedido = cursor.fetchone()
         
-        # Criar mensagem de notificação
         assunto = f"ALERTA: Rachaduras detectadas no pedido #{pedido_id}"
         mensagem_completa = f"{mensagem}\n\nPedido: {pedido['descricao']}\nImagem ID: {imagem_id}"
         
-        # Inserir na tabela de comunicados
         query = "INSERT INTO comunicados_gerais (assunto, mensagem) VALUES (%s, %s)"
         cursor.execute(query, (assunto, mensagem_completa))
         conn.commit()
@@ -293,14 +270,11 @@ def editar_empresa(cnpj, nome=None, endereco=None, telefone=None, senha=None):
         query += "senha = %s, "
         set_values.append(senha)
 
-    
-    query = query.rstrip(', ')  # Remover vírgula extra
+    query = query.rstrip(', ') 
 
-    
     query += " WHERE cnpj = %s"
     set_values.append(cnpj)
 
-    
     cursor.execute(query, tuple(set_values))
     conn.commit()
     cursor.close()
@@ -343,7 +317,6 @@ def buscar_pedidos_usuarios(cpf):
     except Exception as e:
         print(f"Erro ao buscar pedidos: {e}")
         return []
-
 
 def buscar_todos_pedidos():
     try:
@@ -421,22 +394,19 @@ def buscar_dados_cisterna(cnpj):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     
-    # Buscar o pH mais recente
     query_ph_atual = "SELECT ph, data FROM ph_niveis ORDER BY data DESC LIMIT 1"
     cursor.execute(query_ph_atual)
     ph_atual = cursor.fetchone()
     
-    # Buscar o histórico de pH
     query_historico_ph = "SELECT ph, data FROM ph_niveis ORDER BY data DESC LIMIT 10"
     cursor.execute(query_historico_ph)
     historico_ph = cursor.fetchall()
     
-    # Buscar o nível de água mais recente
     query_nivel_atual = "SELECT boia, status, data FROM niveis_agua ORDER BY data DESC LIMIT 1"
     cursor.execute(query_nivel_atual)
     nivel_atual = cursor.fetchone()
     
-    # Buscar o histórico de níveis de água
+
     query_historico_nivel = "SELECT boia, status, data FROM niveis_agua ORDER BY data DESC LIMIT 10"
     cursor.execute(query_historico_nivel)
     historico_nivel = cursor.fetchall()
@@ -480,12 +450,10 @@ def criar_pedido(cpf_usuario, descricao, quantidade, data):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Criar o pedido
     query_pedido = "INSERT INTO pedidos (cpf_usuario, descricao, quantidade, data, status) VALUES (%s, %s, %s, %s, 'pendente')"
     cursor.execute(query_pedido, (cpf_usuario, descricao, quantidade, data))
     pedido_id = cursor.lastrowid
 
-    # Criar notificações para todas as empresas relacionadas ao pedido
     query_empresas = "SELECT cnpj FROM empresas"
     cursor.execute(query_empresas)
     empresas = cursor.fetchall()
@@ -502,22 +470,19 @@ def buscar_dados_cisterna_usuario(usuario_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     
-    # Buscar o pH mais recente
     query_ph_atual = "SELECT ph, data FROM ph_niveis WHERE usuario_id = %s ORDER BY data DESC LIMIT 1"
     cursor.execute(query_ph_atual, (usuario_id,))
     ph_atual = cursor.fetchone()
     
-    # Buscar o histórico de pH
     query_historico_ph = "SELECT ph, data FROM ph_niveis WHERE usuario_id = %s ORDER BY data DESC LIMIT 10"
     cursor.execute(query_historico_ph, (usuario_id,))
     historico_ph = cursor.fetchall()
     
-    # Buscar o nível de água mais recente
+
     query_nivel_atual = "SELECT boia, status, data FROM niveis_agua WHERE usuario_id = %s ORDER BY data DESC LIMIT 1"
     cursor.execute(query_nivel_atual, (usuario_id,))
     nivel_atual = cursor.fetchone()
     
-    # Buscar o histórico de níveis de água
     query_historico_nivel = "SELECT boia, status, data FROM niveis_agua WHERE usuario_id = %s ORDER BY data DESC LIMIT 10"
     cursor.execute(query_historico_nivel, (usuario_id,))
     historico_nivel = cursor.fetchall()
@@ -767,7 +732,6 @@ def solicitar_pedido():
     except Exception as e:
         return str(e), 500
 
-
 @app.route('/cancelar_pedido/<pedido_id>', methods=['POST'])
 def cancelar_pedido(pedido_id):
     try:
@@ -798,10 +762,8 @@ def enviar_comunicado_usuario(pedido_id):
         flash('Mensagem não fornecida', 'error')
         return redirect(url_for('perfil_empresa', cnpj=session.get('cnpj_empresa')))
     
-
     enviar_comunicado_pedido(pedido_id, mensagem)
-    flash('Comunicado enviado com sucesso', 'success')
-    
+    flash('Comunicado enviado com sucesso', 'success') 
     
     return redirect(url_for('perfil_empresa', cnpj=session.get('cnpj_empresa')))
 
@@ -867,15 +829,32 @@ def detalhes_cisterna(cnpj):
         return "Empresa não encontrada", 404
     
     ph_atual, historico_ph, nivel_atual, historico_nivel = buscar_dados_cisterna(cnpj)
-    notificacoes = buscar_notificacoes(cnpj)  
-    
-    return render_template('detalhes_cisterna.html', 
-                           empresa=empresa,
-                           ph_atual=ph_atual, 
-                           historico_ph=historico_ph, 
-                           nivel_atual=nivel_atual, 
-                           historico_nivel=historico_nivel,
-                           notificacoes=notificacoes) 
+    notificacoes = buscar_notificacoes(cnpj)
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    query_imagens = """
+        SELECT i.caminho, i.tipo_imagem, i.tem_rachadura, n.pedido_id
+        FROM imagens_pedido i
+        JOIN notificacoes n ON i.pedido_id = n.pedido_id
+        JOIN empresas e ON n.pedido_id = e.id
+        WHERE e.cnpj = %s
+    """
+    cursor.execute(query_imagens, (cnpj,))
+    imagens_notificacoes = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    return render_template(
+        'detalhes_cisterna.html',
+        empresa=empresa,
+        ph_atual=ph_atual,
+        historico_ph=historico_ph,
+        nivel_atual=nivel_atual,
+        historico_nivel=historico_nivel,
+        notificacoes=notificacoes,
+        imagens_notificacoes=imagens_notificacoes
+    )
 
 @app.route('/analisar_rachadura/<int:pedido_id>', methods=['POST'])
 def analisar_rachadura(pedido_id):
@@ -893,12 +872,10 @@ def analisar_rachadura(pedido_id):
             flash('Tipo de arquivo não permitido', 'danger')
             return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
             
-        # Gera nome único para o arquivo
         filename = f"{int(time())}_{secure_filename(file.filename)}"
         filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
         file.save(filepath)
         
-        # Processa a imagem
         image = cv2.imread(filepath)
         if image is None:
             flash('Erro ao processar a imagem', 'danger')
@@ -906,12 +883,10 @@ def analisar_rachadura(pedido_id):
             
         processed_image, tipo_detectado = detect_cracks_or_objects(image)
         
-        # Salva a imagem processada
         processed_filename = f"processed_{filename}"
         processed_filepath = os.path.join(app.config["UPLOAD_FOLDER"], processed_filename)
         cv2.imwrite(processed_filepath, processed_image)
         
-        # Salva no banco de dados
         conn = get_db_connection()
         cursor = conn.cursor()
         

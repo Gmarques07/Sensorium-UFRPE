@@ -5,13 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro de Empresa - Água em Ação</title>
     
-    <!-- Google Fonts -->
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- AOS (Animate on Scroll) -->
     <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
 
     <style>
@@ -119,7 +116,6 @@
             {% endif %}
         {% endwith %}
 
-        <!-- Formulário -->
         <form id="cadastroEmpresaForm" action="{{ url_for('cadastro_empresa') }}" method="post">
             <!-- Nome da Empresa -->
             <div class="mb-4">
@@ -135,7 +131,6 @@
                 </div>
             </div>
 
-            <!-- CNPJ -->
             <div class="mb-4">
                 <label for="cnpj" class="form-label">CNPJ</label>
                 <div class="input-group">
@@ -152,7 +147,6 @@
                 </div>
             </div>
 
-            <!-- Email -->
             <div class="mb-4">
                 <label for="email_empresa" class="form-label">E-mail Corporativo</label>
                 <div class="input-group">
@@ -166,7 +160,6 @@
                 </div>
             </div>
 
-            <!-- Endereço -->
             <div class="mb-4">
                 <label for="endereco_empresa" class="form-label">Endereço Comercial</label>
                 <div class="input-group">
@@ -180,7 +173,6 @@
                 </div>
             </div>
 
-            <!-- Senha -->
             <div class="mb-4">
                 <label for="senha_empresa" class="form-label">Senha</label>
                 <div class="input-group">
@@ -196,7 +188,6 @@
                 <div class="password-strength" id="passwordStrength"></div>
             </div>
 
-            <!-- Confirmação de Senha -->
             <div class="mb-4">
                 <label for="confirmacao_senha_empresa" class="form-label">Confirme sua Senha</label>
                 <div class="input-group">
@@ -211,12 +202,10 @@
                 <div class="text-danger small mt-1" id="passwordMatch"></div>
             </div>
 
-            <!-- Botão de Cadastro -->
             <button type="submit" class="btn btn-primary w-100 mb-3">
                 <i class="bi bi-building-add me-2"></i>Cadastrar Empresa
             </button>
 
-            <!-- Link para Login -->
             <div class="text-center">
                 <span>Já tem cadastro?</span>
                 <a href="{{ url_for('login_empresa') }}" class="link-secondary ms-2">Acesse sua conta</a>
@@ -224,7 +213,6 @@
         </form>
     </div>
 
-    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
     <script>
@@ -233,7 +221,6 @@
             once: true
         });
 
-        // Formatação e validação do CNPJ
         document.addEventListener('DOMContentLoaded', function() {
             const cnpjInput = document.getElementById('cnpj');
 
@@ -255,7 +242,6 @@
                 this.setSelectionRange(newCursorPosition, newCursorPosition);
             });
 
-            // Validação de senha em tempo real
             const senhaInput = document.getElementById('senha_empresa');
             const confirmSenhaInput = document.getElementById('confirmacao_senha_empresa');
             const passwordMatch = document.getElementById('passwordMatch');
@@ -279,17 +265,13 @@
             senhaInput.addEventListener('input', checkPassword);
             confirmSenhaInput.addEventListener('input', checkPassword);
 
-            // Validação no envio
             document.querySelector('form').addEventListener('submit', function(e) {
-                // Validar CNPJ
                 const rawCNPJ = cnpjInput.value.replace(/\D/g, '');
                 if(rawCNPJ.length !== 14) {
                     e.preventDefault();
                     alert('CNPJ deve conter 14 dígitos numéricos');
                     cnpjInput.focus();
                 }
-
-                // Validar senha
                 if(senhaInput.value !== confirmSenhaInput.value) {
                     e.preventDefault();
                     alert('As senhas não coincidem');
