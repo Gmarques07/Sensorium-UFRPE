@@ -29,7 +29,7 @@ CREATE TABLE `notificacoes` (
   `data_criacao` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `pedido_id` (`pedido_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=104 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -38,7 +38,7 @@ CREATE TABLE `notificacoes` (
 
 LOCK TABLES `notificacoes` WRITE;
 /*!40000 ALTER TABLE `notificacoes` DISABLE KEYS */;
-INSERT INTO `notificacoes` VALUES (1,70,'Rachaduras detectadas no pedido #70','2025-03-05 19:26:47'),(2,71,'Rachaduras detectadas no pedido #71','2025-03-05 19:31:09'),(3,71,'Rachaduras detectadas no pedido #71','2025-03-05 19:31:15'),(4,71,'Rachaduras detectadas no pedido #71','2025-03-05 19:43:05'),(5,73,'Rachaduras detectadas no pedido #73','2025-03-05 20:02:34'),(6,73,'Rachaduras detectadas no pedido #73','2025-03-05 20:05:51');
+INSERT INTO `notificacoes` VALUES (85,86,'Rachadura detectado no pedido #86','2025-03-10 21:55:26'),(84,85,'Rachadura detectado no pedido #85','2025-03-10 21:39:10'),(83,84,'Objeto detectado no pedido #84','2025-03-10 21:36:42');
 /*!40000 ALTER TABLE `notificacoes` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -51,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-03-05 17:06:52
+-- Dump completed on 2025-03-10 23:16:04

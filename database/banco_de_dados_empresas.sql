@@ -32,7 +32,7 @@ CREATE TABLE `empresas` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`),
   UNIQUE KEY `cnpj` (`cnpj`)
-) ENGINE=MyISAM AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -41,7 +41,7 @@ CREATE TABLE `empresas` (
 
 LOCK TABLES `empresas` WRITE;
 /*!40000 ALTER TABLE `empresas` DISABLE KEYS */;
-INSERT INTO `empresas` VALUES (19,'empresa teste','emailempresa@hotmail.com','senha00','11111111111111',NULL),(23,'empresa teste 02','emailempresa2@hotmail.com','senha00','22222222222222',NULL);
+INSERT INTO `empresas` VALUES (19,'empresa teste','emailempresa@hotmail.com','senha00','11111111111111','rua do teste25'),(23,'empresa teste 02','emailempresa2@hotmail.com','senha00','22222222222222',NULL),(24,'irineu','etes@mail.com','senha123','33333333333333',NULL);
 /*!40000 ALTER TABLE `empresas` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -54,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-03-04 17:10:05
+-- Dump completed on 2025-03-10 23:16:05

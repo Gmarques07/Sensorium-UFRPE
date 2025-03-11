@@ -30,11 +30,10 @@ CREATE TABLE `pedidos` (
   `nome` varchar(255) DEFAULT NULL,
   `status` varchar(50) DEFAULT NULL,
   `quantidade` int DEFAULT NULL,
-  `empresa_cnpj` varchar(20) DEFAULT NULL,
   `cnpj_empresa` varchar(20) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `cpf_usuario` (`cpf_usuario`)
-) ENGINE=MyISAM AUTO_INCREMENT=71 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=88 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -43,7 +42,7 @@ CREATE TABLE `pedidos` (
 
 LOCK TABLES `pedidos` WRITE;
 /*!40000 ALTER TABLE `pedidos` DISABLE KEYS */;
-INSERT INTO `pedidos` VALUES (70,'11111111111','~~','2025-03-06 16:54:37',NULL,'aceito',1000,NULL,NULL);
+INSERT INTO `pedidos` VALUES (79,'11111111111','s','2025-03-06 16:09:36',NULL,'aceito',1000,NULL),(87,'11111111111','ksaksaksakaks','2025-03-11 00:00:00',NULL,'pendente',20000,'11111111111111');
 /*!40000 ALTER TABLE `pedidos` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -56,4 +55,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-03-04 17:10:05
+-- Dump completed on 2025-03-10 23:16:04

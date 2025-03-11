@@ -28,7 +28,7 @@ CREATE TABLE `comunicados_gerais` (
   `mensagem` text NOT NULL,
   `data` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -37,7 +37,7 @@ CREATE TABLE `comunicados_gerais` (
 
 LOCK TABLES `comunicados_gerais` WRITE;
 /*!40000 ALTER TABLE `comunicados_gerais` DISABLE KEYS */;
-INSERT INTO `comunicados_gerais` VALUES (24,'dsd','33333333','2025-03-04 16:54:07');
+INSERT INTO `comunicados_gerais` VALUES (27,'teste','12321','2025-03-10 18:10:00');
 /*!40000 ALTER TABLE `comunicados_gerais` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -50,4 +50,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-03-04 17:10:05
+-- Dump completed on 2025-03-10 23:16:05
