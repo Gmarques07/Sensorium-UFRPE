@@ -11,7 +11,6 @@ from time import time
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
-
 db_config = {
     'user': 'root',
     'password': '',

@@ -227,7 +227,7 @@
                 {% for comunicado in comunicados %}
                     <li class="list-group-item pedido-item">
                         <h6>{{ comunicado.mensagem }}</h6>
-                        <small class="text-muted">{{ comunicado.data }}</small>
+                        <small class="text-muted">{{ comunicado.data|dateformat }}</small>
                     </li>
                 {% else %}
                     <li class="list-group-item">Nenhum comunicado encontrado.</li>
@@ -242,7 +242,7 @@
                     <li class="list-group-item pedido-item">
                         <h6>{{ aviso.assunto }}</h6>
                         <p class="mb-1">{{ aviso.mensagem }}</p>
-                        <small class="text-muted">{{ aviso.data }}</small>
+                        <small class="text-muted">{{ aviso.data|dateformat }}</small>
                     </li>
                 {% else %}
                     <li class="list-group-item">Nenhum aviso encontrado.</li>
@@ -262,7 +262,7 @@
                                     <span class="badge-status badge-{{ pedido.status }}">
                                         {{ pedido.status }}
                                     </span>
-                                    <small class="text-muted ms-2">{{ pedido.data }}</small>
+                                    <small class="text-muted ms-2">{{ pedido.data|dateformat }}</small>
                                 </div>
                             </div>
                             <a href="{{ url_for('visualizar_pedido', pedido_id=pedido['id']) }}" 

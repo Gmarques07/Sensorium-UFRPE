@@ -121,7 +121,7 @@
                             <div>
                                 <h5 class="card-title">pH Atual</h5>
                                 <div class="ph-value" id="ph-atual">{{ ph_atual.ph }}</div>
-                                <p class="card-text text-muted">Última atualização: <span id="ph-data">{{ ph_atual.data }}</span></p>
+                                <p class="card-text text-muted">Última atualização: <span id="ph-data">{{ ph_atual.data|dateformat }}</span></p>
                             </div>
                             <div>
                                 {% if ph_atual.ph < 6.5 %}
@@ -166,7 +166,7 @@
                             </div>
                             <div>
                                 <p class="mb-0">Boia: {% if nivel_atual.boia == 1 %}Ativada{% else %}Desativada{% endif %}</p>
-                                <p class="text-muted mb-0">Última atualização: {{ nivel_atual.data }}</p>
+                                <p class="text-muted mb-0">Última atualização: {{ nivel_atual.data|dateformat }}</p>
                             </div>
                         </div>
 <div class="mt-4">
@@ -181,7 +181,7 @@
                                 <tbody>
                                     {% for nivel in historico_nivel %}
                                     <tr>
-                                        <td>{{ nivel.data }}</td>
+                                        <td>{{ nivel.data|dateformat }}</td>
                                         <td>
                                             <span class="status-badge {% if nivel.status == 'ALTO' %}status-alto{% else %}status-baixo{% endif %}">
                                                 {{ nivel.status }}
@@ -213,7 +213,7 @@
                             <tbody>
                                 {% for medicao in historico_ph %}
                                 <tr>
-                                    <td>{{ medicao.data }}</td>
+                                    <td>{{ medicao.data|dateformat}}</td>
                                     <td>{{ medicao.ph }}</td>
                                     <td>
                                         {% if medicao.ph < 6.5 %}
@@ -246,7 +246,7 @@
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
                                             <h6 class="mb-1">{{ notificacao.mensagem }}</h6>
-                                            <small class="text-muted">Data: {{ notificacao.data_criacao }}</small>
+                                            <small class="text-muted">Data: {{ notificacao.data_criacao|dateformat }}</small>
                                         </div>
                                         <div>
                                             <button class="btn btn-primary btn-sm me-2" onclick="window.location.href='{{ url_for('rachaduras', pedido_id=notificacao.pedido_id) }}'">Ver Pedido</button>
@@ -308,7 +308,7 @@
         gradient.addColorStop(0, 'rgba(21, 101, 192, 0.6)');
         gradient.addColorStop(1, 'rgba(21, 101, 192, 0.1)');
         
-        const datas = [{% for item in historico_ph %}"{{ item.data }}",{% endfor %}];
+        const datas = [{% for item in historico_ph %}"{{ item.data|dateformat }}",{% endfor %}];
         const valores = [{% for item in historico_ph %}{{ item.ph }},{% endfor %}];
         
         new Chart(ctx, {

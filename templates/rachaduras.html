@@ -51,7 +51,7 @@
                 <h3>{{ pedido.descricao }}</h3>
                 <p><strong>Quantidade:</strong> {{ pedido.quantidade }}</p>
                 <p><strong>Status:</strong> {{ pedido.status }}</p>
-                <p><strong>Data:</strong> {{ pedido.data }}</p>
+                <p><strong>Data:</strong> {{ pedido.data|dateformat }}</p>
                 <p><strong>Solicitante:</strong> {{ pedido.usuario_nome }}</p>
             </div>
         </div>
