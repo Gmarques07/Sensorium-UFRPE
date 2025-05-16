@@ -1070,7 +1070,6 @@ def limpar_notificacao(notificacao_id):
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # Exclui a notificação específica
         query = "DELETE FROM notificacoes WHERE id = %s"
         cursor.execute(query, (notificacao_id,))
         conn.commit()
@@ -1082,6 +1081,18 @@ def limpar_notificacao(notificacao_id):
     except Exception as e:
         print(f"Erro ao limpar notificação: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
+    
+@app.errorhandler(500)
+def internal_server_error(e):
+    original_exception = getattr(e, "original_exception", e)
+    app.logger.error(f"Erro interno do servidor: {original_exception}", exc_info=True)
+    return render_template('500.html'), 500
+
+@app.errorhandler(404)
+def pagina_nao_encontrada(error):
+    app.logger.warning(f"Página não encontrada: {request.path}")
+    return render_template('404.html'), 404
+
 
 if __name__ == '__main__':
     app.run(debug=True)
