@@ -88,7 +88,6 @@
 </head>
 <body>
     <div class="signup-card" data-aos="fade-up">
-        <!-- Cabeçalho -->
         <div class="text-center mb-5">
             <a href="{{ url_for('pagina_inicial') }}">
                 <i class="bi bi-droplet fs-1 text-primary"></i>
@@ -116,7 +115,6 @@
         {% endwith %}
 
         <form id="cadastroEmpresaForm" action="{{ url_for('cadastro_empresa') }}" method="post">
-            <!-- Nome da Empresa -->
             <div class="mb-4">
                 <label for="nome_empresa" class="form-label">Nome da Empresa</label>
                 <div class="input-group">
@@ -226,9 +224,9 @@
             function formatCNPJ(cnpj) {
                 cnpj = cnpj.replace(/\D/g, '').slice(0, 14);
                 return cnpj.replace(/(\d{2})(\d)/, '$1.$2')
-                          .replace(/(\d{3})(\d)/, '$1.$2')
-                          .replace(/(\d{3})(\d)/, '$1/$2')
-                          .replace(/(\d{4})(\d)/, '$1-$2');
+                            .replace(/(\d{3})(\d)/, '$1.$2')
+                            .replace(/(\d{3})(\d)/, '$1/$2')
+                            .replace(/(\d{4})(\d)/, '$1-$2');
             }
 
             cnpjInput.addEventListener('input', function() {
@@ -262,11 +260,11 @@
                     }
                 }
 
-    const strength = Math.min(password.length * 10, 100);
-    strengthBar.style.width = strength + '%';
-    strengthBar.style.backgroundColor = strength >= 80 ? 'green' : 
-                                        strength >= 50 ? 'orange' : 'red';
-}
+            const strength = Math.min(password.length * 10, 100);
+            strengthBar.style.width = strength + '%';
+            strengthBar.style.backgroundColor = strength >= 80 ? 'green' : 
+                                                strength >= 50 ? 'orange' : 'red';
+            }
 
 
             senhaInput.addEventListener('input', checkPassword);

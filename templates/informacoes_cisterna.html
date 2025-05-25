@@ -94,13 +94,18 @@
                         <i class="bi bi-water me-2"></i>Nível de Água
                     </div>
                     <div class="card-body">
-                        <div class="value-display">
-                            <span class="status-badge {% if nivel_atual.status == 'ALTO' %}status-alto{% else %}status-baixo{% endif %}">
-                                {{ nivel_atual.status }}
-                            </span>
-                        </div>
-                        <p class="text-center mb-0">Boia: {% if nivel_atual.boia == 1 %}Ativada{% else %}Desativada{% endif %}</p>
-                        <p class="text-muted text-center">Última atualização: {{ nivel_atual.data|dateformat }}</p>
+                        {# Verifica se nivel_atual existe antes de acessar seus atributos #}
+                        {% if nivel_atual %}
+                            <div class="value-display">
+                                <span class="status-badge {% if nivel_atual.status == 'ALTO' %}status-alto{% else %}status-baixo{% endif %}">
+                                    {{ nivel_atual.status }}
+                                </span>
+                            </div>
+                            <p class="text-center mb-0">Boia: {% if nivel_atual.boia == 1 %}Ativada{% else %}Desativada{% endif %}</p>
+                            <p class="text-muted text-center">Última atualização: {{ nivel_atual.data|dateformat }}</p>
+                        {% else %}
+                            <p class="text-center">Nenhum dado de nível de água disponível.</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -111,8 +116,13 @@
                         <i class="bi bi-droplet-half me-2"></i>pH da Água
                     </div>
                     <div class="card-body">
-                        <div class="value-display">{{ ph_atual.ph }}</div>
-                        <p class="text-muted text-center">Última atualização: {{ ph_atual.data|dateformat }}</p>
+                        {# Verifica se ph_atual existe antes de acessar seus atributos #}
+                        {% if ph_atual %}
+                            <div class="value-display">{{ ph_atual.ph }}</div>
+                            <p class="text-muted text-center">Última atualização: {{ ph_atual.data|dateformat }}</p>
+                        {% else %}
+                            <p class="text-center">Nenhum dado de pH disponível.</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -170,5 +180,105 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      // O script do Chart.js foi mantido aqui.
+      // Se não houver dados de histórico_ph, o gráfico será renderizado vazio.
+      document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('phChart').getContext('2d');
+        
+        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(21, 101, 192, 0.6)');
+        gradient.addColorStop(1, 'rgba(21, 101, 192, 0.1)');
+        
+        // Garante que historico_ph é um array, mesmo que vazio
+        const historicoPhData = {{ historico_ph | tojson | safe }}; 
+        
+        let datas = [];
+        let valores = [];
+
+        if (historicoPhData && historicoPhData.length > 0) {
+            historicoPhData.sort((a, b) => new Date(a.data) - new Date(b.data));
+            datas = historicoPhData.map(item => new Date(item.data).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }));
+            valores = historicoPhData.map(item => item.ph);
+        }
+
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: datas,
+            datasets: [{
+              label: 'Nível de pH',
+              data: valores,
+              borderColor: '#1565C0',
+              backgroundColor: gradient,
+              borderWidth: 3,
+              pointBackgroundColor: '#1565C0',
+              pointBorderColor: '#fff',
+              pointRadius: 5,
+              pointHoverRadius: 7,
+              fill: true,
+              tension: 0.3
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                labels: {
+                  font: {
+                    family: "'Poppins', sans-serif",
+                    size: 14
+                  }
+                }
+              },
+              tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                titleFont: {
+                  family: "'Poppins', sans-serif",
+                  size: 14
+                },
+                bodyFont: {
+                  family: "'Poppins', sans-serif",
+                  size: 13
+                },
+                padding: 10,
+                cornerRadius: 6
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: false,
+                grid: {
+                  color: 'rgba(200, 200, 200, 0.2)'
+                },
+                ticks: {
+                  font: {
+                    family: "'Poppins', sans-serif"
+                  }
+                }
+              },
+              x: {
+                grid: {
+                  display: false
+                },
+                ticks: {
+                  font: {
+                    family: "'Poppins', sans-serif"
+                  },
+                  maxRotation: 45,
+                  minRotation: 45
+                }
+              }
+            },
+            animation: {
+              duration: 2000,
+              easing: 'easeOutQuart'
+            }
+          }
+        });
+      });
+      </script>
 </body>
 </html>

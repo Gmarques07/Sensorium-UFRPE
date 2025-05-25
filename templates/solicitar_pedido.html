@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -86,20 +86,17 @@
     </style>
 </head>
 <body>
-    <!-- Barra Superior -->
     <div class="topBar">Água em Ação</div>
 
-    <!-- Título principal -->
     <h1>Solicitar Pedido</h1>
 
-    <!-- Formulário de Solicitação -->
     <main class="container d-flex justify-content-center align-items-center" style="min-height: calc(100vh - 150px);">
         <div class="form-section col-md-6">
             <h3 class="text-center mb-4">Preencha os dados do pedido</h3>
 
-            <!-- Formulário -->
             <form method="POST" action="{{ url_for('solicitar_pedido') }}">
-                <input type="hidden" name="cpf" value="{{ session.get('cpf') }}">
+                
+                <input type="hidden" name="cpf" value="{{ current_user.cpf }}">
                 
                 <div class="mb-3">
                     <label for="empresa" class="form-label">Selecione a Empresa:</label>
@@ -109,8 +106,7 @@
                             <option value="{{ empresa.cnpj }}">{{ empresa.nome }}</option>
                         {% endfor %}
                     </select>
-                </div>                
-
+                </div> 
                 <div class="mb-3">
                     <label for="descricao">Descrição:</label>
                     <textarea class="form-control p-2" id="descricao" name="descricao"
@@ -128,7 +124,7 @@
                 </div>
                 <div class="d-flex justify-content-center mt-4 gap-3">
                     <button type="submit" class="btn btn-primary">Solicitar Pedido</button>
-                    <a href="{{ url_for('dashboard_usuario', cpf=session.get('cpf')) }}" class="btn btn-secondary">Cancelar</a>
+                    <a href="{{ url_for('dashboard_usuario', cpf=current_user.cpf) }}" class="btn btn-secondary">Cancelar</a>
                 </div>
             </form>
         </div>

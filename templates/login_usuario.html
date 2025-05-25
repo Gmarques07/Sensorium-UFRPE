@@ -83,7 +83,6 @@
 </head>
 <body>
     <div class="login-card" data-aos="fade-up">
-        <!-- Cabeçalho -->
         <div class="text-center mb-5">
             <a href="{{ url_for('pagina_inicial') }}">
                 <i class="bi bi-droplet fs-1 text-primary"></i>
@@ -97,7 +96,6 @@
             </a>
         </div>
 
-        <!-- Mensagens Flash -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -109,21 +107,20 @@
             {% endif %}
         {% endwith %}
 
-        <!-- Formulário -->
         <form action="{{ url_for('login_usuario') }}" method="post">
             <div class="mb-4">
                 <label for="cpf-login" class="form-label">CPF</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
                     <input type="text" 
-                           id="cpf-login" 
-                           name="cpf" 
-                           class="form-control" 
-                           placeholder="000.000.000-00"
-                           maxlength="14"
-                           pattern="\d{3}\.\d{3}\.\d{3}-\d{2}"
-                           title="Insira um CPF válido no formato 000.000.000-00"
-                           required>
+                            id="cpf-login" 
+                            name="cpf" 
+                            class="form-control" 
+                            placeholder="000.000.000-00"
+                            maxlength="14"
+                            pattern="\d{3}\.\d{3}\.\d{3}-\d{2}"
+                            title="Insira um CPF válido no formato 000.000.000-00"
+                            required>
                 </div>
             </div>
 
@@ -132,11 +129,11 @@
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-lock"></i></span>
                     <input type="password" 
-                           id="senha-login" 
-                           name="senha" 
-                           class="form-control" 
-                           placeholder="••••••••" 
-                           required>
+                            id="senha-login" 
+                            name="senha" 
+                            class="form-control" 
+                            placeholder="••••••••" 
+                            required>
                 </div>
             </div>
 
@@ -165,30 +162,32 @@
         document.addEventListener('DOMContentLoaded', function() {
             const cpfInput = document.getElementById('cpf-login');
 
-            function formatCPF(cpf) {
-                cpf = cpf.replace(/\D/g, '').slice(0, 11);
-                return cpf.replace(/(\d{3})(\d)/, '$1.$2')
-                          .replace(/(\d{3})(\d)/, '$1.$2')
-                          .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-            }
-
             cpfInput.addEventListener('input', function() {
-                const cursorPosition = this.selectionStart;
-                this.value = formatCPF(this.value);
-                const newCursorPosition = cursorPosition + 
-                    (this.value.charAt(cursorPosition) === '.' || 
-                     this.value.charAt(cursorPosition) === '-' ? 1 : 0);
-                this.setSelectionRange(newCursorPosition, newCursorPosition);
+                let value = cpfInput.value.replace(/\D/g, '');
+                let formattedValue = '';
+
+                if (value.length > 0) {
+                    formattedValue += value.substring(0, 3);
+                }
+                if (value.length > 3) {
+                    formattedValue += '.' + value.substring(3, 6);
+                }
+                if (value.length > 6) {
+                    formattedValue += '.' + value.substring(6, 9);
+                }
+                if (value.length > 9) {
+                    formattedValue += '-' + value.substring(9, 11);
+                }
+                cpfInput.value = formattedValue;
             });
 
             document.querySelector('form').addEventListener('submit', function(e) {
-                const rawCPF = cpfInput.value.replace(/\D/g, '');
-                if(rawCPF.length !== 11) {
+                cpfInput.value = cpfInput.value.replace(/\D/g, ''); 
+                if(cpfInput.value.length !== 11) {
                     e.preventDefault();
-                    alert('CPF deve conter exatamente 11 dígitos numéricos');
+                    alert('CPF deve conter exatamente 11 dígitos numéricos.');
                     cpfInput.focus();
                 }
-                cpfInput.value = rawCPF; 
             });
         });
     </script>

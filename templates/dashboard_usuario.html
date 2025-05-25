@@ -123,6 +123,11 @@
 <body>
     <div class="topBar">
         <h2 class="mb-0">Água em Ação</h2>
+        {% if current_user.is_authenticated %}
+            <div class="text-end me-4" style="position: absolute; top: 1.5rem; right: 0;">
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">Sair</a>
+            </div>
+        {% endif %}
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -136,12 +141,9 @@
     {% endif %}
 {% endwith %}
 
-
-
     <div class="container mt-4">
-        <h3 class="text-center text-dark mb-4">Bem-vindo(a) ao seu Dashboard</h3>
+        <h3 class="text-center text-dark mb-4">Bem-vindo(a) ao seu Dashboard, {{ usuario.nome }}!</h3>
 
-        <!-- Cards de Resumo -->
         <div class="row g-4">
             <div class="col-md-4">
                 <div class="summary-card">
@@ -157,7 +159,7 @@
                     <i class="bi bi-check-circle summary-icon"></i>
                     <h5>Pedidos Concluídos</h5>
                     <div class="summary-number">
-                        {{ pedidos|selectattr('status','equalto','concluído')|list|length }}
+                        {{ pedidos|selectattr('status','equalto','aceito')|list|length }}
                     </div>
                 </div>
             </div>
@@ -168,7 +170,7 @@
                     <h5>Último Pedido</h5>
                     <div class="summary-number" style="font-size: 1.2rem;">
                         {% if pedidos %}
-                            {{ pedidos[0].data|dateformat }}
+                            {{ pedidos[0].data|dateformat('%d/%m/%Y %H:%M') }}
                         {% else %}
                             Nenhum pedido
                         {% endif %}
@@ -177,7 +179,6 @@
             </div>
         </div>
 
-        <!-- Cards Interativos -->
         <div class="row g-4">
             <div class="col-md-3">
                 <div class="dashboard-card text-center p-4">
@@ -213,21 +214,20 @@
                 <div class="dashboard-card text-center p-4">
                     <i class="bi bi-info-circle-fill card-icon"></i>
                     <h5>Informações da Cisterna</h5>
-                    <a href="{{ url_for('informacoes_cisterna', cpf=usuario['cpf']) }}" class="btn btn-custom">
+                    <a href="{{ url_for('informacoes_cisterna', cpf=usuario.cpf) }}" class="btn btn-custom">
                         Ver Detalhes
-                    </a>                    
+                    </a>                  
                 </div>
             </div>
         </div>
 
-        <!-- Seções Detalhadas -->
         <div id="comunicados" class="details-section">
             <h4><i class="bi bi-chat-dots me-2"></i>Comunicados dos Pedidos</h4>
             <ul class="list-group mt-3">
                 {% for comunicado in comunicados %}
                     <li class="list-group-item pedido-item">
                         <h6>{{ comunicado.mensagem }}</h6>
-                        <small class="text-muted">{{ comunicado.data }}</small>
+                        <small class="text-muted">{{ comunicado.data|dateformat('%d/%m/%Y %H:%M') }}</small>
                     </li>
                 {% else %}
                     <li class="list-group-item">Nenhum comunicado encontrado.</li>
@@ -242,7 +242,7 @@
                     <li class="list-group-item pedido-item">
                         <h6>{{ aviso.assunto }}</h6>
                         <p class="mb-1">{{ aviso.mensagem }}</p>
-                        <small class="text-muted">{{ aviso.data }}</small>
+                        <small class="text-muted">{{ aviso.data|dateformat('%d/%m/%Y %H:%M') }}</small>
                     </li>
                 {% else %}
                     <li class="list-group-item">Nenhum aviso encontrado.</li>
@@ -262,10 +262,11 @@
                                     <span class="badge-status badge-{{ pedido.status }}">
                                         {{ pedido.status }}
                                     </span>
-                                    <small class="text-muted ms-2">{{ pedido.data }}</small>
+                                    <small class="text-muted ms-2">{{ pedido.data|dateformat('%d/%m/%Y %H:%M') }}</small>
                                 </div>
                             </div>
-                            <a href="{{ url_for('visualizar_pedido', pedido_id=pedido['id']) }}" 
+                            {# A URL agora usa pedido.id que é o ID do pedido #}
+                            <a href="{{ url_for('visualizar_pedido', pedido_id=pedido.id) }}" 
                                class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-eye me-2"></i>Análise sua cisterna
                             </a>
@@ -277,12 +278,13 @@
             </div>
         </div>
 
-        <!-- Botões de Ação -->
         <div class="d-flex justify-content-center gap-3 my-5">
+            {# O Flask-Login já protege solicitar_pedido. Nenhuma alteração aqui. #}
             <a href="{{ url_for('solicitar_pedido') }}" class="btn btn-custom">
                 <i class="bi bi-plus-circle me-2"></i>Solicitar Pedido
             </a>
-            <a href="{{ url_for('editar_usuario_perfil', cpf=usuario['cpf']) }}" class="btn btn-custom">
+            {# A URL agora usa 'usuario.cpf' que é o CPF do usuário logado #}
+            <a href="{{ url_for('editar_usuario_perfil', cpf=usuario.cpf) }}" class="btn btn-custom">
                 <i class="bi bi-pencil me-2"></i>Editar Perfil
             </a>
             <a href="{{ url_for('pagina_inicial') }}" class="btn btn-custom">

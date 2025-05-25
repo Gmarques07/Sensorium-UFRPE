@@ -58,7 +58,6 @@
     </style>
 </head>
 <body>
-    <!-- Barra Superior -->
     <div class="topBar">Água em Ação</div>
 
     <div class="container mt-4">
@@ -70,7 +69,6 @@
             {% endif %}
         {% endwith %}
 
-        <!-- Detalhes do Pedido -->
         <div class="card">
             <div class="card-header">
                 <h2>Detalhes do Pedido</h2>
@@ -84,13 +82,12 @@
             </div>
         </div>
 
-        <!-- Formulário para Envio de Imagens -->
         <div class="card">
             <div class="card-header">
                 <h3>Enviar Imagem para Análise</h3>
             </div>
             <div class="card-body">
-                <form action="{{ url_for('analisar_rachadura', pedido_id=pedido['id']) }}" method="post" enctype="multipart/form-data">
+                <form action="{{ url_for('analisar_rachadura', pedido_id=pedido.id) }}" method="post" enctype="multipart/form-data">
                     <div class="mb-3">
                         <label for="imagem" class="form-label">Selecione uma imagem para análise:</label>
                         <input type="file" class="form-control" id="imagem" name="imagem" accept=".jpg,.jpeg,.png,.gif" required>
@@ -102,11 +99,20 @@
             </div>
         </div>
 
-        <!-- Botão de Voltar -->
         <div class="d-flex justify-content-between mt-4 mb-4">
-            <a href="{{ url_for('dashboard_usuario', cpf=session.get('cpf')) }}" class="btn btn-secondary btn-custom">
-                <i class="bi bi-arrow-left"></i> Voltar ao Dashboard
-            </a>
+            {% if current_user.is_authenticated and current_user.is_a_usuario() %}
+                <a href="{{ url_for('dashboard_usuario', cpf=current_user.cpf) }}" class="btn btn-secondary btn-custom">
+                    <i class="bi bi-arrow-left"></i> Voltar ao Dashboard
+                </a>
+            {% elif current_user.is_authenticated and current_user.is_an_empresa() %}
+                <a href="{{ url_for('perfil_empresa', cnpj=current_user.cnpj) }}" class="btn btn-secondary btn-custom">
+                    <i class="bi bi-arrow-left"></i> Voltar ao Perfil da Empresa
+                </a>
+            {% else %}
+                <a href="{{ url_for('pagina_inicial') }}" class="btn btn-secondary btn-custom">
+                    <i class="bi bi-arrow-left"></i> Voltar à Página Inicial
+                </a>
+            {% endif %}
         </div>
     </div>
 

@@ -84,7 +84,6 @@
 </head>
 <body>
     <div class="login-card" data-aos="fade-up">
-        <!-- Cabeçalho -->
         <div class="text-center mb-5">
             <a href="{{ url_for('pagina_inicial') }}">
                 <i class="bi bi-droplet fs-1 text-primary"></i>
@@ -110,21 +109,20 @@
             {% endif %}
         {% endwith %}
 
-        <!-- Formulário -->
         <form action="{{ url_for('login_empresa') }}" method="post">
             <div class="mb-4">
                 <label for="cnpj-login" class="form-label">CNPJ</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-building"></i></span>
                     <input type="text" 
-                           id="cnpj-login" 
-                           name="cnpj" 
-                           class="form-control" 
-                           placeholder="00.000.000/0000-00"
-                           maxlength="18"
-                           pattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}"
-                           title="Insira um CNPJ válido no formato 00.000.000/0000-00"
-                           required>
+                            id="cnpj-login" 
+                            name="cnpj" 
+                            class="form-control" 
+                            placeholder="00.000.000/0000-00"
+                            maxlength="18"
+                            pattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}"
+                            title="Insira um CNPJ válido no formato 00.000.000/0000-00"
+                            required>
                 </div>
             </div>
 
@@ -133,11 +131,11 @@
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-lock"></i></span>
                     <input type="password" 
-                           id="senha-login" 
-                           name="senha" 
-                           class="form-control" 
-                           placeholder="••••••••" 
-                           required>
+                            id="senha-login" 
+                            name="senha" 
+                            class="form-control" 
+                            placeholder="••••••••" 
+                            required>
                 </div>
             </div>
 
@@ -165,32 +163,35 @@
         document.addEventListener('DOMContentLoaded', function() {
             const cnpjInput = document.getElementById('cnpj-login');
 
-            function formatCNPJ(cnpj) {
-                cnpj = cnpj.replace(/\D/g, '').slice(0, 14);
-                return cnpj.replace(/(\d{2})(\d)/, '$1.$2')
-                           .replace(/(\d{3})(\d)/, '$1.$2')
-                           .replace(/(\d{3})(\d)/, '$1/$2')
-                           .replace(/(\d{4})(\d)/, '$1-$2');
-            }
-
             cnpjInput.addEventListener('input', function() {
-                const cursorPosition = this.selectionStart;
-                this.value = formatCNPJ(this.value);
-                const newCursorPosition = cursorPosition + 
-                    (this.value.charAt(cursorPosition) === '.' || 
-                     this.value.charAt(cursorPosition) === '/' ||
-                     this.value.charAt(cursorPosition) === '-' ? 1 : 0);
-                this.setSelectionRange(newCursorPosition, newCursorPosition);
+                let value = cnpjInput.value.replace(/\D/g, '');
+                let formattedValue = '';
+
+                if (value.length > 0) {
+                    formattedValue += value.substring(0, 2);
+                }
+                if (value.length > 2) {
+                    formattedValue += '.' + value.substring(2, 5);
+                }
+                if (value.length > 5) {
+                    formattedValue += '.' + value.substring(5, 8);
+                }
+                if (value.length > 8) {
+                    formattedValue += '/' + value.substring(8, 12);
+                }
+                if (value.length > 12) {
+                    formattedValue += '-' + value.substring(12, 14);
+                }
+                cnpjInput.value = formattedValue;
             });
 
             document.querySelector('form').addEventListener('submit', function(e) {
-                const rawCNPJ = cnpjInput.value.replace(/\D/g, '');
-                if(rawCNPJ.length !== 14) {
+                cnpjInput.value = cnpjInput.value.replace(/\D/g, ''); 
+                if(cnpjInput.value.length !== 14) {
                     e.preventDefault();
-                    alert('CNPJ deve conter exatamente 14 dígitos numéricos');
+                    alert('CNPJ deve conter exatamente 14 dígitos numéricos.');
                     cnpjInput.focus();
                 }
-                cnpjInput.value = rawCNPJ; 
             });
         });
     </script>

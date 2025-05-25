@@ -26,6 +26,13 @@
             text-align: center;
             padding: 1rem 0;
             width: 100%;
+            position: relative; /* Adicionado para posicionar o botão de sair */
+        }
+        .topBar .logout-btn {
+            position: absolute;
+            right: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
         }
 
         h1 {
@@ -120,14 +127,15 @@
 
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
-                    <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
-                        {{ messages[0][1] }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show text-center" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
                 {% endif %}
             {% endwith %}
 
-            <!-- Formulário -->
             <form action="{{ url_for('criar_comunicado') }}" method="POST">
                 <div class="mb-3">
                     <label for="assunto" class="form-label">Assunto do Aviso:</label>
@@ -141,7 +149,8 @@
                 </div>
                 <div class="button-container">
                     <button type="submit" class="btn btn-primary">Enviar Aviso</button>
-                    <a href="{{ url_for('perfil_empresa', cnpj=session.get('cnpj_empresa')) }}" class="btn btn-secondary">Voltar</a>
+                    {# Ajuste: Usa current_user.cnpj para garantir o retorno correto para o perfil da empresa logada #}
+                    <a href="{{ url_for('perfil_empresa', cnpj=current_user.cnpj) }}" class="btn btn-secondary">Voltar</a>
                 </div>
             </form>
         </div>
