@@ -222,6 +222,7 @@ class Usuario(UserMixin):
 
     @staticmethod
     def from_db_row(row):
+
         if row:
             return Usuario(row['id'], row['cpf'], row['nome'], row['email'], row['endereco'], row['senha'])
         return None
@@ -253,75 +254,131 @@ class Empresa(UserMixin):
         return False
     def is_an_empresa(self):
         return True
-
+    
 @login_manager.user_loader
 def load_user(user_id):
     conn = get_db_connection()
+    if not conn:
+        return None
     cursor = conn.cursor(dictionary=True)
     
-    query_usuario = "SELECT id, cpf, nome, email, endereco, senha FROM usuarios WHERE id = %s"
-    cursor.execute(query_usuario, (user_id,))
-    usuario_data = cursor.fetchone()
-    if usuario_data:
-        cursor.close()
-        conn.close()
-        return Usuario.from_db_row(usuario_data)
+    try:
+        
+        query_usuario = "SELECT id, cpf, nome, email, endereco, senha FROM usuarios WHERE id = %s"
+        cursor.execute(query_usuario, (user_id,))
+        usuario_data = cursor.fetchone()
+        if usuario_data:
+            return Usuario.from_db_row(usuario_data)
 
-    query_empresa = "SELECT id, cnpj, nome, email, endereco, senha FROM empresas WHERE id = %s"
-    cursor.execute(query_empresa, (user_id,))
-    empresa_data = cursor.fetchone()
-    if empresa_data:
-        cursor.close()
-        conn.close()
-        return Empresa.from_db_row(empresa_data)
+        
+        query_empresa = "SELECT id, cnpj, nome, email, endereco, senha FROM empresas WHERE id = %s"
+        cursor.execute(query_empresa, (user_id,))
+        empresa_data = cursor.fetchone()
+        if empresa_data:
+            return Empresa.from_db_row(empresa_data)
 
-    cursor.close()
-    conn.close()
-    return None
+        return None 
+    except mysql.connector.Error as err:
+        print(f"Erro no load_user: {err}")
+        return None
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 def encontrar_usuario(cpf):
     conn = get_db_connection()
+    if not conn:
+        return None
     cursor = conn.cursor(dictionary=True)
-    query = "SELECT id, cpf, nome, email, endereco, senha FROM usuarios WHERE cpf = %s"
-    cursor.execute(query, (cpf,))
-    usuario = cursor.fetchone()
-    cursor.close()
-    conn.close()
-    return usuario
+    try:
+        query = "SELECT id, cpf, nome, email, endereco, senha FROM usuarios WHERE cpf = %s"
+        cursor.execute(query, (cpf,))
+        usuario = cursor.fetchone()
+        return usuario
+    except mysql.connector.Error as err:
+        print(f"Erro ao buscar usuário: {err}")
+        return None
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 def encontrar_empresa(cnpj):
     conn = get_db_connection()
+    if not conn:
+        return None
     cursor = conn.cursor(dictionary=True)
-    query = "SELECT id, cnpj, nome, email, endereco, senha FROM empresas WHERE cnpj = %s"
-    cursor.execute(query, (cnpj,))
-    empresa = cursor.fetchone()
-    cursor.close()
-    conn.close()
-    return empresa
+    try:
+        query = "SELECT id, cnpj, nome, email, endereco, senha FROM empresas WHERE cnpj = %s"
+        cursor.execute(query, (cnpj,))
+        empresa = cursor.fetchone()
+        return empresa
+    except mysql.connector.Error as err:
+        print(f"Erro ao buscar empresa: {err}")
+        return None
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 def limpar_cnpj(cnpj):
     return re.sub(r'\D', '', cnpj) 
 
 def editar_usuario(cpf_atual, nome=None, email=None, endereco=None, senha=None, novo_cpf=None):
     conn = get_db_connection()
+    if not conn:
+        return False 
+
     cursor = conn.cursor()
 
-    if novo_cpf:
-        query = "UPDATE usuarios SET cpf = %s WHERE cpf = %s"
-        cursor.execute(query, (novo_cpf, cpf_atual))
-        conn.commit()  
-        cpf_atual = novo_cpf  
+    try:
+        
+        if novo_cpf and novo_cpf != cpf_atual:
+            query_update_cpf = "UPDATE usuarios SET cpf = %s WHERE cpf = %s"
+            cursor.execute(query_update_cpf, (novo_cpf, cpf_atual))
+            conn.commit()  
+            cpf_atual = novo_cpf  
 
-    if senha:
-        query = "UPDATE usuarios SET nome = %s, email = %s, endereco = %s, senha = %s WHERE cpf = %s"
-        cursor.execute(query, (nome, email, endereco, senha, cpf_atual)) # Senha em texto claro
-    else:
-        query = "UPDATE usuarios SET nome = %s, email = %s, endereco = %s WHERE cpf = %s"
-        cursor.execute(query, (nome, email, endereco, cpf_atual))
-    
-    conn.commit()
-    cursor.close()
-    conn.close()
+        update_fields = []
+        update_values = []
+
+        if nome is not None:
+            update_fields.append("nome = %s")
+            update_values.append(nome)
+        if email is not None:
+            update_fields.append("email = %s")
+            update_values.append(email)
+        if endereco is not None:
+            update_fields.append("endereco = %s")
+            update_values.append(endereco)
+        
+        if senha: 
+            hashed_senha = generate_password_hash(senha)
+            update_fields.append("senha = %s")
+            update_values.append(hashed_senha)
+
+        if update_fields:
+            query = f"UPDATE usuarios SET {', '.join(update_fields)} WHERE cpf = %s"
+            update_values.append(cpf_atual) 
+            cursor.execute(query, tuple(update_values))
+            conn.commit()
+            return True 
+        else:
+            
+            return True 
+    except mysql.connector.Error as err:
+        print(f"Erro ao editar usuário: {err}")
+        conn.rollback() 
+        return False 
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 def editar_empresa(cnpj, nome=None, endereco=None, telefone=None, senha=None):
     conn = get_db_connection()
@@ -632,43 +689,76 @@ def pagina_inicial():
 def login_usuario():
     try:
         if request.method == 'POST':
+            
             cpf = request.form['cpf']
             senha_digitada = request.form['senha']
             
-            db_usuario = encontrar_usuario(cpf)
-            usuario = Usuario.from_db_row(db_usuario)
+            cpf_limpo = re.sub(r'\D', '', cpf)
 
-            if usuario and usuario.senha == senha_digitada:
-                login_user(usuario) # Usa o Flask-Login
+            db_usuario_data = encontrar_usuario(cpf_limpo)
+            
+            usuario = Usuario.from_db_row(db_usuario_data)
+
+            if usuario and check_password_hash(usuario.senha, senha_digitada):
+                login_user(usuario) 
                 flash(f'Bem-vindo(a), {usuario.nome}!', 'success')
                 return redirect(url_for('dashboard_usuario', cpf=usuario.cpf))
-            flash('CPF ou senha incorretos', 'danger')
-            return redirect(url_for('login_usuario'))
+            else:
+                
+                flash('CPF ou senha incorretos', 'danger')
+                return redirect(url_for('login_usuario'))
 
         cadastro_sucesso = request.args.get('cadastro_sucesso')
         return render_template('login_usuario.html', cadastro_sucesso=cadastro_sucesso)
     except Exception as e:
-        flash(f'Ocorreu um erro no login: {str(e)}', 'danger')
+        
+        flash(f'Ocorreu um erro no login. Tente novamente.', 'danger')
+        print(f"Erro detalhado no login_usuario: {e}") 
         return redirect(url_for('login_usuario'))
 
 @app.route('/login_empresa', methods=['GET', 'POST'])
 def login_empresa():
-    if request.method == 'POST':
-        cnpj = limpar_cnpj(request.form['cnpj'])
-        senha_digitada = request.form['senha']
-        
-        db_empresa = encontrar_empresa(cnpj)
-        empresa = Empresa.from_db_row(db_empresa)
+    try:
+        if request.method == 'POST':
+            cnpj = request.form['cnpj']
+            senha_digitada = request.form['senha']
+            
+            cnpj_limpo = re.sub(r'\D', '', cnpj)
 
-        if empresa and empresa.senha == senha_digitada:
-            login_user(empresa)
-            flash(f'Bem-vinda, {empresa.nome}!', 'success')
-            return redirect(url_for('perfil_empresa', cnpj=empresa.cnpj))
-        else:
-            flash('CNPJ ou senha incorretos', 'danger')
-            return redirect(url_for('login_empresa'))
+            db_empresa_data = encontrar_empresa(cnpj_limpo)
+            empresa = Empresa.from_db_row(db_empresa_data)
 
-    return render_template('login_empresa.html')
+            print(f"Tentativa de login para CNPJ: {cnpj_limpo}")
+            print(f"Senha digitada: {senha_digitada}")
+            
+            if empresa:
+                print(f"Empresa encontrada. Nome: {empresa.nome}")
+                print(f"Hash da senha do DB (empresa.senha): {empresa.senha}")
+                
+                if empresa.senha is None or empresa.senha == "":
+                    print("AVISO: Senha da empresa no banco de dados está vazia ou é None.")
+                    flash('CNPJ ou senha incorretos', 'danger')
+                    return redirect(url_for('login_empresa'))
+
+                if check_password_hash(empresa.senha, senha_digitada):
+                    login_user(empresa)
+                    flash(f'Bem-vindo(a), {empresa.nome}!', 'success')
+                    
+                    return redirect(url_for('perfil_empresa', cnpj=empresa.cnpj))
+                else:
+                    print("check_password_hash retornou False. Senha não coincide.")
+                    flash('CNPJ ou senha incorretos', 'danger')
+                    return redirect(url_for('login_empresa'))
+            else:
+                print("Empresa não encontrada no banco de dados.")
+                flash('CNPJ ou senha incorretos', 'danger')
+                return redirect(url_for('login_empresa'))
+
+        return render_template('login_empresa.html')
+    except Exception as e:
+        flash(f'Ocorreu um erro no login da empresa. Tente novamente.', 'danger')
+        print(f"Erro detalhado no login_empresa: {e}")
+        return redirect(url_for('login_empresa'))
 
 
 @app.route('/logout')
@@ -698,9 +788,13 @@ def cadastro():
                 return redirect(url_for('cadastro'))
 
             conn = get_db_connection()
+            if not conn: 
+                return redirect(url_for('cadastro')) 
+            
             cursor = conn.cursor()
-            query = "SELECT cpf FROM usuarios WHERE cpf = %s"
-            cursor.execute(query, (cpf,))
+            
+            query_check_cpf = "SELECT cpf FROM usuarios WHERE cpf = %s"
+            cursor.execute(query_check_cpf, (cpf,))
             resultado = cursor.fetchone()
 
             if resultado:
@@ -708,20 +802,24 @@ def cadastro():
                 cursor.close()
                 conn.close()
                 return redirect(url_for('cadastro'))
+            
+            hashed_senha = generate_password_hash(senha)
 
-            query = "INSERT INTO usuarios (nome, cpf, email, endereco, senha) VALUES (%s, %s, %s, %s, %s)"
-            cursor.execute(query, (nome, cpf, email, endereco, senha)) # Salvando senha em texto claro
+            query_insert_user = "INSERT INTO usuarios (nome, cpf, email, endereco, senha) VALUES (%s, %s, %s, %s, %s)"
+            cursor.execute(query_insert_user, (nome, cpf, email, endereco, hashed_senha)) 
             conn.commit()
+            
             cursor.close()
             conn.close()
 
-            flash('Cadastro realizado com sucesso', 'success')
+            flash('Cadastro realizado com sucesso!', 'success')
             return redirect(url_for('login_usuario', cadastro_sucesso=True))
 
         return render_template('cadastro.html')
     except Exception as e:
         flash('Ocorreu um erro ao processar o cadastro. Tente novamente.', 'danger')
-        return str(e), 500
+        print(f"Erro no cadastro: {e}") 
+        return redirect(url_for('cadastro')) 
 
 @app.route('/cadastro_empresa', methods=['GET', 'POST'])
 def cadastro_empresa():
@@ -751,9 +849,14 @@ def cadastro_empresa():
                 return redirect(url_for('cadastro_empresa'))
 
             conn = get_db_connection()
+            if not conn:
+                return redirect(url_for('cadastro_empresa')) 
+            
             cursor = conn.cursor()
-            query = "SELECT cnpj FROM empresas WHERE cnpj = %s"
-            cursor.execute(query, (cnpj,))
+            
+            
+            query_check_cnpj = "SELECT cnpj FROM empresas WHERE cnpj = %s"
+            cursor.execute(query_check_cnpj, (cnpj,))
             resultado = cursor.fetchone()
 
             if resultado:
@@ -761,10 +864,15 @@ def cadastro_empresa():
                 cursor.close()
                 conn.close()
                 return redirect(url_for('cadastro_empresa'))
-
-            query = "INSERT INTO empresas (nome, cnpj, email, endereco, senha) VALUES (%s, %s, %s, %s, %s)"
-            cursor.execute(query, (nome_empresa, cnpj, email_empresa, endereco_empresa, senha_empresa))
+            
+            
+            hashed_senha_empresa = generate_password_hash(senha_empresa)
+            
+            query_insert_company = "INSERT INTO empresas (nome, cnpj, email, endereco, senha) VALUES (%s, %s, %s, %s, %s)"
+            
+            cursor.execute(query_insert_company, (nome_empresa, cnpj, email_empresa, endereco_empresa, hashed_senha_empresa))
             conn.commit()
+            
             cursor.close()
             conn.close()
 
@@ -774,32 +882,38 @@ def cadastro_empresa():
         return render_template('cadastro_empresa.html')
     except Exception as e:
         flash('Ocorreu um erro ao processar o cadastro. Tente novamente.', 'danger')
-        return str(e), 500
+        print(f"Erro no cadastro_empresa: {e}") 
+        return redirect(url_for('cadastro_empresa'))
 
 @app.route('/editar_usuario/<cpf>', methods=['GET', 'POST'])
 @login_required 
 def editar_usuario_perfil(cpf):
-
+    
     if not isinstance(current_user, Usuario) or current_user.cpf != cpf:
         flash('Acesso não autorizado para editar este perfil.', 'danger')
         logout_user()
         return redirect(url_for('login_usuario'))
 
-    usuario = encontrar_usuario(cpf) 
-    if not usuario:
+    usuario_data = encontrar_usuario(cpf) 
+    if not usuario_data:
         flash('Usuário não encontrado!', 'danger')
         return redirect(url_for('dashboard_usuario', cpf=current_user.cpf))
+    
+    usuario = Usuario.from_db_row(usuario_data)
 
     if request.method == 'POST':
         nome = request.form.get('nome')
         email = request.form.get('email')
         endereco = request.form.get('endereco')
         senha = request.form.get('senha', None) 
+        novo_cpf = request.form.get('novo_cpf', None) 
 
-        editar_usuario(cpf, nome, email, endereco, senha) 
-        flash('Perfil atualizado com sucesso!', 'success')
-
-        return redirect(url_for('dashboard_usuario', cpf=cpf)) 
+        if editar_usuario(cpf, nome, email, endereco, senha, novo_cpf): 
+            flash('Perfil atualizado com sucesso!', 'success')
+            return redirect(url_for('dashboard_usuario', cpf=novo_cpf if novo_cpf else cpf)) 
+        else:
+            flash('Erro ao atualizar o perfil. Tente novamente.', 'danger')
+            return redirect(url_for('editar_usuario_perfil', cpf=cpf))
 
     return render_template('editar_usuario.html', usuario=usuario)
 
@@ -834,21 +948,26 @@ def editar_empresa_perfil(cnpj):
     return render_template('editar_empresa.html', empresa=empresa)
 
 
-@app.route('/perfil_empresa/<cnpj>', methods=['GET'])
+@app.route('/perfil_empresa/<cnpj>') 
 @login_required
-def perfil_empresa(cnpj):
-
-    if not isinstance(current_user, Empresa) or current_user.cnpj != cnpj:
-        flash('Acesso não autorizado para este perfil.', 'danger')
-        logout_user()
+def perfil_empresa(cnpj): 
+    print(f"Entrou na rota perfil_empresa para CNPJ: {cnpj}")
+    try:
+       
+        if not current_user.is_an_empresa():
+            print(f"current_user não é uma empresa. Tipo: {type(current_user)}")
+            flash('Acesso não autorizado.', 'danger')
+            logout_user() 
+            return redirect(url_for('login_usuario')) 
+        
+        print(f"current_user é uma empresa. Nome: {current_user.nome}, CNPJ: {current_user.cnpj}")
+      
+        return render_template('perfil_empresa.html', company=current_user) 
+    except Exception as e:
+        print(f"ERRO CRÍTICO ao renderizar perfil_empresa: {e}") 
+        flash('Ocorreu um erro ao carregar o perfil da empresa. Tente novamente.', 'danger')
+        logout_user() 
         return redirect(url_for('login_empresa'))
-
-    empresa = current_user 
-    pedidos = buscar_pedidos_por_empresa(empresa.cnpj) 
-    comunicados_gerais = buscar_comunicado_geral()
-
-    return render_template('perfil_empresa.html', empresa=empresa, pedidos=pedidos, comunicados_gerais=comunicados_gerais)
-
 
 @app.route('/dashboard_usuario/<cpf>', methods=['GET'])
 @login_required 
@@ -1231,7 +1350,7 @@ def analisar_rachadura(pedido_id):
         return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
  
 @app.route('/excluir_imagem/<int:imagem_id>/<int:pedido_id>', methods=['POST'])
-@login_required # Protege a rota
+@login_required 
 def excluir_imagem_view(imagem_id, pedido_id):
     """Rota para excluir uma imagem"""
     conn = get_db_connection()
@@ -1317,7 +1436,7 @@ def dateformat(value, format="%d/%m/%Y %H:%M"):
             return value
         
 @app.route('/informacoes_cisterna/<cpf>')
-@login_required # Protege a rota
+@login_required 
 def informacoes_cisterna(cpf):
     if not isinstance(current_user, Usuario) or current_user.cpf != cpf:
         flash('Acesso não autorizado para estas informações de cisterna.', 'danger')

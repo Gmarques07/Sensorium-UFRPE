@@ -88,8 +88,10 @@
                         <h5 class="card-title">Informações da Empresa</h5>
                         <button class="btn btn-custom toggle-details" data-target="#informacoes-empresa">Ver Detalhes</button>
                         <div id="informacoes-empresa" class="details-section mt-3">
-                            <p><strong>Nome:</strong> {{ empresa.nome }}</p>
-                            <p><strong>CNPJ:</strong> {{ empresa.cnpj }}</p>
+                            <p><strong>Nome:</strong> {{ company.nome }}</p>
+                            <p><strong>CNPJ:</strong> {{ company.cnpj }}</p>
+                            <p><strong>Email:</strong> {{ company.email }}</p>
+                            <p><strong>Endereço:</strong> {{ company.endereco }}</p>
                         </div>
                     </div>
                 </div>
@@ -119,7 +121,7 @@
                     <div class="card-body">
                         <div class="icon-container mb-3"><i class="bi bi-water"></i></div>
                         <h5 class="card-title">Informações da Cisterna</h5>
-                        <a href="{{ url_for('detalhes_cisterna', cnpj=empresa.cnpj) }}" class="btn btn-custom">Ver Detalhes</a>
+                        <a href="{{ url_for('detalhes_cisterna', cnpj=company.cnpj) }}" class="btn btn-custom">Ver Detalhes</a>
                     </div>
                 </div>
             </div>
@@ -152,7 +154,7 @@
                         Usuário: {{ pedido.usuario_nome }}<br>
                         Data do Pedido: {{ pedido.data }}
                         
-                        <form action="{{ url_for('alterar_status', pedido_id=pedido.id, cnpj=empresa.cnpj) }}" method="POST" class="mt-2">
+                        <form action="{{ url_for('alterar_status', pedido_id=pedido.id, cnpj=company.cnpj) }}" method="POST" class="mt-2">
                             <select name="novo_status" class="form-select mb-2" required>
                                 <option value="pendente" {% if pedido.status == 'pendente' %}selected{% endif %}>Pendente</option>
                                 <option value="aceito" {% if pedido.status == 'aceito' %}selected{% endif %}>Aceito</option>
@@ -167,7 +169,7 @@
                             </div>
                             <button type="submit" class="btn btn-success btn-sm">Enviar Comunicado</button>
                         </form>
-                        <form action="{{ url_for('excluir_pedido_view', pedido_id=pedido.id, cnpj=empresa.cnpj) }}" method="POST" class="mt-2">
+                        <form action="{{ url_for('excluir_pedido_view', pedido_id=pedido.id, cnpj=company.cnpj) }}" method="POST" class="mt-2">
                             <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
                         </form>
                         <a href="{{ url_for('visualizar_pedido', pedido_id=pedido.id) }}" 
@@ -182,7 +184,7 @@
         </section>
 
         <div class="btn-container">
-            <a href="{{ url_for('editar_empresa_perfil', cnpj=empresa.cnpj) }}" class="btn btn-secondary btn-custom">Editar Dados</a>
+            <a href="{{ url_for('editar_empresa_perfil', cnpj=company.cnpj) }}" class="btn btn-secondary btn-custom">Editar Dados</a>
             <a href="{{ url_for('pagina_inicial') }}" class="btn btn-secondary btn-custom">Voltar para a Tela Inicial</a>
         </div>
     </main>
@@ -192,7 +194,7 @@
             button.addEventListener('click', function () {
                 const target = this.dataset.target;
                 if (target === '#cisterna-details') {
-                    window.location.href = '{{ url_for("detalhes_cisterna", cnpj=empresa.cnpj) }}';
+                    window.location.href = '{{ url_for("detalhes_cisterna", cnpj=company.cnpj) }}'; // Corrigido aqui também
                 } else {
                     const targetElement = document.querySelector(target);
                     targetElement.style.display = targetElement.style.display === 'none' || targetElement.style.display === '' ? 'block' : 'none';
