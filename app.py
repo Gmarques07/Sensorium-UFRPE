@@ -8,10 +8,10 @@ import cv2
 import numpy as np
 from werkzeug.utils import secure_filename
 from time import time
-
-
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 from functools import wraps
+from flask import render_template, request, redirect, url_for, flash, session
+from flask import session, abort
 
 
 app = Flask(__name__)
@@ -26,9 +26,10 @@ login_manager.login_message_category = 'warning'
 
 db_config = {
     'user': 'root',
-    'password': '',
-    'host': 'localhost',
-    'database': 'banco_de_dados'
+    'password': 'osOvMtonkwxcbEphriXeJGPKdOxSfAzl',
+    'host': 'ballast.proxy.rlwy.net',
+    'port': 56724,
+    'database': 'railway'
 }
 
 def get_db_connection():
@@ -1571,6 +1572,31 @@ def internal_server_error(e):
 def pagina_nao_encontrada(error):
     return render_template('404.html', current_year=datetime.now().year), 404
 
+@app.route('/admin/login', methods=['GET', 'POST'])
+def login_admin():
+    if request.method == 'POST':
+        usuario = request.form['usuario']
+        senha = request.form['senha']
+
+        if usuario == 'admin' and senha == 'suasenha':
+            session['admin_logged_in'] = True
+            flash('Login de administrador realizado com sucesso!', 'success')
+            return redirect(url_for('admin_dashboard'))
+        else:
+            flash('Usuário ou senha inválidos.', 'danger')
+    return render_template('login_admin.html')
+
+@app.route('/admin/dashboard')
+def admin_dashboard():
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('login_admin'))
+    return render_template('admin_dashboard.html')
+
+@app.route('/admin/logout')
+def admin_logout():
+    session.pop('admin_logged_in', None)
+    flash('Logout realizado com sucesso!', 'success')
+    return redirect(url_for('login_admin'))
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
