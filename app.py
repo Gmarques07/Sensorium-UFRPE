@@ -954,7 +954,6 @@ def editar_empresa_perfil(cnpj):
 def perfil_empresa(cnpj): 
     print(f"Entrou na rota perfil_empresa para CNPJ: {cnpj}")
     try:
-       
         if not current_user.is_an_empresa():
             print(f"current_user não é uma empresa. Tipo: {type(current_user)}")
             flash('Acesso não autorizado.', 'danger')
@@ -962,13 +961,35 @@ def perfil_empresa(cnpj):
             return redirect(url_for('login_usuario')) 
         
         print(f"current_user é uma empresa. Nome: {current_user.nome}, CNPJ: {current_user.cnpj}")
-      
-        return render_template('perfil_empresa.html', company=current_user) 
+        
+
+        print("Buscando dados da cisterna...")
+        ph_atual, historico_ph, nivel_atual, historico_nivel = buscar_dados_cisterna(current_user.id)
+        print("Buscando notificações...")
+        notificacoes = buscar_notificacoes(current_user.id)
+        print("Buscando comunicados gerais...")
+        comunicados_gerais = buscar_comunicado_geral()
+        print("Buscando pedidos...")
+        pedidos = buscar_pedidos_por_empresa(current_user.id)
+        print("Tudo pronto para renderizar o template.")
+
+        return render_template(
+            'perfil_empresa.html',
+            company=current_user,
+            ph_atual=ph_atual,
+            nivel_atual=nivel_atual,
+            historico_ph=historico_ph,
+            historico_nivel=historico_nivel,
+            notificacoes=notificacoes,
+            comunicados_gerais=comunicados_gerais,
+            pedidos=pedidos,
+        )
     except Exception as e:
         print(f"ERRO CRÍTICO ao renderizar perfil_empresa: {e}") 
         flash('Ocorreu um erro ao carregar o perfil da empresa. Tente novamente.', 'danger')
         logout_user() 
         return redirect(url_for('login_empresa'))
+
 
 @app.route('/dashboard_usuario/<cpf>', methods=['GET'])
 @login_required 

@@ -1,209 +1,634 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Perfil da Empresa - Sensorium</title>
-
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
     <style>
+        :root {
+            --primary-blue: #1565C0;
+            --secondary-blue: #4FC3F7;
+            --dark-blue: #003366;
+            --light-bg: #f1f3f7;
+            --card-bg: #f9fafc;
+        }
         body {
-            background-color: #F8F9FA;
             font-family: 'Poppins', sans-serif;
+            background: var(--light-bg);
         }
-        .topBar {
-            background-color: #1565C0;
-            color: white;
-            font-size: 2rem;
-            font-weight: bold;
-            text-align: center;
-            padding: 1rem 0;
+        .sidebar {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 2rem 1rem;
         }
-        .card {
-            border-radius: 15px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            border: none;
+        .sidebar .nav-link {
+            color: #fff;
+            margin-bottom: 1rem;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: background 0.2s;
+            cursor: pointer;
         }
-        .card-body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+        .sidebar .nav-link.active, .sidebar .nav-link:hover {
+            background: rgba(255,255,255,0.18);
+            color: #fff;
         }
-        .icon-container {
-            font-size: 3rem;
-            color: #1565C0;
+        .content {
+            padding: 2rem;
+            background: var(--light-bg);
+            min-height: 100vh;
+        }
+        .section-panel {
+            display: none;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(21, 101, 192, 0.08);
+            padding: 2rem 2rem 1.5rem 2rem;
+            margin-bottom: 2rem;
+            color: var(--dark-blue);
+        }
+        .section-panel.active {
+            display: block;
+            animation: fadeIn 0.4s;
+        }
+        @keyframes fadeIn {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+        .dashboard-icon {
+            font-size: 2.3rem;
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+        }
+        .logout-link {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 500;
+            margin-top: 2rem;
+            display: inline-block;
+        }
+        .logout-link:hover {
+            text-decoration: underline;
+            color: #e57373;
+        }
+        .table thead {
+            background: var(--secondary-blue);
+            color: #fff;
+        }
+        .table-striped>tbody>tr:nth-of-type(odd)>* {
+            background-color: #f2f6fa;
+        }
+        .btn-outline-primary {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+        .btn-outline-primary:hover {
+            background: var(--primary-blue);
+            color: #fff;
         }
         .btn-custom {
-            padding: 0.75rem 1.5rem;
-            font-size: 1rem;
-            border-radius: 25px;
-            background-color: #1565C0;
+            background-color: var(--primary-blue);
             color: white;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
             border: none;
         }
         .btn-custom:hover {
-            background-color: #4FC3F7;
+            background-color: var(--secondary-blue);
+            color: #fff;
+            transform: translateY(-2px);
         }
-        .details-section {
-            display: none;
-        }
-        .btn-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 20px;
+        @media (max-width: 767px) {
+            .sidebar {
+                min-height: auto;
+                padding: 1rem 0.5rem;
+            }
+            .content {
+                padding: 1rem;
+            }
+            .section-panel {
+                padding: 1rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="topBar">Sensorium</div>
-    <h1 class="text-center mt-4 mb-4">Perfil da Empresa</h1>
-    
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            <div class="alert alert-{{ category }} alert-dismissible fade show text-center mt-3" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <!-- Sidebar -->
+            <div class="col-auto sidebar d-flex flex-column align-items-start">
+                <a href="{{ url_for('pagina_inicial') }}" class="mb-4 text-decoration-none text-white">
+                    <i class="bi bi-droplet fs-1"></i>
+                    <span class="fs-4 ms-2">Sensorium</span>
+                </a>
+                <nav class="nav flex-column w-100">
+                    <a class="nav-link active" onclick="showSection(event, 'empresa-info')"><i class="bi bi-building me-2"></i>Informações</a>
+                    <a class="nav-link" onclick="showSection(event, 'avisos')"><i class="bi bi-bell me-2"></i>Avisos</a>
+                    <a class="nav-link" onclick="showSection(event, 'pedidos')"><i class="bi bi-box-seam me-2"></i>Pedidos</a>
+                    <a class="nav-link" onclick="showSection(event, 'cisterna')"><i class="bi bi-water me-2"></i>Cisterna</a>
+                </nav>
+                <a href="{{ url_for('logout') }}" class="logout-link mt-auto"><i class="bi bi-box-arrow-right me-2"></i>Sair</a>
             </div>
+            <!-- Main Content -->
+            <div class="col content">
+                <h3 class="mb-4 text-primary">Bem-vindo(a), {{ company.nome }}!</h3>
+                <!-- Informações da Empresa (já visível) -->
+                <div id="empresa-info" class="section-panel active">
+                    <div class="dashboard-icon"><i class="bi bi-building"></i></div>
+                    <h4 class="mb-3">Informações da Empresa</h4>
+                    <p><strong>Nome:</strong> {{ company.nome }}</p>
+                    <p><strong>CNPJ:</strong> {{ company.cnpj }}</p>
+                    <p><strong>Email:</strong> {{ company.email }}</p>
+                    <p><strong>Endereço:</strong> {{ company.endereco }}</p>
+                    <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditarEmpresa">
+                        <i class="bi bi-pencil me-2"></i>Editar Dados
+                    </button>
+                </div>
+                
+<!-- Seção Avisos Gerais -->
+<div id="avisos" class="section-panel">
+    <div class="dashboard-icon"><i class="bi bi-bell-fill"></i></div>
+    <h4 class="mb-3">Avisos Gerais</h4>
+    <ul class="list-group">
+        {% for comunicado in comunicados_gerais %}
+            <li class="list-group-item">
+                <strong>{{ comunicado.assunto }}</strong><br>
+                {{ comunicado.mensagem }}<br>
+                <small>Data: {{ comunicado.data }}</small>
+                <form action="{{ url_for('excluir_comunicado_geral_view', comunicado_id=comunicado.id) }}" method="POST">
+                    <button type="submit" class="btn btn-danger btn-sm mt-2">Excluir</button>
+                </form>
+            </li>
+        {% else %}
+            <li class="list-group-item">Nenhum aviso enviado.</li>
         {% endfor %}
-    {% endif %}
-{% endwith %}
+    </ul>
+    <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#modalCriarAviso">
+        <i class="bi bi-plus-circle me-2"></i>Criar Novo Aviso
+    </button>
+</div>
 
-    <main class="container dashboard-section">
-        <div class="row g-4 mb-4">
-            <div class="col-md-6">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <div class="icon-container mb-3"><i class="bi bi-building"></i></div>
-                        <h5 class="card-title">Informações da Empresa</h5>
-                        <button class="btn btn-custom toggle-details" data-target="#informacoes-empresa">Ver Detalhes</button>
-                        <div id="informacoes-empresa" class="details-section mt-3">
-                            <p><strong>Nome:</strong> {{ company.nome }}</p>
-                            <p><strong>CNPJ:</strong> {{ company.cnpj }}</p>
-                            <p><strong>Email:</strong> {{ company.email }}</p>
-                            <p><strong>Endereço:</strong> {{ company.endereco }}</p>
+<!-- Modal Criar Aviso -->
+<div class="modal fade" id="modalCriarAviso" tabindex="-1" aria-labelledby="modalCriarAvisoLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="{{ url_for('criar_comunicado') }}" method="POST">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalCriarAvisoLabel">Criar Aviso Geral</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="assunto" class="form-label">Assunto do Aviso:</label>
+            <input type="text" class="form-control" id="assunto" name="assunto" placeholder="Digite o assunto do aviso" required>
+          </div>
+          <div class="mb-3">
+            <label for="mensagem" class="form-label">Mensagem:</label>
+            <textarea class="form-control" id="mensagem" name="mensagem" placeholder="Escreva a mensagem do aviso..." rows="4" required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Enviar Aviso</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+                <!-- Pedidos Recentes -->
+                <div id="pedidos" class="section-panel">
+                    <div class="dashboard-icon"><i class="bi bi-box-seam"></i></div>
+                    <h4 class="mb-3">Pedidos Recentes</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Descrição</th>
+                                    <th>Quantidade</th>
+                                    <th>Status</th>
+                                    <th>Cliente</th>
+                                    <th>Data</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pedido in pedidos %}
+                                    <tr>
+                                        <td>{{ pedido.descricao }}</td>
+                                        <td>{{ pedido.quantidade }}</td>
+                                        <td>
+                                            <span class="badge 
+                                                {% if pedido.status == 'pendente' %}bg-warning
+                                                {% elif pedido.status == 'aceito' %}bg-success
+                                                {% elif pedido.status == 'cancelado' %}bg-danger
+                                                {% else %}bg-secondary{% endif %}">
+                                                {{ pedido.status }}
+                                            </span>
+                                        </td>
+                                        <td>{{ pedido.usuario_nome }}</td>
+                                        <td>{{ pedido.data }}</td>
+                                        <td>
+                                            <a href="{{ url_for('visualizar_pedido', pedido_id=pedido.id) }}" class="btn btn-info btn-sm mb-1">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <form action="{{ url_for('alterar_status', pedido_id=pedido.id, cnpj=company.cnpj) }}" method="POST" class="d-inline">
+                                                <select name="novo_status" class="form-select form-select-sm d-inline w-auto" required>
+                                                    <option value="pendente" {% if pedido.status == 'pendente' %}selected{% endif %}>Pendente</option>
+                                                    <option value="aceito" {% if pedido.status == 'aceito' %}selected{% endif %}>Aceito</option>
+                                                    <option value="cancelado" {% if pedido.status == 'cancelado' %}selected{% endif %}>Cancelado</option>
+                                                </select>
+                                                <button type="submit" class="btn btn-primary btn-sm">Alterar</button>
+                                            </form>
+                                            <form action="{{ url_for('excluir_pedido_view', pedido_id=pedido.id, cnpj=company.cnpj) }}" method="POST" class="d-inline">
+                                                <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="6" class="text-center">Nenhum pedido encontrado.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="cisterna" class="section-panel">
+    <h4 class="mb-4 text-primary"><i class="bi bi-water me-2"></i>Detalhes da Cisterna</h4>
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">pH da Água</div>
+                <div class="card-body">
+                    <div class="ph-info">
+                        <div>
+                            <h5 class="card-title">pH Atual</h5>
+                            <div class="ph-value" id="ph-atual">{{ ph_atual.ph if ph_atual else 'N/A' }}</div>
+                            <p class="card-text text-muted">Última atualização: <span id="ph-data">{{ (ph_atual.data if ph_atual and ph_atual.data else '') | dateformat('%d/%m/%Y %H:%M') }}</span></p>
+                        </div>
+                        <div>
+                            {% if ph_atual and ph_atual.ph is not none %}
+                                {% if ph_atual.ph < 6.5 %}
+                                    <span class="ph-classification ph-acido">Ácido</span>
+                                {% elif ph_atual.ph > 8.5 %}
+                                    <span class="ph-classification ph-alcalino">Alcalino</span>
+                                {% else %}
+                                    <span class="ph-classification ph-neutro">Neutro</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="ph-classification">Sem Classificação</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="phChart"></canvas>
+                    </div>
+                    <div class="ph-levels">
+                        <h6>Níveis de pH e suas implicações:</h6>
+                        <div class="ph-level-item ph-level-safe">
+                            <strong>6.5 - 8.5:</strong> Nível seguro para consumo humano
+                        </div>
+                        <div class="ph-level-item ph-level-caution">
+                            <strong>6.0 - 6.5 ou 8.5 - 9.0:</strong> Aceitável, mas requer atenção
+                        </div>
+                        <div class="ph-level-item ph-level-danger">
+                            <strong>&lt; 6.0 ou &gt; 9.0:</strong> Risco para saúde e infraestrutura
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <div class="icon-container mb-3"><i class="bi bi-bell-fill"></i></div>
-                        <h5 class="card-title">Avisos Gerais</h5>
-                        <button class="btn btn-custom toggle-details" data-target="#avisos">Ver Detalhes</button>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">Nível de Água</div>
+                <div class="card-body">
+                    <h5 class="card-title">Status Atual</h5>
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <span class="status-badge {% if nivel_atual and nivel_atual.status == 'ALTO' %}status-alto{% else %}status-baixo{% endif %}">
+                                {{ nivel_atual.status if nivel_atual else 'N/A' }}
+                            </span>
+                        </div>
+                        <div>
+                            <p class="mb-0">Boia: {% if nivel_atual and nivel_atual.boia == 1 %}Ativada{% else %}Desativada{% endif %}</p>
+                            <p class="text-muted mb-0">Última atualização: {{ (nivel_atual.data if nivel_atual and nivel_atual.data else '') | dateformat('%d/%m/%Y %H:%M') }}</p>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <h6>Histórico de Níveis de Água</h6>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for nivel in historico_nivel %}
+                                <tr>
+                                    <td>{{ nivel.data|dateformat('%d/%m/%Y %H:%M') }}</td>
+                                    <td>
+                                        <span class="status-badge {% if nivel.status == 'ALTO' %}status-alto{% else %}status-baixo{% endif %}">
+                                            {{ nivel.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="row g-4">
-            <div class="col-md-6">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <div class="icon-container mb-3"><i class="bi bi-box-seam"></i></div>
-                        <h5 class="card-title">Pedidos Realizados</h5>
-                        <button class="btn btn-custom toggle-details" data-target="#pedidos">Ver Detalhes</button>
-                    </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">Histórico de Medições de pH</div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>pH</th>
+                                <th>Classificação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for medicao in historico_ph %}
+                            <tr>
+                                <td>{{ medicao.data|dateformat('%d/%m/%Y %H:%M') }}</td>
+                                <td>{{ medicao.ph }}</td>
+                                <td>
+                                    {% if medicao.ph < 6.5 %}
+                                        <span class="ph-classification ph-acido">Ácido</span>
+                                    {% elif medicao.ph > 8.5 %}
+                                        <span class="ph-classification ph-alcalino">Alcalino</span>
+                                    {% else %}
+                                        <span class="ph-classification ph-neutro">Neutro</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <div class="icon-container mb-3"><i class="bi bi-water"></i></div>
-                        <h5 class="card-title">Informações da Cisterna</h5>
-                        <a href="{{ url_for('detalhes_cisterna', cnpj=company.cnpj) }}" class="btn btn-custom">Ver Detalhes</a>
-                    </div>
-                </div>
-            </div>
-            
-        <section id="avisos" class="mt-5 details-section">
-            <h3>Avisos Gerais</h3>
-            <ul class="list-group mt-3">
-                {% for comunicado in comunicados_gerais %}
-                    <li class="list-group-item">
-                        <h5>{{ comunicado.assunto }}</h5>
-                        {{ comunicado.mensagem }}
-                        <small>Data: {{ comunicado.data }}</small>
-                        <form action="{{ url_for('excluir_comunicado_geral_view', comunicado_id=comunicado.id) }}" method="POST">
-                            <button type="submit" class="btn btn-danger btn-sm mt-2">Excluir</button>
-                        </form>
-                    </li>
-                {% else %}
-                    <li class="list-group-item">Nenhum aviso enviado.</li>
-                {% endfor %}
-            </ul>
-            <a href="{{ url_for('criar_comunicado') }}" class="btn btn-primary mt-3">Criar Novo Aviso</a>
-        </section>
-
-        <section id="pedidos" class="mt-5 details-section">
-            <h3>Pedidos Realizados</h3>
-            <ul class="list-group mt-3">
-                {% for pedido in pedidos %}
-                    <li class="list-group-item">
-                        {{ pedido.descricao }} - Quantidade: {{ pedido.quantidade }} - Status: {{ pedido.status }}<br>
-                        Usuário: {{ pedido.usuario_nome }}<br>
-                        Data do Pedido: {{ pedido.data }}
-                        
-                        <form action="{{ url_for('alterar_status', pedido_id=pedido.id, cnpj=company.cnpj) }}" method="POST" class="mt-2">
-                            <select name="novo_status" class="form-select mb-2" required>
-                                <option value="pendente" {% if pedido.status == 'pendente' %}selected{% endif %}>Pendente</option>
-                                <option value="aceito" {% if pedido.status == 'aceito' %}selected{% endif %}>Aceito</option>
-                                <option value="cancelado" {% if pedido.status == 'cancelado' %}selected{% endif %}>Cancelado</option>
-                            </select>
-                            <button type="submit" class="btn btn-primary btn-sm">Alterar Status</button>
-                        </form>
-                        <form action="{{ url_for('enviar_comunicado_usuario', pedido_id=pedido.id) }}" method="POST">
-                            <div class="form-group">
-                                <label for="mensagem">Mensagem</label>
-                                <textarea name="mensagem" id="mensagem" class="form-control" placeholder="Digite sua mensagem" required></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-success btn-sm">Enviar Comunicado</button>
-                        </form>
-                        <form action="{{ url_for('excluir_pedido_view', pedido_id=pedido.id, cnpj=company.cnpj) }}" method="POST" class="mt-2">
-                            <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
-                        </form>
-                        <a href="{{ url_for('visualizar_pedido', pedido_id=pedido.id) }}" 
-                           class="btn btn-info btn-sm mt-2">
-                            <i class="bi bi-eye me-1"></i> Ver Detalhes do Pedido
-                        </a>
-                    </li>
-                {% else %}
-                    <li class="list-group-item">Nenhum pedido encontrado.</li>
-                {% endfor %}
-            </ul>
-        </section>
-
-        <div class="btn-container">
-            <a href="{{ url_for('editar_empresa_perfil', cnpj=company.cnpj) }}" class="btn btn-secondary btn-custom">Editar Dados</a>
-            <a href="{{ url_for('pagina_inicial') }}" class="btn btn-secondary btn-custom">Voltar para a Tela Inicial</a>
         </div>
-    </main>
+    </div>
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    Notificações de Manutenção
+                </div>
+                <div class="card-body">
+                    {% if notificacoes %}
+                    <ul class="list-group">
+                        {% for notificacao in notificacoes %}
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">{{ notificacao.mensagem }}</h6>
+                                        <small class="text-muted">Data: {{ (notificacao.data_criacao if notificacao and notificacao.data_criacao else '') | dateformat('%d/%m/%Y %H:%M') }}</small>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-primary btn-sm me-2" onclick="window.location.href='{{ url_for('rachaduras', pedido_id=notificacao.pedido_id) }}'">Ver Pedido</button>
+                                        <button class="btn btn-danger btn-sm" onclick="limparNotificacao({{ notificacao.id }})">Limpar</button>
+                                    </div>
+                                </div>
+                                {% for imagem in notificacao.imagens %}
+                                    <div class="mt-3">
+                                        <h6>Imagens Processadas:</h6>
+                                        <div class="mb-2">
+                                            <img src="{{ url_for('static', filename=imagem.caminho) }}" alt="Imagem Processada" style="max-width: 100%; height: auto;">
+                                            <p class="mb-0"><strong>Tipo:</strong> {{ imagem.tipo_imagem }}</p>
+                                            {% if imagem.tipo_imagem == "rachadura" %}
+                                                {% if imagem.tem_rachadura %}
+                                                    <p class="text-danger"><strong>Rachaduras detectadas!</strong></p>
+                                                {% else %}
+                                                    <p class="text-success"><strong>Nenhuma rachadura detectada.</strong></p>
+                                                {% endif %}
+                                            {% elif imagem.tipo_imagem == "objeto" %}
+                                                <p class="text-info"><strong>Objeto detectado!</strong></p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                        <p class="text-center">Nenhuma notificação de manutenção no momento.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
     
+    <div class="modal fade" id="pedidoModal" tabindex="-1" aria-labelledby="pedidoModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="pedidoModalLabel">Detalhes do Pedido</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" id="pedidoModalBody">
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+    <!-- Modal Editar Empresa -->
+    <div class="modal fade" id="modalEditarEmpresa" tabindex="-1" aria-labelledby="modalEditarEmpresaLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form action="{{ url_for('editar_empresa_perfil', cnpj=company.cnpj) }}" method="post">
+            <div class="modal-header">
+              <h5 class="modal-title" id="modalEditarEmpresaLabel">Editar Dados da Empresa</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="nome" class="form-label">Nome da Empresa:</label>
+                <input type="text" id="nome" name="nome" class="form-control" value="{{ company.nome }}" required>
+              </div>
+              <div class="mb-3">
+                <label for="endereco" class="form-label">Endereço:</label>
+                <input type="text" id="endereco" name="endereco" class="form-control" value="{{ company.endereco }}" required>
+              </div>
+              <div class="mb-3">
+                <label for="email" class="form-label">E-mail:</label>
+                <input type="email" id="email" name="email" class="form-control" value="{{ company.email }}" required>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <script>
-        document.querySelectorAll('.toggle-details').forEach(button => {
-            button.addEventListener('click', function () {
-                const target = this.dataset.target;
-                if (target === '#cisterna-details') {
-                    window.location.href = '{{ url_for("detalhes_cisterna", cnpj=company.cnpj) }}'; // Corrigido aqui também
-                } else {
-                    const targetElement = document.querySelector(target);
-                    targetElement.style.display = targetElement.style.display === 'none' || targetElement.style.display === '' ? 'block' : 'none';
-                    this.textContent = targetElement.style.display === 'block' ? 'Ocultar Detalhes' : 'Ver Detalhes';
-                }
-            });
-        });
+        function showSection(event, sectionId) {
+            document.querySelectorAll('.sidebar .nav-link').forEach(link => link.classList.remove('active'));
+            document.querySelectorAll('.section-panel').forEach(panel => panel.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.getElementById(sectionId).classList.add('active');
+        }
+        
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('phChart').getContext('2d');
+    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, 'rgba(21, 101, 192, 0.6)');
+    gradient.addColorStop(1, 'rgba(21, 101, 192, 0.1)');
+    const datas = [{% for item in historico_ph %}"{{ item.data }}",{% endfor %}];
+    const valores = [{% for item in historico_ph %}{{ item.ph }},{% endfor %}];
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: datas,
+        datasets: [{
+          label: 'Nível de pH',
+          data: valores,
+          borderColor: '#1565C0',
+          backgroundColor: gradient,
+          borderWidth: 3,
+          pointBackgroundColor: '#1565C0',
+          pointBorderColor: '#fff',
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            labels: {
+              font: {
+                family: "'Poppins', sans-serif",
+                size: 14
+              }
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            titleFont: {
+              family: "'Poppins', sans-serif",
+              size: 14
+            },
+            bodyFont: {
+              family: "'Poppins', sans-serif",
+              size: 13
+            },
+            padding: 10,
+            cornerRadius: 6
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: false,
+            grid: {
+              color: 'rgba(200, 200, 200, 0.2)'
+            },
+            ticks: {
+              font: {
+                family: "'Poppins', sans-serif"
+              }
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              font: {
+                family: "'Poppins', sans-serif"
+              },
+              maxRotation: 45,
+              minRotation: 45
+            }
+          }
+        },
+        animation: {
+          duration: 2000,
+          easing: 'easeOutQuart'
+        }
+      }
+    });
+  });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var pedidoModal = document.getElementById('pedidoModal')
+        if (pedidoModal) {
+            pedidoModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget
+                var pedidoId = button.getAttribute('data-pedido-id')
+                var modalBody = pedidoModal.querySelector('.modal-body')
+                fetch('/api/pedido/' + pedidoId)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            modalBody.innerHTML = `<p>Erro ao carregar detalhes do pedido: ${data.error}</p>`;
+                            return;
+                        }
+                        modalBody.innerHTML = `
+                            <p><strong>Descrição:</strong> ${data.descricao}</p>
+                            <p><strong>Quantidade:</strong> ${data.quantidade}</p>
+                            <p><strong>Status:</strong> ${data.status}</p>
+                            <p><strong>Data:</strong> ${data.data}</p>
+                            <p><strong>Solicitante:</strong> ${data.usuario_nome}</p>
+                        `;
+                    })
+                    .catch(error => {
+                        modalBody.innerHTML = '<p>Erro ao carregar detalhes do pedido.</p>';
+                        console.error('Erro ao buscar API de pedido:', error);
+                    });
+            });
+        }
+    });
+</script>
+<script>
+    function limparNotificacao(notificacaoId) {
+        if (confirm("Tem certeza que deseja limpar esta notificação?")) {
+            fetch("{{ url_for('limpar_notificacao', notificacao_id=0) }}".replace("0", notificacaoId), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert("Erro ao limpar notificação: " + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert("Erro ao limpar notificação.");
+            });
+        }
+    }
+</script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
