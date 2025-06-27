@@ -952,7 +952,6 @@ def editar_empresa_perfil(cnpj):
 @app.route('/perfil_empresa/<cnpj>') 
 @login_required
 def perfil_empresa(cnpj): 
-    print(f"Entrou na rota perfil_empresa para CNPJ: {cnpj}")
     try:
         if not current_user.is_an_empresa():
             print(f"current_user não é uma empresa. Tipo: {type(current_user)}")
@@ -960,18 +959,11 @@ def perfil_empresa(cnpj):
             logout_user() 
             return redirect(url_for('login_usuario')) 
         
-        print(f"current_user é uma empresa. Nome: {current_user.nome}, CNPJ: {current_user.cnpj}")
-        
-
-        print("Buscando dados da cisterna...")
         ph_atual, historico_ph, nivel_atual, historico_nivel = buscar_dados_cisterna(current_user.id)
-        print("Buscando notificações...")
         notificacoes = buscar_notificacoes(current_user.id)
-        print("Buscando comunicados gerais...")
         comunicados_gerais = buscar_comunicado_geral()
-        print("Buscando pedidos...")
         pedidos = buscar_pedidos_por_empresa(current_user.id)
-        print("Tudo pronto para renderizar o template.")
+        
 
         return render_template(
             'perfil_empresa.html',
