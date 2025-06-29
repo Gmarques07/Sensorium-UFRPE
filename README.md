@@ -1,4 +1,4 @@
-# PIEC1
+# PIEC3
 
 Este projeto é referente à disciplina de Projeto Interdisciplinar em Engenharia da Computação 1.  
 Equipe composta por: Cauã Venceslau, Gabriel Alves, João Victor Bione, Luís Felipe, Pedro Ivo Novaes, Pedro Marques, Vinícius Rodrigues.
