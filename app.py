@@ -12,6 +12,11 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, curren
 from functools import wraps
 from flask import render_template, request, redirect, url_for, flash, session
 from flask import session, abort
+from typing import Dict, Any, Optional, Union, List, TypedDict, cast, TypeVar
+from mysql.connector.types import RowType, MySQLConvertibleType, RowItemType
+from decimal import Decimal
+from datetime import date, timedelta
+from mysql.connector.cursor import MySQLCursorDict
 
 
 app = Flask(__name__)
@@ -20,7 +25,7 @@ app.secret_key = os.urandom(24)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login_usuario' 
+login_manager.login_view = 'login_usuario'  # type: ignore
 login_manager.login_message = 'Você precisa estar logado para acessar esta página.'
 login_manager.login_message_category = 'warning'
 
@@ -131,7 +136,7 @@ def excluir_imagem(imagem_id):
         cursor = conn.cursor(dictionary=True)
         query = "SELECT caminho FROM imagens_pedido WHERE id = %s"
         cursor.execute(query, (imagem_id,))
-        imagem = cursor.fetchone()
+        imagem: Optional[Dict[str, Any]] = cursor.fetchone()
         
         if not imagem:
             cursor.close()
@@ -144,10 +149,11 @@ def excluir_imagem(imagem_id):
         cursor.close()
         conn.close()
         
-        caminho_completo = os.path.join('static', imagem['caminho'])
-        if os.path.exists(caminho_completo):
-            os.remove(caminho_completo)
-            
+        if imagem and isinstance(imagem, dict) and 'caminho' in imagem:
+            caminho_str = str(imagem.get('caminho', ''))
+            caminho_completo = os.path.join('static', caminho_str)
+            if os.path.exists(caminho_completo):
+                os.remove(caminho_completo)
         return True
     except Exception as e:
         print(f"Erro ao excluir imagem: {e}")
@@ -157,14 +163,19 @@ def notificar_rachadura(pedido_id, imagem_id, mensagem):
     """Cria uma notificação para a empresa sobre rachaduras detectadas"""
     try:
         conn = get_db_connection()
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
         
         query_pedido = "SELECT cpf_usuario, descricao FROM pedidos WHERE id = %s"
         cursor.execute(query_pedido, (pedido_id,))
-        pedido = cursor.fetchone()
+        pedido: Optional[Dict[str, Any]] = cursor.fetchone()
         
+        if not pedido:
+            cursor.close()
+            conn.close()
+            return False
+            
         assunto = f"ALERTA: Rachaduras detectadas no pedido #{pedido_id}"
-        mensagem_completa = f"{mensagem}\n\nPedido: {pedido['descricao']}\nImagem ID: {imagem_id}"
+        mensagem_completa = f"{mensagem}\n\nPedido: {pedido.get('descricao', '')}\nImagem ID: {imagem_id}"
         
         query = "INSERT INTO comunicados_gerais (assunto, mensagem) VALUES (%s, %s)"
         cursor.execute(query, (assunto, mensagem_completa))
@@ -381,35 +392,40 @@ def editar_usuario(cpf_atual, nome=None, email=None, endereco=None, senha=None, 
         if conn:
             conn.close()
 
-def editar_empresa(cnpj, nome=None, endereco=None, telefone=None, senha=None):
-    conn = get_db_connection()
-    cursor = conn.cursor()
+def editar_empresa(cnpj: str, nome: Optional[str] = None, endereco: Optional[str] = None, senha: Optional[str] = None) -> bool:
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
 
-    set_values = []
-    query = "UPDATE empresas SET "
+        set_values = []
+        params = []
+        query = "UPDATE empresas SET "
 
-    if nome:
-        query += "nome = %s, "
-        set_values.append(nome)
-    if endereco:
-        query += "endereco = %s, "
-        set_values.append(endereco)
-    if telefone:
-        query += "telefone = %s, "
-        set_values.append(telefone)
-    if senha:
-        query += "senha = %s, "
-        set_values.append(senha)
+        if nome:
+            set_values.append("nome = %s")
+            params.append(nome)
+        if endereco:
+            set_values.append("endereco = %s")
+            params.append(endereco)
+        if senha:
+            set_values.append("senha = %s")
+            params.append(generate_password_hash(senha))
 
-    query = query.rstrip(', ') 
+        if not set_values:
+            return False
 
-    query += " WHERE cnpj = %s"
-    set_values.append(cnpj)
+        query += ", ".join(set_values)
+        query += " WHERE cnpj = %s"
+        params.append(cnpj)
 
-    cursor.execute(query, tuple(set_values))
-    conn.commit()
-    cursor.close()
-    conn.close()
+        cursor.execute(query, tuple(params))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return True
+    except Exception as e:
+        print(f"Erro ao editar empresa: {e}")
+        return False
 
 def aceitar_pedido(pedido_id):
     conn = get_db_connection()
@@ -461,7 +477,7 @@ def buscar_pedidos_por_empresa(cnpj):
             ORDER BY p.data DESC
         """
         cursor.execute(query, (cnpj,))
-        pedidos = cursor.fetchall()
+        pedidos = [convert_row_to_dict(row) for row in cursor.fetchall()]
         cursor.close()
         conn.close()
         return pedidos
@@ -576,22 +592,32 @@ def criar_notificacao(pedido_id, mensagem):
     cursor.close()
     conn.close()
 
+# Definindo tipos personalizados para melhor tipagem
+class PedidoDict(TypedDict, total=False):
+    id: int
+    descricao: str
+    quantidade: int
+    status: str
+    data: Optional[datetime]
+    usuario_nome: str
+    cpf_usuario: str
+    cnpj_empresa: str
+
+class NotificacaoDict(TypedDict, total=False):
+    id: int
+    pedido_id: int
+    mensagem: str
+    data_criacao: datetime
+    cpf_usuario: str
+    cnpj_empresa: str
+
 def buscar_notificacoes(id_entidade):
-    """
-    Busca as notificações associadas a um ID de usuário ou empresa.
-    Para empresa, buscará notificações de pedidos relacionados ao CNPJ.
-    Para usuário, buscará notificações relacionadas ao CPF.
-    
-    :param id_entidade: ID do usuário ou CNPJ da empresa.
-    :return: Lista de dicionários contendo notificações e imagens processadas.
-    """
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     
-    notificacoes = []
+    notificacoes: List[Dict[str, Any]] = []
 
     if isinstance(id_entidade, str) and len(id_entidade) == 14:
-
         query_notificacoes = """
             SELECT n.* FROM notificacoes n
             JOIN pedidos p ON n.pedido_id = p.id
@@ -600,19 +626,19 @@ def buscar_notificacoes(id_entidade):
             LIMIT 10
         """
         cursor.execute(query_notificacoes, (id_entidade,))
-        notificacoes = cursor.fetchall()
+        notificacoes = convert_rows_to_dicts(cursor.fetchall())
         
-        for notificacao in notificacoes:
+        for notif in notificacoes:
             query_imagens = """
                 SELECT caminho, tipo_imagem, tem_rachadura
                 FROM imagens_pedido
                 WHERE pedido_id = %s
             """
-            cursor.execute(query_imagens, (notificacao['pedido_id'],))
-            notificacao['imagens'] = cursor.fetchall()
+            pedido_id = cast(int, notif.get('pedido_id', 0))
+            cursor.execute(query_imagens, (pedido_id,))
+            notif['imagens'] = convert_rows_to_dicts(cursor.fetchall())
 
     elif isinstance(id_entidade, int): 
-
         query_notificacoes = """
             SELECT n.* FROM notificacoes n
             JOIN pedidos p ON n.pedido_id = p.id
@@ -622,16 +648,17 @@ def buscar_notificacoes(id_entidade):
             LIMIT 10
         """
         cursor.execute(query_notificacoes, (id_entidade,))
-        notificacoes = cursor.fetchall()
+        notificacoes = convert_rows_to_dicts(cursor.fetchall())
         
-        for notificacao in notificacoes:
+        for notif in notificacoes:
             query_imagens = """
                 SELECT caminho, tipo_imagem, tem_rachadura
                 FROM imagens_pedido
                 WHERE pedido_id = %s
             """
-            cursor.execute(query_imagens, (notificacao['pedido_id'],))
-            notificacao['imagens'] = cursor.fetchall()
+            pedido_id = cast(int, notif.get('pedido_id', 0))
+            cursor.execute(query_imagens, (pedido_id,))
+            notif['imagens'] = convert_rows_to_dicts(cursor.fetchall())
     
     cursor.close()
     conn.close()
@@ -886,68 +913,98 @@ def cadastro_empresa():
         print(f"Erro no cadastro_empresa: {e}") 
         return redirect(url_for('cadastro_empresa'))
 
-@app.route('/editar_usuario/<cpf>', methods=['GET', 'POST'])
-@login_required 
+@app.route('/editar_usuario/<cpf>', methods=['POST'])
+@login_required
 def editar_usuario_perfil(cpf):
-    
     if not isinstance(current_user, Usuario) or current_user.cpf != cpf:
         flash('Acesso não autorizado para editar este perfil.', 'danger')
-        logout_user()
-        return redirect(url_for('login_usuario'))
+        return redirect(url_for('dashboard_usuario'))
 
-    usuario_data = encontrar_usuario(cpf) 
-    if not usuario_data:
-        flash('Usuário não encontrado!', 'danger')
-        return redirect(url_for('dashboard_usuario', cpf=current_user.cpf))
-    
-    usuario = Usuario.from_db_row(usuario_data)
+    nome = request.form.get('nome')
+    email = request.form.get('email')
+    endereco = request.form.get('endereco')
+    senha = request.form.get('senha')
 
-    if request.method == 'POST':
-        nome = request.form.get('nome')
-        email = request.form.get('email')
-        endereco = request.form.get('endereco')
-        senha = request.form.get('senha', None) 
-        novo_cpf = request.form.get('novo_cpf', None) 
+    if not nome or not email or not endereco:
+        flash('Nome, email e endereço são obrigatórios!', 'danger')
+        return redirect(url_for('dashboard_usuario'))
 
-        if editar_usuario(cpf, nome, email, endereco, senha, novo_cpf): 
-            flash('Perfil atualizado com sucesso!', 'success')
-            return redirect(url_for('dashboard_usuario', cpf=novo_cpf if novo_cpf else cpf)) 
-        else:
-            flash('Erro ao atualizar o perfil. Tente novamente.', 'danger')
-            return redirect(url_for('editar_usuario_perfil', cpf=cpf))
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
 
-    return render_template('editar_usuario.html', usuario=usuario)
+        set_values = []
+        params = []
+        query = "UPDATE usuarios SET "
 
+        if nome:
+            set_values.append("nome = %s")
+            params.append(nome)
+        if email:
+            set_values.append("email = %s")
+            params.append(email)
+        if endereco:
+            set_values.append("endereco = %s")
+            params.append(endereco)
+        if senha:
+            set_values.append("senha = %s")
+            params.append(generate_password_hash(senha))
+
+        query += ", ".join(set_values)
+        query += " WHERE cpf = %s"
+        params.append(cpf)
+
+        cursor.execute(query, tuple(params))
+        conn.commit()
+
+        # Atualiza os dados do usuário na sessão
+        current_user.nome = nome
+        current_user.email = email
+        current_user.endereco = endereco
+
+        cursor.close()
+        conn.close()
+
+        flash('Perfil atualizado com sucesso!', 'success')
+        # Se a requisição for AJAX, retorna status 200
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return '', 200
+        return redirect(url_for('dashboard_usuario'))
+    except Exception as e:
+        print(f"Erro ao atualizar usuário: {e}")
+        flash('Erro ao atualizar o perfil. Tente novamente.', 'danger')
+        # Se a requisição for AJAX, retorna status 400
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return '', 400
+        return redirect(url_for('dashboard_usuario'))
 
 @app.route('/editar_empresa/<cnpj>', methods=['GET', 'POST'])
-@login_required 
-def editar_empresa_perfil(cnpj):
-
+@login_required
+def editar_empresa_perfil(cnpj: str):
     if not isinstance(current_user, Empresa) or current_user.cnpj != cnpj:
         flash('Acesso não autorizado para editar este perfil.', 'danger')
-        logout_user()
-        return redirect(url_for('login_empresa'))
-
-    empresa = encontrar_empresa(cnpj)
-    if not empresa:
-        flash('Empresa não encontrada', 'danger')
         return redirect(url_for('perfil_empresa', cnpj=current_user.cnpj))
 
-    if request.method == 'POST':
-        nome = request.form['nome']
-        endereco = request.form['endereco']
-        senha = request.form['senha'] if 'senha' in request.form and request.form['senha'] else None
+    nome = request.form.get('nome')
+    endereco = request.form.get('endereco')
+    senha = request.form.get('senha')
 
-        if not nome or not endereco:
-            flash('Todos os campos são obrigatórios!', 'error')
-            return redirect(request.url)
+    if not nome or not endereco:
+        flash('Nome e endereço são obrigatórios!', 'danger')
+        return redirect(url_for('perfil_empresa', cnpj=cnpj))
 
-        editar_empresa(cnpj, nome, endereco, senha)
-        flash('Perfil atualizado com sucesso', 'success')
-        return redirect(url_for('perfil_empresa', cnpj=cnpj)) 
+    if editar_empresa(cnpj, nome, endereco, senha):
+        # Atualiza os dados do usuário na sessão
+        empresa_atualizada = encontrar_empresa(cnpj)
+        if empresa_atualizada:
+            empresa_dict = cast(Dict[str, Any], empresa_atualizada)
+            current_user.nome = empresa_dict.get('nome', current_user.nome)
+            current_user.endereco = empresa_dict.get('endereco', current_user.endereco)
+        flash('Dados atualizados com sucesso!', 'success')
+    else:
+        flash('Erro ao atualizar os dados. Tente novamente.', 'danger')
 
-    return render_template('editar_empresa.html', empresa=empresa)
-
+    return redirect(url_for('perfil_empresa', cnpj=cnpj))
 
 @app.route('/perfil_empresa/<cnpj>') 
 @login_required
@@ -960,9 +1017,9 @@ def perfil_empresa(cnpj):
             return redirect(url_for('login_usuario')) 
         
         ph_atual, historico_ph, nivel_atual, historico_nivel = buscar_dados_cisterna(current_user.id)
-        notificacoes = buscar_notificacoes(current_user.id)
+        notificacoes = buscar_notificacoes(current_user.cnpj)
         comunicados_gerais = buscar_comunicado_geral()
-        pedidos = buscar_pedidos_por_empresa(current_user.id)
+        pedidos = buscar_pedidos_por_empresa(current_user.cnpj)
         
 
         return render_template(
@@ -983,38 +1040,139 @@ def perfil_empresa(cnpj):
         return redirect(url_for('login_empresa'))
 
 
-@app.route('/dashboard_usuario/<cpf>', methods=['GET'])
-@login_required 
+@app.route('/dashboard_usuario/<cpf>')
+@login_required
 def dashboard_usuario(cpf):
-
     if not isinstance(current_user, Usuario) or current_user.cpf != cpf:
-        flash('Acesso não autorizado para este perfil.', 'danger')
-        logout_user()
-        return redirect(url_for('login_usuario'))
+        flash('Acesso não autorizado.', 'danger')
+        return redirect(url_for('pagina_inicial'))
 
-    usuario = current_user 
-    pedidos = buscar_pedidos_usuarios(usuario.cpf)
-    comunicados = buscar_comunicados_usuario(usuario.cpf)
-    comunicados_gerais = buscar_comunicado_geral()
-    
-    ph_atual, historico_ph, nivel_atual, historico_nivel = buscar_dados_cisterna_usuario(usuario.id)
-    
-    return render_template('dashboard_usuario.html', 
-                            usuario=usuario, 
-                            pedidos=pedidos, 
-                            comunicados=comunicados, 
-                            comunicados_gerais=comunicados_gerais,
-                            ph_atual=ph_atual,
-                            nivel_atual=nivel_atual,
-                            historico_ph=historico_ph,
-                            historico_nivel=historico_nivel)
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
 
+        # Busca pedidos
+        query_pedidos = """
+            SELECT p.*, u.nome AS usuario_nome
+            FROM pedidos p
+            JOIN usuarios u ON p.cpf_usuario = u.cpf
+            WHERE p.cpf_usuario = %s
+            ORDER BY p.data DESC
+        """
+        cursor.execute(query_pedidos, (cpf,))
+        pedidos = [convert_row_to_dict(row) for row in cursor.fetchall()]
+
+        # Busca comunicados dos pedidos
+        query_comunicados = """
+            SELECT cp.*, p.descricao AS pedido_descricao
+            FROM comunicado_pedido cp
+            JOIN pedidos p ON cp.pedido_id = p.id
+            WHERE p.cpf_usuario = %s
+            ORDER BY cp.data DESC
+        """
+        cursor.execute(query_comunicados, (cpf,))
+        comunicados = [convert_row_to_dict(row) for row in cursor.fetchall()]
+
+        # Busca comunicados gerais
+        query_comunicados_gerais = """
+            SELECT * FROM comunicados_gerais
+            ORDER BY data DESC
+        """
+        cursor.execute(query_comunicados_gerais)
+        comunicados_gerais = [convert_row_to_dict(row) for row in cursor.fetchall()]
+
+        # Busca nível atual da água
+        query_nivel = """
+            SELECT * FROM niveis_agua
+            ORDER BY data DESC
+            LIMIT 1
+        """
+        cursor.execute(query_nivel)
+        nivel_atual = convert_row_to_dict(cursor.fetchone())
+
+        # Busca histórico de nível
+        query_historico_nivel = """
+            SELECT * FROM niveis_agua
+            ORDER BY data DESC
+            LIMIT 5
+        """
+        cursor.execute(query_historico_nivel)
+        historico_nivel = [convert_row_to_dict(row) for row in cursor.fetchall()]
+
+        # Busca pH atual
+        query_ph = """
+            SELECT * FROM ph_niveis
+            ORDER BY data DESC
+            LIMIT 1
+        """
+        cursor.execute(query_ph)
+        ph_atual = convert_row_to_dict(cursor.fetchone())
+
+        # Busca histórico de pH
+        query_historico_ph = """
+            SELECT * FROM ph_niveis
+            ORDER BY data DESC
+            LIMIT 5
+        """
+        cursor.execute(query_historico_ph)
+        historico_ph = [convert_row_to_dict(row) for row in cursor.fetchall()]
+
+        # Busca lista de empresas
+        query_empresas = "SELECT cnpj, nome FROM empresas"
+        cursor.execute(query_empresas)
+        empresas = [convert_row_to_dict(row) for row in cursor.fetchall()]
+
+        cursor.close()
+        conn.close()
+
+        return render_template('dashboard_usuario.html',
+                             usuario=current_user,
+                             pedidos=pedidos,
+                             comunicados=comunicados,
+                             comunicados_gerais=comunicados_gerais,
+                             nivel_atual=nivel_atual,
+                             historico_nivel=historico_nivel,
+                             ph_atual=ph_atual,
+                             historico_ph=historico_ph,
+                             empresas=empresas)
+    except Exception as e:
+        flash(f'Erro ao carregar o dashboard: {str(e)}', 'danger')
+        return redirect(url_for('pagina_inicial'))
+
+
+@app.route('/api/pedidos')
+@login_required
+def api_pedidos():
+    if not isinstance(current_user, Usuario):
+        return jsonify({"error": "Acesso não autorizado"}), 403
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    query = """
+        SELECT p.*, u.nome AS usuario_nome
+        FROM pedidos p
+        JOIN usuarios u ON p.cpf_usuario = u.cpf
+        WHERE p.cpf_usuario = %s
+        ORDER BY p.data DESC
+    """
+    cursor.execute(query, (current_user.cpf,))
+    pedidos = [convert_row_to_dict(row) for row in cursor.fetchall()]
+    cursor.close()
+    conn.close()
+
+    # Converte datas para string
+    for pedido in pedidos:
+        if pedido and 'data' in pedido and isinstance(pedido['data'], (datetime, date)):
+            pedido['data'] = pedido['data'].strftime('%Y-%m-%d %H:%M:%S')
+
+    return jsonify(pedidos)
 
 @app.route('/solicitar_pedido', methods=['GET', 'POST'])
 @login_required 
 def solicitar_pedido():
-
     if not isinstance(current_user, Usuario):
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({"error": "Apenas usuários podem solicitar pedidos."}), 403
         flash('Apenas usuários podem solicitar pedidos.', 'danger')
         return redirect(url_for('dashboard_usuario', cpf=current_user.cpf)) 
 
@@ -1023,6 +1181,8 @@ def solicitar_pedido():
             cpf = request.form['cpf']
 
             if cpf != current_user.cpf:
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({"error": "Você só pode solicitar pedidos para o seu próprio CPF."}), 403
                 flash('Você só pode solicitar pedidos para o seu próprio CPF.', 'danger')
                 return redirect(url_for('solicitar_pedido'))
 
@@ -1032,18 +1192,27 @@ def solicitar_pedido():
             cnpj_empresa = request.form['cnpj_empresa'] 
 
             if not descricao.strip():
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({"error": "A descrição não pode estar vazia"}), 400
                 flash('A descrição não pode estar vazia', 'danger')
                 return redirect(url_for('solicitar_pedido'))
 
             if not data:
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({"error": "A data de entrega é obrigatória"}), 400
                 flash('A data de entrega é obrigatória', 'danger')
                 return redirect(url_for('solicitar_pedido'))
 
             if int(quantidade) < 1000:
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({"error": "A quantidade mínima é 1000 litros"}), 400
                 flash('A quantidade mínima é 1000 litros', 'danger')
                 return redirect(url_for('solicitar_pedido'))
 
-            criar_pedido(current_user.cpf, descricao, quantidade, data, cnpj_empresa)
+            pedido_id = criar_pedido(current_user.cpf, descricao, quantidade, data, cnpj_empresa)
+
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({"message": "Pedido solicitado com sucesso!", "pedido_id": pedido_id})
 
             flash('Pedido solicitado com sucesso!', 'success')
             return redirect(url_for('dashboard_usuario', cpf=current_user.cpf))
@@ -1058,22 +1227,23 @@ def solicitar_pedido():
 
         return render_template('solicitar_pedido.html', empresas=empresas, usuario=current_user)
     except Exception as e:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({"error": f"Ocorreu um erro ao processar o pedido: {str(e)}"}), 500
         flash(f'Ocorreu um erro ao processar o pedido: {str(e)}', 'danger')
         return redirect(url_for('solicitar_pedido'))
 
 @app.route('/cancelar_pedido/<int:pedido_id>', methods=['POST'])
 @login_required
 def cancelar_pedido(pedido_id):
-
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     query = "SELECT cpf_usuario FROM pedidos WHERE id = %s"
     cursor.execute(query, (pedido_id,))
-    pedido = cursor.fetchone()
+    pedido = convert_row_to_dict(cursor.fetchone())
     cursor.close()
     conn.close()
 
-    if not pedido or pedido['cpf_usuario'] != current_user.cpf:
+    if not pedido or pedido.get('cpf_usuario') != current_user.cpf:
         flash('Você não tem permissão para cancelar este pedido.', 'danger')
         return redirect(url_for('dashboard_usuario', cpf=current_user.cpf))
 
@@ -1088,7 +1258,6 @@ def cancelar_pedido(pedido_id):
 @app.route('/excluir_pedido/<int:pedido_id>/<cnpj>', methods=['POST'])
 @login_required
 def excluir_pedido_view(pedido_id, cnpj):
-
     if not isinstance(current_user, Empresa) or current_user.cnpj != cnpj:
         flash('Acesso não autorizado.', 'danger')
         return redirect(url_for('perfil_empresa', cnpj=current_user.cnpj))
@@ -1097,11 +1266,11 @@ def excluir_pedido_view(pedido_id, cnpj):
     cursor = conn.cursor(dictionary=True)
     query = "SELECT cnpj_empresa FROM pedidos WHERE id = %s"
     cursor.execute(query, (pedido_id,))
-    pedido = cursor.fetchone()
+    pedido = convert_row_to_dict(cursor.fetchone())
     cursor.close()
     conn.close()
 
-    if not pedido or pedido['cnpj_empresa'] != current_user.cnpj:
+    if not pedido or pedido.get('cnpj_empresa') != current_user.cnpj:
         flash('Você não tem permissão para excluir este pedido.', 'danger')
         return redirect(url_for('perfil_empresa', cnpj=current_user.cnpj))
 
@@ -1112,21 +1281,19 @@ def excluir_pedido_view(pedido_id, cnpj):
 @app.route('/alterar_status/<int:pedido_id>/<cnpj>', methods=['POST'])
 @login_required 
 def alterar_status(pedido_id, cnpj):
-
     if not isinstance(current_user, Empresa) or current_user.cnpj != cnpj:
         flash('Acesso não autorizado.', 'danger')
         return redirect(url_for('perfil_empresa', cnpj=current_user.cnpj))
-
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     query = "SELECT cnpj_empresa FROM pedidos WHERE id = %s"
     cursor.execute(query, (pedido_id,))
-    pedido = cursor.fetchone()
+    pedido = convert_row_to_dict(cursor.fetchone())
     cursor.close()
     conn.close()
 
-    if not pedido or pedido['cnpj_empresa'] != current_user.cnpj:
+    if not pedido or pedido.get('cnpj_empresa') != current_user.cnpj:
         flash('Você não tem permissão para alterar o status deste pedido.', 'danger')
         return redirect(url_for('perfil_empresa', cnpj=current_user.cnpj))
 
@@ -1141,17 +1308,16 @@ def enviar_comunicado_usuario(pedido_id):
     if not isinstance(current_user, Empresa):
         flash('Acesso não autorizado.', 'danger')
         return redirect(url_for('perfil_empresa', cnpj=current_user.cnpj))
-    
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     query = "SELECT cnpj_empresa FROM pedidos WHERE id = %s"
     cursor.execute(query, (pedido_id,))
-    pedido = cursor.fetchone()
+    pedido = convert_row_to_dict(cursor.fetchone())
     cursor.close()
     conn.close()
 
-    if not pedido or pedido['cnpj_empresa'] != current_user.cnpj:
+    if not pedido or pedido.get('cnpj_empresa') != current_user.cnpj:
         flash('Você não tem permissão para enviar comunicado para este pedido.', 'danger')
         return redirect(url_for('perfil_empresa', cnpj=current_user.cnpj))
 
@@ -1208,7 +1374,7 @@ def visualizar_pedido(pedido_id):
         WHERE p.id = %s
     """
     cursor.execute(query_pedido, (pedido_id,))
-    pedido = cursor.fetchone()
+    pedido = convert_row_to_dict(cursor.fetchone())
 
     if not pedido:
         cursor.close()
@@ -1216,11 +1382,10 @@ def visualizar_pedido(pedido_id):
         flash('Pedido não encontrado.', 'danger')
         return redirect(url_for('pagina_inicial'))
 
-
     tem_permissao = False
-    if isinstance(current_user, Usuario) and current_user.cpf == pedido['cpf_usuario']:
+    if isinstance(current_user, Usuario) and current_user.cpf == pedido.get('cpf_usuario'):
         tem_permissao = True
-    elif isinstance(current_user, Empresa) and current_user.cnpj == pedido['cnpj_empresa']:
+    elif isinstance(current_user, Empresa) and current_user.cnpj == pedido.get('cnpj_empresa'):
         tem_permissao = True
     
     if not tem_permissao:
@@ -1235,7 +1400,6 @@ def visualizar_pedido(pedido_id):
         else:
             return redirect(url_for('pagina_inicial'))
 
-
     query_imagens = """
         SELECT id, caminho, tipo_imagem, tem_rachadura
         FROM imagens_pedido
@@ -1248,7 +1412,6 @@ def visualizar_pedido(pedido_id):
     conn.close()
 
     return render_template('pedido_detalhe.html', pedido=pedido, imagens=imagens, current_user_is_empresa=isinstance(current_user, Empresa))
-
 
 @app.route('/detalhes_cisterna/<cnpj>')
 @login_required 
@@ -1281,12 +1444,11 @@ def detalhes_cisterna(cnpj):
 @app.route('/analisar_rachadura/<int:pedido_id>', methods=['POST'])
 @login_required
 def analisar_rachadura(pedido_id):
-
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     query = "SELECT cpf_usuario, cnpj_empresa FROM pedidos WHERE id = %s"
     cursor.execute(query, (pedido_id,))
-    pedido_info = cursor.fetchone()
+    pedido_info: Optional[Dict[str, Any]] = cursor.fetchone()
     cursor.close()
     conn.close()
 
@@ -1295,9 +1457,9 @@ def analisar_rachadura(pedido_id):
         return redirect(url_for('pagina_inicial'))
 
     tem_permissao = False
-    if isinstance(current_user, Usuario) and current_user.cpf == pedido_info['cpf_usuario']:
+    if isinstance(current_user, Usuario) and current_user.cpf == pedido_info.get('cpf_usuario'):
         tem_permissao = True
-    elif isinstance(current_user, Empresa) and current_user.cnpj == pedido_info['cnpj_empresa']:
+    elif isinstance(current_user, Empresa) and current_user.cnpj == pedido_info.get('cnpj_empresa'):
         tem_permissao = True
 
     if not tem_permissao:
@@ -1308,56 +1470,45 @@ def analisar_rachadura(pedido_id):
         if 'imagem' not in request.files:
             flash('Nenhum arquivo enviado', 'danger')
             return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
-            
         file = request.files['imagem']
-        
         if file.filename == '':
             flash('Nenhum arquivo selecionado', 'danger')
             return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
-
         if not allowed_file(file.filename):
             flash('Tipo de arquivo não permitido', 'danger')
             return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
-
-        filename = f"{int(time())}_{secure_filename(file.filename)}"
-        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-        file.save(filepath)
-
-        image = cv2.imread(filepath)
-        if image is None:
-            flash('Erro ao processar a imagem', 'danger')
+        if file.filename:
+            filename = f"{int(time())}_{secure_filename(file.filename)}"
+            filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+            file.save(filepath)
+            image = cv2.imread(filepath)
+            if image is None:
+                flash('Erro ao processar a imagem', 'danger')
+                os.remove(filepath)
+                return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
+            processed_image, tipo_detectado = detect_cracks_or_objects(image)
+            processed_filename = f"processed_{filename}"
+            processed_filepath = os.path.join(app.config["UPLOAD_FOLDER"], processed_filename)
+            cv2.imwrite(processed_filepath, processed_image)
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            db_filepath = f"uploads/{processed_filename}"
+            query = "INSERT INTO imagens_pedido (pedido_id, caminho, tipo_imagem, tem_rachadura) VALUES (%s, %s, %s, %s)"
+            cursor.execute(query, (pedido_id, db_filepath, tipo_detectado, 1 if tipo_detectado == "rachadura" else 0))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            if tipo_detectado in ["rachadura", "objeto"]:
+                mensagem = f"{tipo_detectado.capitalize()} detectado no pedido #{pedido_id}"
+            else:
+                mensagem = f"Imagem recebida para análise no pedido #{pedido_id}"
+            criar_notificacao(pedido_id, mensagem)
+            flash("Imagem enviada com sucesso! Será analisada pela empresa.", "success")
             os.remove(filepath)
             return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
-
-        processed_image, tipo_detectado = detect_cracks_or_objects(image)
-        
-        processed_filename = f"processed_{filename}"
-        processed_filepath = os.path.join(app.config["UPLOAD_FOLDER"], processed_filename)
-        cv2.imwrite(processed_filepath, processed_image)
-        
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
-        db_filepath = f"uploads/{processed_filename}"
-        
-        query = "INSERT INTO imagens_pedido (pedido_id, caminho, tipo_imagem, tem_rachadura) VALUES (%s, %s, %s, %s)"
-        cursor.execute(query, (pedido_id, db_filepath, tipo_detectado, 1 if tipo_detectado == "rachadura" else 0))
-        conn.commit()
-        
-        cursor.close()
-        conn.close()
-        
-        if tipo_detectado in ["rachadura", "objeto"]:
-            mensagem = f"{tipo_detectado.capitalize()} detectado no pedido #{pedido_id}"
         else:
-            mensagem = f"Imagem recebida para análise no pedido #{pedido_id}"
-        criar_notificacao(pedido_id, mensagem)
-
-        flash("Imagem enviada com sucesso! Será analisada pela empresa.", "success")
-                
-        os.remove(filepath)
-                
-        return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
+            flash('Nome do arquivo inválido', 'danger')
+            return redirect(url_for('visualizar_pedido', pedido_id=pedido_id))
     except Exception as e:
         print(f"Erro ao analisar rachadura: {e}")
         flash(f"Erro ao processar a imagem: {str(e)}", 'danger')
@@ -1366,12 +1517,11 @@ def analisar_rachadura(pedido_id):
 @app.route('/excluir_imagem/<int:imagem_id>/<int:pedido_id>', methods=['POST'])
 @login_required 
 def excluir_imagem_view(imagem_id, pedido_id):
-    """Rota para excluir uma imagem"""
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     query_pedido = "SELECT cpf_usuario, cnpj_empresa FROM pedidos WHERE id = %s"
     cursor.execute(query_pedido, (pedido_id,))
-    pedido_info = cursor.fetchone()
+    pedido_info: Optional[Dict[str, Any]] = cursor.fetchone()
     cursor.close()
     conn.close()
 
@@ -1380,9 +1530,9 @@ def excluir_imagem_view(imagem_id, pedido_id):
         return redirect(url_for('pagina_inicial'))
 
     tem_permissao = False
-    if isinstance(current_user, Usuario) and current_user.cpf == pedido_info['cpf_usuario']:
+    if isinstance(current_user, Usuario) and current_user.cpf == pedido_info.get('cpf_usuario'):
         tem_permissao = True
-    elif isinstance(current_user, Empresa) and current_user.cnpj == pedido_info['cnpj_empresa']:
+    elif isinstance(current_user, Empresa) and current_user.cnpj == pedido_info.get('cnpj_empresa'):
         tem_permissao = True
 
     if not tem_permissao:
@@ -1411,21 +1561,26 @@ def api_pedido(pedido_id):
         WHERE p.id = %s
     """
     cursor.execute(query, (pedido_id,))
-    pedido = cursor.fetchone()
+    pedido = convert_row_to_dict(cursor.fetchone())
     cursor.close()
     conn.close()
     
     if pedido:
         tem_permissao = False
-        if isinstance(current_user, Usuario) and current_user.cpf == pedido['cpf_usuario']:
+        if isinstance(current_user, Usuario) and current_user.cpf == pedido.get('cpf_usuario'):
             tem_permissao = True
-        elif isinstance(current_user, Empresa) and current_user.cnpj == pedido['cnpj_empresa']:
+        elif isinstance(current_user, Empresa) and current_user.cnpj == pedido.get('cnpj_empresa'):
             tem_permissao = True
         
         if not tem_permissao:
-            return jsonify({"error": "Acesso não autorizado para este pedido"}), 403 # 403 Forbidden
+            return jsonify({"error": "Acesso não autorizado para este pedido"}), 403 
             
-        pedido['data'] = pedido['data'].strftime('%Y-%m-%d %H:%M:%S') if pedido['data'] else None
+        data = pedido.get('data')
+        if isinstance(data, (datetime, date)):
+            pedido['data'] = data.strftime('%Y-%m-%d %H:%M:%S')
+        else:
+            pedido['data'] = None
+            
         return jsonify(pedido)
     else:
         return jsonify({"error": "Pedido não encontrado"}), 404
@@ -1484,7 +1639,7 @@ def rachaduras(pedido_id):
             WHERE p.id = %s
         """
         cursor.execute(query_pedido, (pedido_id,))
-        pedido = cursor.fetchone()
+        pedido: Optional[Dict[str, Any]] = cursor.fetchone()
         
         if not pedido:
             cursor.close()
@@ -1493,9 +1648,9 @@ def rachaduras(pedido_id):
             return redirect(url_for('pagina_inicial'))
 
         tem_permissao = False
-        if isinstance(current_user, Usuario) and current_user.cpf == pedido['cpf_usuario']:
+        if isinstance(current_user, Usuario) and current_user.cpf == pedido.get('cpf_usuario'):
             tem_permissao = True
-        elif isinstance(current_user, Empresa) and current_user.cnpj == pedido['cnpj_empresa']:
+        elif isinstance(current_user, Empresa) and current_user.cnpj == pedido.get('cnpj_empresa'):
             tem_permissao = True
         
         if not tem_permissao:
@@ -1522,7 +1677,7 @@ def rachaduras(pedido_id):
             FROM empresas
             WHERE cnpj = %s
         """
-        cursor.execute(query_empresa, (pedido['cnpj_empresa'],))
+        cursor.execute(query_empresa, (pedido.get('cnpj_empresa'),))
         empresa = cursor.fetchone()
         
         cursor.close()
@@ -1547,7 +1702,7 @@ def limpar_notificacao(notificacao_id):
             WHERE n.id = %s
         """
         cursor.execute(query_notificacao_proprietario, (notificacao_id,))
-        notificacao_info = cursor.fetchone()
+        notificacao_info: Optional[Dict[str, Any]] = cursor.fetchone()
 
         if not notificacao_info:
             cursor.close()
@@ -1555,9 +1710,9 @@ def limpar_notificacao(notificacao_id):
             return jsonify({"success": False, "error": "Notificação não encontrada"}), 404
 
         tem_permissao = False
-        if isinstance(current_user, Usuario) and current_user.cpf == notificacao_info['cpf_usuario']:
+        if isinstance(current_user, Usuario) and current_user.cpf == notificacao_info.get('cpf_usuario'):
             tem_permissao = True
-        elif isinstance(current_user, Empresa) and current_user.cnpj == notificacao_info['cnpj_empresa']:
+        elif isinstance(current_user, Empresa) and current_user.cnpj == notificacao_info.get('cnpj_empresa'):
             tem_permissao = True
         
         if not tem_permissao:
@@ -1610,6 +1765,49 @@ def admin_logout():
     session.pop('admin_logged_in', None)
     flash('Logout realizado com sucesso!', 'success')
     return redirect(url_for('login_admin'))
+
+T = TypeVar('T', bound=Union[Dict[str, Any], None])
+
+def convert_row_to_dict(row: Any) -> Optional[Dict[str, Any]]:
+    """Converte uma linha do cursor MySQL para um dicionário.
+    
+    Args:
+        row: Uma linha retornada pelo cursor MySQL
+        
+    Returns:
+        Um dicionário com os dados da linha ou None se a linha for None
+    """
+    if row is None:
+        return None
+    try:
+        # Se já é um dicionário, retorna uma cópia
+        if isinstance(row, dict):
+            return dict(row)
+        # Se é uma sequência, converte para dicionário usando índices como chaves
+        if isinstance(row, (list, tuple)):
+            return {str(i): v for i, v in enumerate(row)}
+        # Tenta converter para dicionário
+        return dict(row)
+    except (TypeError, ValueError, AttributeError):
+        return None
+
+def convert_rows_to_dicts(rows: Any) -> List[Dict[str, Any]]:
+    """Converte uma lista de linhas do cursor MySQL para uma lista de dicionários.
+    
+    Args:
+        rows: Uma lista de linhas retornadas pelo cursor MySQL
+        
+    Returns:
+        Uma lista de dicionários com os dados das linhas
+    """
+    if rows is None:
+        return []
+    result = []
+    for row in rows:
+        converted = convert_row_to_dict(row)
+        if converted is not None:
+            result.append(converted)
+    return result
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
