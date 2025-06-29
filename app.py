@@ -136,7 +136,7 @@ def excluir_imagem(imagem_id):
         cursor = conn.cursor(dictionary=True)
         query = "SELECT caminho FROM imagens_pedido WHERE id = %s"
         cursor.execute(query, (imagem_id,))
-        imagem: Optional[Dict[str, Any]] = cursor.fetchone()
+        imagem = convert_row_to_dict(cursor.fetchone())
         
         if not imagem:
             cursor.close()
@@ -167,7 +167,7 @@ def notificar_rachadura(pedido_id, imagem_id, mensagem):
         
         query_pedido = "SELECT cpf_usuario, descricao FROM pedidos WHERE id = %s"
         cursor.execute(query_pedido, (pedido_id,))
-        pedido: Optional[Dict[str, Any]] = cursor.fetchone()
+        pedido = convert_row_to_dict(cursor.fetchone())
         
         if not pedido:
             cursor.close()
@@ -1448,7 +1448,7 @@ def analisar_rachadura(pedido_id):
     cursor = conn.cursor(dictionary=True)
     query = "SELECT cpf_usuario, cnpj_empresa FROM pedidos WHERE id = %s"
     cursor.execute(query, (pedido_id,))
-    pedido_info: Optional[Dict[str, Any]] = cursor.fetchone()
+    pedido_info = convert_row_to_dict(cursor.fetchone())
     cursor.close()
     conn.close()
 
@@ -1521,7 +1521,7 @@ def excluir_imagem_view(imagem_id, pedido_id):
     cursor = conn.cursor(dictionary=True)
     query_pedido = "SELECT cpf_usuario, cnpj_empresa FROM pedidos WHERE id = %s"
     cursor.execute(query_pedido, (pedido_id,))
-    pedido_info: Optional[Dict[str, Any]] = cursor.fetchone()
+    pedido_info = convert_row_to_dict(cursor.fetchone())
     cursor.close()
     conn.close()
 
@@ -1639,7 +1639,7 @@ def rachaduras(pedido_id):
             WHERE p.id = %s
         """
         cursor.execute(query_pedido, (pedido_id,))
-        pedido: Optional[Dict[str, Any]] = cursor.fetchone()
+        pedido = convert_row_to_dict(cursor.fetchone())
         
         if not pedido:
             cursor.close()
@@ -1702,7 +1702,7 @@ def limpar_notificacao(notificacao_id):
             WHERE n.id = %s
         """
         cursor.execute(query_notificacao_proprietario, (notificacao_id,))
-        notificacao_info: Optional[Dict[str, Any]] = cursor.fetchone()
+        notificacao_info = convert_row_to_dict(cursor.fetchone())
 
         if not notificacao_info:
             cursor.close()
@@ -1754,11 +1754,153 @@ def login_admin():
             flash('Usuário ou senha inválidos.', 'danger')
     return render_template('login_admin.html')
 
+def criar_tabelas_admin():
+    """Cria as tabelas necessárias para o admin se não existirem"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Criar tabela de notificações
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS notificacoes_admin (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                tipo VARCHAR(50) NOT NULL,
+                titulo VARCHAR(255) NOT NULL,
+                mensagem TEXT NOT NULL,
+                lida BOOLEAN DEFAULT FALSE,
+                data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                data_leitura TIMESTAMP NULL
+            )
+        """)
+        
+        # Criar tabela de configurações
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS configuracoes_sistema (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                chave VARCHAR(100) NOT NULL UNIQUE,
+                valor TEXT NOT NULL,
+                descricao VARCHAR(255),
+                tipo VARCHAR(50) NOT NULL,
+                data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )
+        """)
+        
+        # Inserir configurações padrão se não existirem
+        cursor.execute("""
+            INSERT IGNORE INTO configuracoes_sistema (chave, valor, descricao, tipo) VALUES 
+            ('limite_pedidos', '1000', 'Quantidade mínima de litros por pedido', 'numero'),
+            ('tempo_analise', '24', 'Tempo máximo para análise de pedidos (horas)', 'numero'),
+            ('notificacoes_ativas', 'true', 'Ativar sistema de notificações', 'booleano'),
+            ('mensagem_manutencao', '', 'Mensagem exibida durante manutenção', 'texto'),
+            ('horarios_entrega', '{"inicio": "08:00", "fim": "18:00"}', 'Horários permitidos para entrega', 'json')
+        """)
+        
+        conn.commit()
+        
+        # Criar notificações de exemplo
+        criar_notificacoes_exemplo()
+        
+        cursor.close()
+        conn.close()
+        return True
+    except Exception as e:
+        print(f"Erro ao criar tabelas admin: {e}")
+        return False
+
+def criar_notificacoes_exemplo():
+    """Cria algumas notificações de exemplo para o admin"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Limpar notificações existentes
+        cursor.execute("DELETE FROM notificacoes_admin")
+        
+        # Inserir notificações de exemplo
+        notificacoes = [
+            ('usuario', 'Novo usuário cadastrado', 'Um novo usuário se cadastrou no sistema.'),
+            ('empresa', 'Nova empresa registrada', 'Uma nova empresa foi registrada e precisa de aprovação.'),
+            ('pedido', 'Pedido urgente', 'Novo pedido marcado como urgente necessita de atenção.'),
+            ('sistema', 'Backup realizado', 'Backup automático do sistema foi concluído com sucesso.'),
+            ('sistema', 'Atualização disponível', 'Uma nova atualização do sistema está disponível.')
+        ]
+        
+        query = """
+            INSERT INTO notificacoes_admin (tipo, titulo, mensagem) 
+            VALUES (%s, %s, %s)
+        """
+        cursor.executemany(query, notificacoes)
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return True
+    except Exception as e:
+        print(f"Erro ao criar notificações de exemplo: {e}")
+        return False
+
 @app.route('/admin/dashboard')
 def admin_dashboard():
     if not session.get('admin_logged_in'):
         return redirect(url_for('login_admin'))
-    return render_template('admin_dashboard.html')
+    try:
+        # Garantir que as tabelas existam
+        criar_tabelas_admin()
+        
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Buscar dados existentes
+        cursor.execute("SELECT * FROM usuarios")
+        usuarios = cursor.fetchall()
+        total_usuarios = len(usuarios)
+
+        cursor.execute("SELECT * FROM empresas")
+        empresas = cursor.fetchall()
+        total_empresas = len(empresas)
+
+        cursor.execute("""
+            SELECT p.*, u.nome AS usuario_nome, e.nome AS empresa_nome
+            FROM pedidos p
+            LEFT JOIN usuarios u ON p.cpf_usuario = u.cpf
+            LEFT JOIN empresas e ON p.cnpj_empresa = e.cnpj
+            ORDER BY p.data DESC
+        """)
+        pedidos = cursor.fetchall()
+        total_pedidos = len(pedidos)
+
+        # Buscar notificações não lidas
+        cursor.execute("""
+            SELECT * FROM notificacoes_admin 
+            WHERE lida = FALSE 
+            ORDER BY data_criacao DESC
+        """)
+        notificacoes = cursor.fetchall()
+
+        # Buscar configurações
+        cursor.execute("SELECT * FROM configuracoes_sistema ORDER BY chave")
+        configuracoes = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return render_template(
+            'admin_dashboard.html',
+            total_usuarios=total_usuarios,
+            usuarios=usuarios,
+            total_empresas=total_empresas,
+            empresas=empresas,
+            total_pedidos=total_pedidos,
+            pedidos=pedidos,
+            notificacoes=notificacoes,
+            configuracoes=configuracoes
+        )
+    except Exception as e:
+        print(f"Erro ao carregar dashboard admin: {e}")
+        return render_template('admin_dashboard.html', 
+                             total_usuarios=0, usuarios=[], 
+                             total_empresas=0, empresas=[], 
+                             total_pedidos=0, pedidos=[],
+                             notificacoes=[], configuracoes=[])
 
 @app.route('/admin/logout')
 def admin_logout():
@@ -1808,6 +1950,245 @@ def convert_rows_to_dicts(rows: Any) -> List[Dict[str, Any]]:
         if converted is not None:
             result.append(converted)
     return result
+
+# --- ROTAS ADMIN PARA USO VIA AJAX (JSON) ---
+
+# Usuários
+@app.route('/admin/usuario/<int:id>', methods=['GET'])
+def admin_ver_usuario(id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM usuarios WHERE id = %s", (id,))
+    usuario = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    if usuario:
+        return jsonify({'success': True, 'usuario': usuario})
+    return jsonify({'success': False, 'error': 'Usuário não encontrado'}), 404
+
+@app.route('/admin/usuario/<int:id>', methods=['POST'])
+def admin_editar_usuario(id):
+    data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'error': 'Dados inválidos'}), 400
+        
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    query = "UPDATE usuarios SET nome=%s, cpf=%s, email=%s, endereco=%s WHERE id=%s"
+    cursor.execute(query, (data.get('nome'), data.get('cpf'), data.get('email'), data.get('endereco'), id))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return jsonify({'success': True})
+
+@app.route('/admin/usuario/<int:id>', methods=['DELETE'])
+def admin_excluir_usuario(id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM usuarios WHERE id = %s", (id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return jsonify({'success': True})
+
+# Empresas
+@app.route('/admin/empresa/<int:id>', methods=['GET'])
+def admin_ver_empresa(id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM empresas WHERE id = %s", (id,))
+    empresa = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    if empresa:
+        return jsonify({'success': True, 'empresa': empresa})
+    return jsonify({'success': False, 'error': 'Empresa não encontrada'}), 404
+
+@app.route('/admin/empresa/<int:id>', methods=['POST'])
+def admin_editar_empresa(id):
+    data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'error': 'Dados inválidos'}), 400
+        
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    query = "UPDATE empresas SET nome=%s, cnpj=%s, email=%s, endereco=%s WHERE id=%s"
+    cursor.execute(query, (data.get('nome'), data.get('cnpj'), data.get('email'), data.get('endereco'), id))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return jsonify({'success': True})
+
+@app.route('/admin/empresa/<int:id>', methods=['DELETE'])
+def admin_excluir_empresa(id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM empresas WHERE id = %s", (id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return jsonify({'success': True})
+
+# Pedidos
+@app.route('/admin/pedido/<int:id>', methods=['GET'])
+def admin_ver_pedido(id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT p.*, u.nome AS usuario_nome, e.nome AS empresa_nome FROM pedidos p LEFT JOIN usuarios u ON p.cpf_usuario = u.cpf LEFT JOIN empresas e ON p.cnpj_empresa = e.cnpj WHERE p.id = %s", (id,))
+    pedido = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    if pedido:
+        return jsonify({'success': True, 'pedido': pedido})
+    return jsonify({'success': False, 'error': 'Pedido não encontrado'}), 404
+
+@app.route('/admin/pedido/<int:id>', methods=['POST'])
+def admin_editar_pedido(id):
+    data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'error': 'Dados inválidos'}), 400
+        
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    query = "UPDATE pedidos SET descricao=%s, quantidade=%s, status=%s, data=%s, cpf_usuario=%s, cnpj_empresa=%s WHERE id=%s"
+    cursor.execute(query, (
+        data.get('descricao'),
+        data.get('quantidade'),
+        data.get('status'),
+        data.get('data'),
+        data.get('cpf_usuario'),
+        data.get('cnpj_empresa'),
+        id
+    ))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return jsonify({'success': True})
+
+@app.route('/admin/pedido/<int:id>', methods=['DELETE'])
+def admin_excluir_pedido(id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM pedidos WHERE id = %s", (id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return jsonify({'success': True})
+
+def criar_notificacao_admin(tipo, titulo, mensagem):
+    """Cria uma nova notificação para o admin"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    query = "INSERT INTO notificacoes_admin (tipo, titulo, mensagem) VALUES (%s, %s, %s)"
+    cursor.execute(query, (tipo, titulo, mensagem))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+def buscar_notificacoes_admin(apenas_nao_lidas=False):
+    """Busca notificações do admin"""
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    if apenas_nao_lidas:
+        query = "SELECT * FROM notificacoes_admin WHERE lida = FALSE ORDER BY data_criacao DESC"
+    else:
+        query = "SELECT * FROM notificacoes_admin ORDER BY data_criacao DESC"
+    
+    cursor.execute(query)
+    notificacoes = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return notificacoes
+
+def marcar_notificacao_como_lida(notificacao_id):
+    """Marca uma notificação como lida"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    query = "UPDATE notificacoes_admin SET lida = TRUE, data_leitura = CURRENT_TIMESTAMP WHERE id = %s"
+    cursor.execute(query, (notificacao_id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+def buscar_configuracoes():
+    """Busca todas as configurações do sistema"""
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    query = "SELECT * FROM configuracoes_sistema ORDER BY chave"
+    cursor.execute(query)
+    configuracoes = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return configuracoes
+
+def atualizar_configuracao(chave, valor):
+    """Atualiza o valor de uma configuração"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    query = "UPDATE configuracoes_sistema SET valor = %s WHERE chave = %s"
+    cursor.execute(query, (valor, chave))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+# Rotas para notificações
+@app.route('/admin/notificacoes')
+def admin_notificacoes():
+    if not session.get('admin_logged_in'):
+        return jsonify({'success': False, 'error': 'Não autorizado'}), 403
+    notificacoes = buscar_notificacoes_admin()
+    return jsonify({'success': True, 'notificacoes': notificacoes})
+
+@app.route('/admin/notificacoes/nao-lidas')
+def admin_notificacoes_nao_lidas():
+    if not session.get('admin_logged_in'):
+        return jsonify({'success': False, 'error': 'Não autorizado'}), 403
+    try:
+        # Garantir que as tabelas existam
+        criar_tabelas_admin()
+        
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT * FROM notificacoes_admin 
+            WHERE lida = FALSE 
+            ORDER BY data_criacao DESC
+        """)
+        notificacoes = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return jsonify({'success': True, 'notificacoes': notificacoes})
+    except Exception as e:
+        print(f"Erro ao buscar notificações: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/admin/notificacoes/<int:notificacao_id>/marcar-lida', methods=['POST'])
+def admin_marcar_notificacao_lida(notificacao_id):
+    if not session.get('admin_logged_in'):
+        return jsonify({'success': False, 'error': 'Não autorizado'}), 403
+    marcar_notificacao_como_lida(notificacao_id)
+    return jsonify({'success': True})
+
+# Rotas para configurações
+@app.route('/admin/configuracoes')
+def admin_configuracoes():
+    if not session.get('admin_logged_in'):
+        return jsonify({'success': False, 'error': 'Não autorizado'}), 403
+    configuracoes = buscar_configuracoes()
+    return jsonify({'success': True, 'configuracoes': configuracoes})
+
+@app.route('/admin/configuracoes/<chave>', methods=['POST'])
+def admin_atualizar_configuracao(chave):
+    if not session.get('admin_logged_in'):
+        return jsonify({'success': False, 'error': 'Não autorizado'}), 403
+    
+    data = request.get_json()
+    if not data or 'valor' not in data:
+        return jsonify({'success': False, 'error': 'Valor não fornecido'}), 400
+        
+    atualizar_configuracao(chave, data['valor'])
+    return jsonify({'success': True})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

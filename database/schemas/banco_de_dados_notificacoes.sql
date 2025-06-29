@@ -52,3 +52,33 @@ UNLOCK TABLES;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2025-03-10 23:16:04
+
+-- Tabela de notificações do admin
+CREATE TABLE IF NOT EXISTS notificacoes_admin (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tipo VARCHAR(50) NOT NULL, -- 'usuario', 'empresa', 'pedido', 'sistema'
+    titulo VARCHAR(255) NOT NULL,
+    mensagem TEXT NOT NULL,
+    lida BOOLEAN DEFAULT FALSE,
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_leitura TIMESTAMP NULL
+);
+
+-- Tabela de configurações do sistema
+CREATE TABLE IF NOT EXISTS configuracoes_sistema (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    chave VARCHAR(100) NOT NULL UNIQUE,
+    valor TEXT NOT NULL,
+    descricao VARCHAR(255),
+    tipo VARCHAR(50) NOT NULL, -- 'texto', 'numero', 'booleano', 'json'
+    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Inserir configurações padrão
+INSERT INTO configuracoes_sistema (chave, valor, descricao, tipo) VALUES
+('limite_pedidos_diarios', '100', 'Limite de pedidos por dia', 'numero'),
+('notificacoes_email', 'true', 'Enviar notificações por email', 'booleano'),
+('tempo_sessao', '3600', 'Tempo de sessão em segundos', 'numero'),
+('mensagem_boas_vindas', 'Bem-vindo ao Sensorium!', 'Mensagem de boas-vindas', 'texto'),
+('configuracoes_email', '{"smtp_host": "smtp.example.com", "smtp_port": 587}', 'Configurações do servidor de email', 'json')
+ON DUPLICATE KEY UPDATE chave=chave;
