@@ -101,7 +101,7 @@
 
         <div class="d-flex justify-content-between mt-4 mb-4">
             {% if current_user.is_authenticated and current_user.is_a_usuario() %}
-                <a href="{{ url_for('dashboard_usuario', cpf=current_user.cpf) }}" class="btn btn-secondary btn-custom">
+                <a href="{{ url_for('dashboard_usuario_by_cpf', cpf=current_user.cpf) }}" class="btn btn-secondary btn-custom">
                     <i class="bi bi-arrow-left"></i> Voltar ao Dashboard
                 </a>
             {% elif current_user.is_authenticated and current_user.is_an_empresa() %}

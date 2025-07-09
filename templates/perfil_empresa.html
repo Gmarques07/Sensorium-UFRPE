@@ -157,6 +157,9 @@
                     <a class="nav-link" onclick="showSection(event, 'pedidos')" role="button">
                         <i class="bi bi-box-seam me-2"></i>Pedidos
                     </a>
+                    <a class="nav-link" onclick="showSection(event, 'gerenciar-cisternas')" role="button">
+                        <i class="bi bi-gear me-2"></i>Gerenciar Cisternas
+                    </a>
                     <a class="nav-link" onclick="showSection(event, 'cisterna')" role="button">
                         <i class="bi bi-water me-2"></i>Cisterna
                     </a>
@@ -355,6 +358,153 @@
                     </div>
                 </div>
 
+                <!-- Seção Gerenciar Cisternas -->
+                <div id="gerenciar-cisternas" class="section-panel">
+                    <div class="dashboard-icon">
+                        <i class="bi bi-gear"></i>
+                    </div>
+                    <h4 class="mb-3">Gerenciamento de Cisternas</h4>
+                    
+                    <!-- Botão Cadastrar Nova Cisterna -->
+                    <div class="mb-4">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCadastrarCisterna">
+                            <i class="bi bi-plus-circle me-2"></i>Cadastrar Nova Cisterna
+                        </button>
+                    </div>
+
+                    <!-- Tabela de Cisternas -->
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Nome</th>
+                                            <th>Usuário</th>
+                                            <th>pH Atual</th>
+                                            <th>Nível Água</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% if dados_cisternas %}
+                                            {% for dado in dados_cisternas %}
+                                                <tr>
+                                                    <td>{{ dado.cisterna.identificador }}</td>
+                                                    <td>{{ dado.cisterna.nome }}</td>
+                                                    <td>{{ dado.cisterna.usuario_nome }}</td>
+                                                    <td>{{ dado.ph_atual.ph if dado.ph_atual else 'N/A' }}</td>
+                                                    <td>{{ dado.nivel_atual.boia if dado.nivel_atual else 'N/A' }}</td>
+                                                    <td>
+                                                        <span class="badge {% if dado.cisterna.status == 'ativo' %}bg-success{% elif dado.cisterna.status == 'inativo' %}bg-danger{% else %}bg-warning{% endif %}">
+                                                            {{ dado.cisterna.status }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-group">
+                                                            <button class="btn btn-info btn-sm" onclick="verDetalhesUsuario('{{ dado.cisterna.cpf_usuario }}', '{{ dado.cisterna.id }}')">
+                                                                <i class="bi bi-file-text"></i>
+                                                            </button>
+                                                            <button class="btn btn-warning btn-sm" onclick="editarCisterna('{{ dado.cisterna.id }}')">
+                                                                <i class="bi bi-pencil"></i>
+                                                            </button>
+                                                            <form action="{{ url_for('excluir_cisterna', cisterna_id=dado.cisterna.id) }}" method="POST" class="d-inline">
+                                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir esta cisterna?')">
+                                                                    <i class="bi bi-trash"></i>
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        {% else %}
+                                            <tr>
+                                                <td colspan="7" class="text-center">
+                                                    <div class="text-muted">
+                                                        <i class="bi bi-info-circle fs-4"></i>
+                                                        <p class="mt-2">Nenhuma cisterna cadastrada.</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Cadastrar Cisterna -->
+                <div class="modal fade" id="modalCadastrarCisterna" tabindex="-1" aria-labelledby="modalCadastrarCisternaLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form action="{{ url_for('cadastrar_cisterna_route') }}" method="POST">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="modalCadastrarCisternaLabel">Cadastrar Nova Cisterna</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label for="nome" class="form-label">Nome da Cisterna:</label>
+                                        <input type="text" class="form-control" id="nome" name="nome" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="tipo_equipamento" class="form-label">Tipo de Equipamento:</label>
+                                        <select class="form-select" id="tipo_equipamento" name="tipo_equipamento" required>
+                                            <option value="">Selecione o tipo de equipamento</option>
+                                            <option value="arduino">Arduino</option>
+                                            <option value="raspberry">Raspberry Pi</option>
+                                        </select>
+                                    </div>
+                                    {% if dispositivos_disponiveis %}
+                                    <div class="mb-3">
+                                        <label for="dispositivo_id" class="form-label">Dispositivo:</label>
+                                        <select class="form-select" id="dispositivo_id" name="dispositivo_id">
+                                            <option value="">Selecione um dispositivo</option>
+                                            {% for dispositivo in dispositivos_disponiveis %}
+                                                <option value="{{ dispositivo.id }}">{{ dispositivo.id }} ({{ dispositivo.tipo_equipamento }})</option>
+                                            {% endfor %}
+                                        </select>
+                                        <div class="form-text">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Opcional: Você pode vincular um dispositivo agora ou mais tarde
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        Nenhum dispositivo disponível no momento. O dispositivo poderá ser vinculado posteriormente quando estiver disponível.
+                                    </div>
+                                    {% endif %}
+                                    <div class="mb-3">
+                                        <label for="cpf_usuario" class="form-label">Usuário:</label>
+                                        <select class="form-select" id="cpf_usuario" name="cpf_usuario" required>
+                                            <option value="">Selecione um usuário</option>
+                                            {% for usuario in usuarios %}
+                                                <option value="{{ usuario.cpf }}">{{ usuario.nome }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="status" class="form-label">Status:</label>
+                                        <select class="form-select" id="status" name="status" required>
+                                            <option value="ativo">Ativo</option>
+                                            <option value="inativo">Inativo</option>
+                                            <option value="manutencao">Manutenção</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="submit" class="btn btn-primary">Cadastrar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Seção Cisterna -->
                 <div id="cisterna" class="section-panel">
                     <div class="dashboard-icon">
@@ -531,6 +681,23 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Modal Detalhes do Usuário -->
+                <div class="modal fade" id="modalDetalhesUsuario" tabindex="-1" aria-labelledby="modalDetalhesUsuarioLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="modalDetalhesUsuarioLabel">Relatório do Usuário</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div id="detalhesUsuarioContent">
+                                    <!-- Conteúdo será preenchido via JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -547,6 +714,30 @@
             document.querySelectorAll('.section-panel').forEach(panel => panel.classList.remove('active'));
             event.currentTarget.classList.add('active');
             document.getElementById(sectionId).classList.add('active');
+        }
+
+        // Função para limpar notificação
+        function limparNotificacao(notificacaoId) {
+            if (confirm("Tem certeza que deseja limpar esta notificação?")) {
+                fetch(`/limpar_notificacao/${notificacaoId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert("Erro ao limpar notificação: " + (data.error || "Erro desconhecido"));
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert("Erro ao limpar notificação.");
+                });
+            }
         }
 
         // Configuração do gráfico de pH
@@ -619,30 +810,6 @@
             }
         });
 
-        // Função para limpar notificação
-        function limparNotificacao(notificacaoId) {
-            if (confirm("Tem certeza que deseja limpar esta notificação?")) {
-                fetch(`/limpar_notificacao/${notificacaoId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        window.location.reload();
-                    } else {
-                        alert("Erro ao limpar notificação: " + (data.error || "Erro desconhecido"));
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    alert("Erro ao limpar notificação.");
-                });
-            }
-        }
-
         // Função para atualizar a página após criar/excluir avisos
         function atualizarPagina() {
             window.location.reload();
@@ -681,6 +848,112 @@
                 });
             });
         });
+
+        // Funções para gerenciamento de cisternas
+        function verDetalhesUsuario(cpfUsuario, cisternaId) {
+            fetch(`/api/usuario/${cpfUsuario}/cisterna/${cisternaId}/relatorio`)
+                .then(response => response.json())
+                .then(data => {
+                    const content = document.getElementById('detalhesUsuarioContent');
+                    
+                    // Template do relatório
+                    const atividades = data.atividades.map(atividade => 
+                        `<tr>
+                            <td>${atividade.data}</td>
+                            <td>${atividade.tipo}</td>
+                            <td>${atividade.descricao}</td>
+                        </tr>`
+                    ).join('');
+                    
+                    content.innerHTML = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="border-bottom pb-2">Informações do Usuário</h6>
+                                <p><strong>Nome:</strong> ${data.usuario.nome}</p>
+                                <p><strong>CPF:</strong> ${data.usuario.cpf}</p>
+                                <p><strong>Email:</strong> ${data.usuario.email}</p>
+                                <p><strong>Endereço:</strong> ${data.usuario.endereco}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="border-bottom pb-2">Informações da Cisterna</h6>
+                                <p><strong>Identificador:</strong> ${data.cisterna.identificador}</p>
+                                <p><strong>Nome:</strong> ${data.cisterna.nome}</p>
+                                <p><strong>Tipo:</strong> ${data.cisterna.tipo_equipamento}</p>
+                                <p><strong>Instalação:</strong> ${data.cisterna.data_instalacao}</p>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h6 class="border-bottom pb-2">Estatísticas</h6>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="card bg-light">
+                                            <div class="card-body text-center">
+                                                <h3 class="h6">Média de pH</h3>
+                                                <p class="h4">${data.estatisticas.media_ph || 'N/A'}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card bg-light">
+                                            <div class="card-body text-center">
+                                                <h3 class="h6">Alertas de Nível</h3>
+                                                <p class="h4">${data.estatisticas.alertas_nivel || 0}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card bg-light">
+                                            <div class="card-body text-center">
+                                                <h3 class="h6">Manutenções</h3>
+                                                <p class="h4">${data.estatisticas.manutencoes || 0}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h6 class="border-bottom pb-2">Últimas Atividades</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Data</th>
+                                                <th>Tipo</th>
+                                                <th>Descrição</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${atividades}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Abrir o modal
+                    const modal = new bootstrap.Modal(document.getElementById('modalDetalhesUsuario'));
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar detalhes:', error);
+                    alert('Erro ao carregar detalhes do usuário');
+                });
+        }
+
+        function editarCisterna(cisternaId) {
+            window.location.href = `/cisterna/${cisternaId}/editar`;
+        }
+
+        // Removendo o listener do formulário de cadastro de cisterna para permitir o comportamento padrão
+        document.querySelector('#modalCadastrarCisterna form').addEventListener('submit', function(e) {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalCadastrarCisterna'));
+            modal.hide();
+        });
     </script>
 </body>
 </html>
+

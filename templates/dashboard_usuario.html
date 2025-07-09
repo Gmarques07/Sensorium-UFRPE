@@ -203,6 +203,48 @@
         <!-- Dashboard Section -->
         <section id="dashboard" class="section-panel active">
           <div class="row g-4">
+            <!-- Informações Importantes Card -->
+            <div class="col-12 mb-4">
+              <div class="dashboard-card">
+                <div class="dashboard-icon">
+                  <i class="bi bi-info-circle"></i>
+                </div>
+                <h2 class="h5">Informações Importantes</h2>
+                <div class="row mt-3">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <h6 class="text-muted">Empresa Responsável:</h6>
+                      <p class="mb-1">{{ cisterna.empresa_nome if cisterna else 'Não cadastrado' }}</p>
+                    </div>
+                    <div class="mb-3">
+                      <h6 class="text-muted">Identificador da Cisterna:</h6>
+                      <p class="mb-1">{{ cisterna.identificador if cisterna else 'Não cadastrado' }}</p>
+                    </div>
+                    <div class="mb-3">
+                      <h6 class="text-muted">Nome da Cisterna:</h6>
+                      <p class="mb-1">{{ cisterna.nome if cisterna else 'Não cadastrado' }}</p>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <h6 class="text-muted">Tipo de Equipamento:</h6>
+                      <p class="mb-1">{{ cisterna.tipo_equipamento|title if cisterna else 'Não cadastrado' }}</p>
+                    </div>
+                    <div class="mb-3">
+                      <h6 class="text-muted">Status do Sistema:</h6>
+                      <span class="badge bg-{{ 'success' if cisterna and cisterna.status == 'ativo' else 'warning' if cisterna and cisterna.status == 'manutencao' else 'danger' }}">
+                        {{ cisterna.status|title if cisterna else 'Não Instalado' }}
+                      </span>
+                    </div>
+                    <div class="mb-3">
+                      <h6 class="text-muted">Data de Instalação:</h6>
+                      <p class="mb-1">{{ cisterna.data_instalacao|dateformat if cisterna else 'Não cadastrado' }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div class="col-md-4">
               <div class="dashboard-card">
                 <div class="dashboard-icon">
