@@ -5,93 +5,187 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login de Usuário - Sensorium</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-
+    <!-- Fontes -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-
     <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
 
     <style>
         :root {
-            --primary-blue: #1565C0;
+            --primary-blue: #0066cc;
             --secondary-blue: #4FC3F7;
             --dark-blue: #003366;
-            --light-bg: #f5f9ff;
+            --light-bg: #f8faff;
+            --accent-color: #00E676;
         }
 
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
-            height: 100vh;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 2rem;
         }
 
         .login-card {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.98);
             border-radius: 20px;
-            padding: 2.5rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
             width: 100%;
-            max-width: 400px;
-            transition: transform 0.3s ease;
+            max-width: 450px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .login-card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: var(--dark-blue);
+            margin-bottom: 0.5rem;
         }
 
         .form-control {
-            border-radius: 10px;
+            border-radius: 15px;
             padding: 0.75rem 1.25rem;
             border: 2px solid #e9ecef;
             transition: all 0.3s ease;
+            font-size: 1rem;
         }
 
         .form-control:focus {
             border-color: var(--primary-blue);
-            box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.1);
+            box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.1);
+        }
+
+        .input-group-text {
+            border-radius: 15px 0 0 15px;
+            border: 2px solid #e9ecef;
+            border-right: none;
+            background-color: white;
+            color: var(--primary-blue);
+            padding: 0.75rem 1.25rem;
+        }
+
+        .input-group .form-control {
+            border-radius: 0 15px 15px 0;
         }
 
         .btn-primary {
-            background-color: var(--primary-blue);
-            border: none;
-            border-radius: 10px;
-            padding: 0.75rem 1.5rem;
-            font-weight: 500;
+            background: var(--primary-blue);
+            color: white !important;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             transition: all 0.3s ease;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: all 0.5s ease;
         }
 
         .btn-primary:hover {
-            background-color: var(--secondary-blue);
-            transform: translateY(-2px);
+            background: var(--dark-blue);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
         }
 
         .link-secondary {
             color: var(--dark-blue);
             text-decoration: none;
-            transition: color 0.3s ease;
+            transition: all 0.3s ease;
+            font-weight: 500;
         }
 
         .link-secondary:hover {
             color: var(--primary-blue);
+            transform: translateX(5px);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            transform: translateX(-5px);
+        }
+
+        .alert {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .logo-icon {
+            font-size: 3rem;
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .logo-icon:hover {
+            transform: scale(1.1) rotate(15deg);
+            color: var(--dark-blue);
+        }
+
+        .divider {
+            display: inline-block;
+            width: 5px;
+            height: 5px;
+            background-color: var(--dark-blue);
+            border-radius: 50%;
+            margin: 0 10px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 576px) {
+            .login-card {
+                padding: 2rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="login-card" data-aos="fade-up">
-        <div class="text-center mb-5">
-            <a href="{{ url_for('pagina_inicial') }}">
-                <i class="bi bi-droplet fs-1 text-primary"></i>
+        <div class="text-center mb-4">
+            <a href="{{ url_for('pagina_inicial') }}" class="text-decoration-none">
+                <i class="bi bi-droplet logo-icon"></i>
+                <h2 class="mt-3 mb-2">Bem-vindo ao Sensorium</h2>
+                <p class="text-muted mb-0">Acesse sua conta para gerenciar seus pedidos</p>
             </a>
-            <h2 class="mt-3">Acesse sua conta</h2>
-            <p class="text-muted">Gerencie seus pedidos de água</p>
         </div>
+
         <div class="mb-4">
-            <a href="{{ url_for('pagina_inicial') }}" class="link-secondary text-decoration-none">
+            <a href="{{ url_for('pagina_inicial') }}" class="link-secondary back-link">
                 <i class="bi bi-arrow-left me-2"></i>Voltar à Página Inicial
             </a>
         </div>
@@ -99,7 +193,7 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    <div class="alert alert-{{ category }} alert-dismissible fade show mb-4" role="alert">
                         {{ message }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
@@ -113,14 +207,14 @@
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
                     <input type="text" 
-                            id="cpf-login" 
-                            name="cpf" 
-                            class="form-control" 
-                            placeholder="000.000.000-00"
-                            maxlength="14"
-                            pattern="\d{3}\.\d{3}\.\d{3}-\d{2}"
-                            title="Insira um CPF válido no formato 000.000.000-00"
-                            required>
+                           id="cpf-login" 
+                           name="cpf" 
+                           class="form-control" 
+                           placeholder="000.000.000-00"
+                           maxlength="14"
+                           pattern="\d{3}\.\d{3}\.\d{3}-\d{2}"
+                           title="Insira um CPF válido no formato 000.000.000-00"
+                           required>
                 </div>
             </div>
 
@@ -129,41 +223,43 @@
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-lock"></i></span>
                     <input type="password" 
-                            id="senha-login" 
-                            name="senha" 
-                            class="form-control" 
-                            placeholder="••••••••" 
-                            required>
+                           id="senha-login" 
+                           name="senha" 
+                           class="form-control" 
+                           placeholder="••••••••" 
+                           required>
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100 mb-3">
+            <button type="submit" class="btn btn-primary w-100 mb-4">
                 <i class="bi bi-box-arrow-in-right me-2"></i>Entrar
             </button>
 
             <div class="text-center">
-                <span class="mx-2">•</span>
-                <a href="{{ url_for('cadastro') }}" class="link-secondary">Criar nova conta</a>
-                <span class="mx-2">•</span>
-                
+                <p class="mb-0">
+                    Ainda não tem uma conta?
+                    <a href="{{ url_for('cadastro') }}" class="link-secondary ms-1">Cadastre-se aqui</a>
+                </p>
             </div>
         </form>
     </div>
 
-
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
     <script>
+        // Inicialização do AOS
         AOS.init({
             duration: 800,
             once: true
         });
 
+        // Formatação do CPF
         document.addEventListener('DOMContentLoaded', function() {
             const cpfInput = document.getElementById('cpf-login');
 
             cpfInput.addEventListener('input', function() {
-                let value = cpfInput.value.replace(/\D/g, '');
+                let value = this.value.replace(/\D/g, '');
                 let formattedValue = '';
 
                 if (value.length > 0) {
@@ -178,12 +274,12 @@
                 if (value.length > 9) {
                     formattedValue += '-' + value.substring(9, 11);
                 }
-                cpfInput.value = formattedValue;
+                this.value = formattedValue;
             });
 
             document.querySelector('form').addEventListener('submit', function(e) {
-                cpfInput.value = cpfInput.value.replace(/\D/g, ''); 
-                if(cpfInput.value.length !== 11) {
+                const cpfValue = cpfInput.value.replace(/\D/g, '');
+                if(cpfValue.length !== 11) {
                     e.preventDefault();
                     alert('CPF deve conter exatamente 11 dígitos numéricos.');
                     cpfInput.focus();
