@@ -7,70 +7,235 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <style>
         :root {
-            --primary-blue: #1565C0;
-            --secondary-blue: #4FC3F7;
-            --dark-blue: #003366;
-            --light-bg: #c5d0d6;
+            --primary-color: #0066cc;
+            --secondary-color: #003366;
+            --accent-color: #00E676;
+            --light-bg: #f5f9ff;
+            --dark-text: #2c3e50;
+            --light-text: #ffffff;
+            --border-radius: 15px;
+            --transition: all 0.3s ease;
         }
+
         body {
             font-family: 'Poppins', sans-serif;
             background: var(--light-bg);
+            color: var(--dark-text);
         }
+
         .sidebar {
-            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+            background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
             min-height: 100vh;
-            color: #fff;
-            padding: 2rem 1rem;
+            color: var(--light-text);
+            padding: 2rem 1.5rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 280px;
+            z-index: 1000;
+            transition: var(--transition);
         }
+
         .sidebar .nav-link {
-            color: #fff;
-            margin-bottom: 1rem;
+            color: var(--light-text);
+            margin-bottom: 0.75rem;
             font-weight: 500;
-            border-radius: 8px;
-            transition: background 0.2s;
+            border-radius: var(--border-radius);
+            padding: 0.75rem 1rem;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
-        .sidebar .nav-link.active, .sidebar .nav-link:hover {
-            background: rgba(255,255,255,0.15);
-            color: #fff;
+
+        .sidebar .nav-link i {
+            font-size: 1.25rem;
         }
+
+        .sidebar .nav-link.active,
+        .sidebar .nav-link:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+
         .content {
+            margin-left: 280px;
             padding: 2rem;
+            min-height: 100vh;
         }
+
         .dashboard-card {
-            border-radius: 16px;
-            box-shadow: 0 4px 16px rgba(21, 101, 192, 0.08);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             background: #fff;
-            padding: 1.5rem 2rem;
-            margin-bottom: 2rem;
-            transition: box-shadow 0.2s;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: var(--transition);
+            border: none;
         }
+
         .dashboard-card:hover {
-            box-shadow: 0 8px 32px rgba(21, 101, 192, 0.15);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
         }
+
         .dashboard-icon {
             font-size: 2.5rem;
-            color: var(--primary-blue);
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            transition: var(--transition);
         }
+
+        .dashboard-card:hover .dashboard-icon {
+            transform: scale(1.1);
+            color: var(--accent-color);
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table th {
+            font-weight: 600;
+            color: var(--secondary-color);
+            border-bottom-width: 1px;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .btn {
+            border-radius: var(--border-radius);
+            padding: 0.5rem 1rem;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+        }
+
+        .btn i {
+            font-size: 1.1em;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            border: none;
+            color: #000;
+        }
+
+        .btn-warning:hover {
+            background: #ffb300;
+            color: #000;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            border: none;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .badge {
+            padding: 0.5rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            border-radius: var(--border-radius);
+            padding: 0.75rem;
+            border: 2px solid #e9ecef;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(0, 102, 204, 0.15);
+        }
+
+        .modal-content {
+            border-radius: var(--border-radius);
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: var(--light-text);
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            border: none;
+        }
+
+        .modal-footer {
+            border-top: 1px solid #e9ecef;
+        }
+
+        .alert {
+            border-radius: var(--border-radius);
+            border: none;
+            margin-bottom: 1rem;
+        }
+
         .logout-link {
-            color: #fff;
+            color: var(--light-text);
             text-decoration: none;
             font-weight: 500;
-            margin-top: 2rem;
-            display: inline-block;
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
+
         .logout-link:hover {
-            text-decoration: underline;
-            color: #000000;
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--light-text);
+            transform: translateX(5px);
         }
-        @media (max-width: 767px) {
+
+        @media (max-width: 991px) {
             .sidebar {
-                min-height: auto;
-                padding: 1rem 0.5rem;
+                width: 220px;
             }
             .content {
+                margin-left: 220px;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                min-height: auto;
+            }
+            .content {
+                margin-left: 0;
                 padding: 1rem;
+            }
+            .dashboard-card {
+                margin-bottom: 1rem;
             }
         }
     </style>
@@ -78,56 +243,89 @@
 <body>
     <div class="container-fluid">
         <div class="row flex-nowrap">
-            <div class="col-auto sidebar d-flex flex-column align-items-start">
-                <a href="{{ url_for('pagina_inicial') }}" class="mb-4 text-decoration-none text-white">
+            <div class="col-auto sidebar">
+                <a href="{{ url_for('pagina_inicial') }}" class="d-flex align-items-center mb-4 text-decoration-none text-white" data-aos="fade-right">
                     <i class="bi bi-droplet fs-1"></i>
                     <span class="fs-4 ms-2">Sensorium</span>
                 </a>
-                <nav class="nav flex-column w-100">
-                    <a class="nav-link active" href="#painel"><i class="bi bi-speedometer2 me-2"></i>Painel</a>
-                    <a class="nav-link" href="#usuarios"><i class="bi bi-people me-2"></i>Usuários</a>
-                    <a class="nav-link" href="#empresas"><i class="bi bi-building me-2"></i>Empresas</a>
-                    <a class="nav-link" href="#pedidos"><i class="bi bi-bag-check me-2"></i>Pedidos</a>
-                    <a class="nav-link" href="#notificacoes"><i class="bi bi-bell me-2"></i>Notificações</a>
-                    <a class="nav-link" href="#configuracoes"><i class="bi bi-gear me-2"></i>Configurações</a>
+                <nav class="nav flex-column w-100" data-aos="fade-right" data-aos-delay="100">
+                    <a class="nav-link active" href="#painel">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>Painel</span>
+                    </a>
+                    <a class="nav-link" href="#usuarios">
+                        <i class="bi bi-people"></i>
+                        <span>Usuários</span>
+                    </a>
+                    <a class="nav-link" href="#empresas">
+                        <i class="bi bi-building"></i>
+                        <span>Empresas</span>
+                    </a>
+                    <a class="nav-link" href="#pedidos">
+                        <i class="bi bi-bag-check"></i>
+                        <span>Pedidos</span>
+                    </a>
+                    <a class="nav-link" href="#notificacoes">
+                        <i class="bi bi-bell"></i>
+                        <span>Notificações</span>
+                    </a>
+                    <a class="nav-link" href="#configuracoes">
+                        <i class="bi bi-gear"></i>
+                        <span>Configurações</span>
+                    </a>
                 </nav>
-                <a href="{{ url_for('admin_logout') }}" class="logout-link mt-auto"><i class="bi bi-box-arrow-right me-2"></i>Sair</a>
+                <a href="{{ url_for('admin_logout') }}" class="logout-link mt-auto" data-aos="fade-right" data-aos-delay="200">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Sair</span>
+                </a>
             </div>
             
             <div class="col content">
-                <h2 class="mb-4 text-primary">Bem-vindo, Administrador!</h2>
+                <h2 class="mb-4 text-primary" data-aos="fade-up">
+                    <i class="bi bi-person-workspace me-2"></i>
+                    Bem-vindo, Administrador!
+                </h2>
 
                 <!-- Cards do Painel -->
                 <div id="painel" class="row">
-                    <div class="col-md-4">
+                    <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
                         <div class="dashboard-card text-center">
-                            <div class="dashboard-icon mb-2"><i class="bi bi-people"></i></div>
-                            <h5 class="mb-1">Usuários</h5>
-                            <p class="mb-0 fs-4">{{ total_usuarios or 0 }}</p>
+                            <div class="dashboard-icon">
+                                <i class="bi bi-people"></i>
+                            </div>
+                            <h5 class="mb-1">Total de Usuários</h5>
+                            <p class="mb-0 fs-4 fw-bold text-primary">{{ total_usuarios or 0 }}</p>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
                         <div class="dashboard-card text-center">
-                            <div class="dashboard-icon mb-2"><i class="bi bi-building"></i></div>
-                            <h5 class="mb-1">Empresas</h5>
-                            <p class="mb-0 fs-4">{{ total_empresas or 0 }}</p>
+                            <div class="dashboard-icon">
+                                <i class="bi bi-building"></i>
+                            </div>
+                            <h5 class="mb-1">Total de Empresas</h5>
+                            <p class="mb-0 fs-4 fw-bold text-primary">{{ total_empresas or 0 }}</p>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
                         <div class="dashboard-card text-center">
-                            <div class="dashboard-icon mb-2"><i class="bi bi-bag-check"></i></div>
-                            <h5 class="mb-1">Pedidos</h5>
-                            <p class="mb-0 fs-4">{{ total_pedidos or 0 }}</p>
+                            <div class="dashboard-icon">
+                                <i class="bi bi-bag-check"></i>
+                            </div>
+                            <h5 class="mb-1">Total de Pedidos</h5>
+                            <p class="mb-0 fs-4 fw-bold text-primary">{{ total_pedidos or 0 }}</p>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Seção de Usuários -->
-                <div class="mt-5" id="usuarios">
-                    <h4 class="mb-3">Usuários</h4>
+                <div class="mt-5" id="usuarios" data-aos="fade-up">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-people-fill fs-3 text-primary me-2"></i>
+                        <h4 class="mb-0">Usuários</h4>
+                    </div>
                     <div class="dashboard-card">
                         <div class="table-responsive">
-                            <table class="table table-striped">
+                            <table class="table table-hover">
                                 <thead>
                                     <tr>
                                         <th>Nome</th>
@@ -140,14 +338,23 @@
                                 <tbody>
                                     {% for usuario in usuarios %}
                                     <tr>
-                                        <td>{{ usuario.nome }}</td>
+                                        <td>
+                                            <i class="bi bi-person-circle text-primary me-2"></i>
+                                            {{ usuario.nome }}
+                                        </td>
                                         <td>{{ usuario.cpf }}</td>
                                         <td>{{ usuario.email }}</td>
                                         <td>{{ usuario.endereco }}</td>
                                         <td>
-                                            <button type="button" class="btn btn-sm btn-primary btn-visualizar-usuario" data-id="{{ usuario.id }}" title="Visualizar"><i class="bi bi-eye"></i></button>
-                                            <button type="button" class="btn btn-sm btn-warning btn-editar-usuario" data-id="{{ usuario.id }}" title="Editar"><i class="bi bi-pencil"></i></button>
-                                            <button type="button" class="btn btn-sm btn-danger btn-excluir-usuario" data-id="{{ usuario.id }}" title="Excluir"><i class="bi bi-trash"></i></button>
+                                            <button type="button" class="btn btn-sm btn-primary btn-visualizar-usuario" data-id="{{ usuario.id }}" title="Visualizar">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-warning btn-editar-usuario" data-id="{{ usuario.id }}" title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-danger btn-excluir-usuario" data-id="{{ usuario.id }}" title="Excluir">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -158,11 +365,14 @@
                 </div>
 
                 <!-- Seção de Empresas -->
-                <div class="mt-5" id="empresas">
-                    <h4 class="mb-3">Empresas</h4>
+                <div class="mt-5" id="empresas" data-aos="fade-up">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-building-fill fs-3 text-primary me-2"></i>
+                        <h4 class="mb-0">Empresas</h4>
+                    </div>
                     <div class="dashboard-card">
                         <div class="table-responsive">
-                            <table class="table table-striped">
+                            <table class="table table-hover">
                                 <thead>
                                     <tr>
                                         <th>Nome</th>
@@ -175,14 +385,23 @@
                                 <tbody>
                                     {% for empresa in empresas %}
                                     <tr>
-                                        <td>{{ empresa.nome }}</td>
+                                        <td>
+                                            <i class="bi bi-building text-primary me-2"></i>
+                                            {{ empresa.nome }}
+                                        </td>
                                         <td>{{ empresa.cnpj }}</td>
                                         <td>{{ empresa.email }}</td>
                                         <td>{{ empresa.endereco }}</td>
                                         <td>
-                                            <button type="button" class="btn btn-sm btn-primary btn-visualizar-empresa" data-id="{{ empresa.id }}" title="Visualizar"><i class="bi bi-eye"></i></button>
-                                            <button type="button" class="btn btn-sm btn-warning btn-editar-empresa" data-id="{{ empresa.id }}" title="Editar"><i class="bi bi-pencil"></i></button>
-                                            <button type="button" class="btn btn-sm btn-danger btn-excluir-empresa" data-id="{{ empresa.id }}" title="Excluir"><i class="bi bi-trash"></i></button>
+                                            <button type="button" class="btn btn-sm btn-primary btn-visualizar-empresa" data-id="{{ empresa.id }}" title="Visualizar">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-warning btn-editar-empresa" data-id="{{ empresa.id }}" title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-danger btn-excluir-empresa" data-id="{{ empresa.id }}" title="Excluir">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -193,11 +412,14 @@
                 </div>
 
                 <!-- Seção de Pedidos -->
-                <div class="mt-5" id="pedidos">
-                    <h4 class="mb-3">Pedidos</h4>
+                <div class="mt-5" id="pedidos" data-aos="fade-up">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-bag-check-fill fs-3 text-primary me-2"></i>
+                        <h4 class="mb-0">Pedidos</h4>
+                    </div>
                     <div class="dashboard-card">
                         <div class="table-responsive">
-                            <table class="table table-striped">
+                            <table class="table table-hover">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
@@ -213,17 +435,28 @@
                                 <tbody>
                                     {% for pedido in pedidos %}
                                     <tr>
-                                        <td>{{ pedido.id }}</td>
+                                        <td>#{{ pedido.id }}</td>
                                         <td>{{ pedido.descricao }}</td>
                                         <td>{{ pedido.quantidade }}</td>
-                                        <td>{{ pedido.status }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ pedido.status == 'pendente' and 'warning' or (pedido.status == 'aceito' and 'success' or 'danger') }}">
+                                                <i class="bi bi-{{ pedido.status == 'pendente' and 'hourglass-split' or (pedido.status == 'aceito' and 'check-circle-fill' or 'x-circle-fill') }} me-1"></i>
+                                                {{ pedido.status }}
+                                            </span>
+                                        </td>
                                         <td>{{ pedido.data|dateformat }}</td>
                                         <td>{{ pedido.usuario_nome }}</td>
                                         <td>{{ pedido.empresa_nome }}</td>
                                         <td>
-                                            <button type="button" class="btn btn-sm btn-primary btn-visualizar-pedido" data-id="{{ pedido.id }}" title="Visualizar"><i class="bi bi-eye"></i></button>
-                                            <button type="button" class="btn btn-sm btn-warning btn-editar-pedido" data-id="{{ pedido.id }}" title="Editar"><i class="bi bi-pencil"></i></button>
-                                            <button type="button" class="btn btn-sm btn-danger btn-excluir-pedido" data-id="{{ pedido.id }}" title="Excluir"><i class="bi bi-trash"></i></button>
+                                            <button type="button" class="btn btn-sm btn-primary btn-visualizar-pedido" data-id="{{ pedido.id }}" title="Visualizar">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-warning btn-editar-pedido" data-id="{{ pedido.id }}" title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-danger btn-excluir-pedido" data-id="{{ pedido.id }}" title="Excluir">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -234,11 +467,14 @@
                 </div>
 
                 <!-- Seção de Notificações -->
-                <div class="mt-5" id="notificacoes">
-                    <h4 class="mb-3">Notificações</h4>
+                <div class="mt-5" id="notificacoes" data-aos="fade-up">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-bell-fill fs-3 text-primary me-2"></i>
+                        <h4 class="mb-0">Notificações</h4>
+                    </div>
                     <div class="dashboard-card">
                         <div class="table-responsive">
-                            <table class="table">
+                            <table class="table table-hover">
                                 <thead>
                                     <tr>
                                         <th>Tipo</th>
@@ -252,15 +488,24 @@
                                 <tbody id="notificacoes-lista">
                                     {% for notificacao in notificacoes %}
                                     <tr data-id="{{ notificacao.id }}" class="{% if not notificacao.lida %}table-warning{% endif %}">
-                                        <td>{{ notificacao.tipo }}</td>
+                                        <td>
+                                            <i class="bi bi-envelope text-primary me-2"></i>
+                                            {{ notificacao.tipo }}
+                                        </td>
                                         <td>{{ notificacao.titulo }}</td>
                                         <td>{{ notificacao.mensagem }}</td>
                                         <td>{{ notificacao.data_criacao|dateformat }}</td>
                                         <td>
                                             {% if notificacao.lida %}
-                                            <span class="badge bg-success">Lida</span>
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle-fill me-1"></i>
+                                                Lida
+                                            </span>
                                             {% else %}
-                                            <span class="badge bg-warning">Não lida</span>
+                                            <span class="badge bg-warning">
+                                                <i class="bi bi-exclamation-circle-fill me-1"></i>
+                                                Não lida
+                                            </span>
                                             {% endif %}
                                         </td>
                                         <td>
@@ -279,13 +524,19 @@
                 </div>
 
                 <!-- Seção de Configurações -->
-                <div class="mt-5" id="configuracoes">
-                    <h4 class="mb-3">Configurações do Sistema</h4>
+                <div class="mt-5" id="configuracoes" data-aos="fade-up">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-gear-fill fs-3 text-primary me-2"></i>
+                        <h4 class="mb-0">Configurações do Sistema</h4>
+                    </div>
                     <div class="dashboard-card">
                         <form id="form-configuracoes">
                             {% for config in configuracoes %}
-                            <div class="mb-3">
-                                <label class="form-label">{{ config.descricao }}</label>
+                            <div class="mb-4">
+                                <label class="form-label d-flex align-items-center">
+                                    <i class="bi bi-sliders me-2 text-primary"></i>
+                                    {{ config.descricao }}
+                                </label>
                                 {% if config.tipo == 'texto' %}
                                 <input type="text" class="form-control config-input" 
                                        data-chave="{{ config.chave }}" value="{{ config.valor }}">
@@ -301,10 +552,16 @@
                                 <textarea class="form-control config-input" 
                                           data-chave="{{ config.chave }}" rows="3">{{ config.valor }}</textarea>
                                 {% endif %}
-                                <div class="form-text">Última atualização: {{ config.data_atualizacao|dateformat }}</div>
+                                <div class="form-text">
+                                    <i class="bi bi-clock-history me-1"></i>
+                                    Última atualização: {{ config.data_atualizacao|dateformat }}
+                                </div>
                             </div>
                             {% endfor %}
-                            <button type="submit" class="btn btn-primary">Salvar Configurações</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i>
+                                Salvar Configurações
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -317,7 +574,10 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Detalhes</h5>
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil-square me-2"></i>
+                        <span>Detalhes</span>
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -326,8 +586,14 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                    <button type="submit" form="formAdmin" class="btn btn-primary" id="btnSalvar">Salvar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i>
+                        Fechar
+                    </button>
+                    <button type="submit" form="formAdmin" class="btn btn-primary" id="btnSalvar">
+                        <i class="bi bi-check-lg"></i>
+                        Salvar
+                    </button>
                 </div>
             </div>
         </div>
@@ -335,282 +601,289 @@
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
-    $(document).ready(function() {
-        // Navegação suave para âncoras do menu lateral
-        $('.sidebar .nav-link').on('click', function(e) {
-            const target = $(this).attr('href');
-            if(target.startsWith('#')) {
-                e.preventDefault();
-                const $el = $(target);
-                if($el.length) {
-                    $('html, body').animate({
-                        scrollTop: $el.offset().top - 30
-                    }, 500);
-                }
-            }
-        });
-
-        // Função para abrir modal
-        function openModal(tipo, id, modo) {
-            $.get(`/admin/${tipo}/${id}`, function(data) {
-                if(!data.success) {
-                    alert('Erro ao carregar dados!');
-                    return;
-                }
-                
-                const obj = data[tipo];
-                const $form = $('#formAdmin');
-                $form.empty();
-                $form.append(`<input type="hidden" name="id" value="${id}">`);
-                $form.append(`<input type="hidden" name="tipo" value="${tipo}">`);
-                
-                if(tipo === 'usuario') {
-                    $form.append(`
-                        <div class="mb-3">
-                            <label class="form-label">Nome</label>
-                            <input type="text" class="form-control" name="nome" value="${obj.nome}" ${modo === 'view' ? 'readonly' : ''}>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">CPF</label>
-                            <input type="text" class="form-control" name="cpf" value="${obj.cpf}" ${modo === 'view' ? 'readonly' : ''}>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Email</label>
-                            <input type="email" class="form-control" name="email" value="${obj.email}" ${modo === 'view' ? 'readonly' : ''}>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Endereço</label>
-                            <input type="text" class="form-control" name="endereco" value="${obj.endereco}" ${modo === 'view' ? 'readonly' : ''}>
-                        </div>
-                    `);
-                } else if(tipo === 'empresa') {
-                    $form.append(`
-                        <div class="mb-3">
-                            <label class="form-label">Nome</label>
-                            <input type="text" class="form-control" name="nome" value="${obj.nome}" ${modo === 'view' ? 'readonly' : ''}>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">CNPJ</label>
-                            <input type="text" class="form-control" name="cnpj" value="${obj.cnpj}" ${modo === 'view' ? 'readonly' : ''}>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Email</label>
-                            <input type="email" class="form-control" name="email" value="${obj.email}" ${modo === 'view' ? 'readonly' : ''}>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Endereço</label>
-                            <input type="text" class="form-control" name="endereco" value="${obj.endereco}" ${modo === 'view' ? 'readonly' : ''}>
-                        </div>
-                    `);
-                } else if(tipo === 'pedido') {
-                    $form.append(`
-                        <div class="mb-3">
-                            <label class="form-label">Descrição</label>
-                            <input type="text" class="form-control" name="descricao" value="${obj.descricao}" ${modo === 'view' ? 'readonly' : ''}>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Quantidade</label>
-                            <input type="number" class="form-control" name="quantidade" value="${obj.quantidade}" ${modo === 'view' ? 'readonly' : ''}>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Status</label>
-                            <input type="text" class="form-control" name="status" value="${obj.status}" ${modo === 'view' ? 'readonly' : ''}>
-                        </div>
-                    `);
-                }
-
-                $('#btnSalvar').toggle(modo !== 'view');
-                $('.modal-title').text(modo === 'view' ? 'Visualizar' : 'Editar');
-                
-                const modal = new bootstrap.Modal('#modalAdmin');
-                modal.show();
+        $(document).ready(function() {
+            // Inicializa AOS
+            AOS.init({
+                duration: 800,
+                once: true
             });
-        }
 
-        // Event listeners para os botões de ação
-        $(document).on('click', '.btn-visualizar-usuario', function() {
-            openModal('usuario', $(this).data('id'), 'view');
-        });
-        $(document).on('click', '.btn-editar-usuario', function() {
-            openModal('usuario', $(this).data('id'), 'edit');
-        });
-        $(document).on('click', '.btn-excluir-usuario', function() {
-            if(confirm('Tem certeza que deseja excluir este usuário?')) {
-                const $btn = $(this);
-                $.ajax({
-                    url: `/admin/usuario/${$btn.data('id')}`,
-                    method: 'DELETE',
-                    success: function(data) {
-                        if(data.success) {
-                            $btn.closest('tr').fadeOut();
-                        } else {
-                            alert('Erro ao excluir usuário!');
-                        }
-                    }
-                });
-            }
-        });
-
-        // Mesmos listeners para empresa
-        $(document).on('click', '.btn-visualizar-empresa', function() {
-            openModal('empresa', $(this).data('id'), 'view');
-        });
-        $(document).on('click', '.btn-editar-empresa', function() {
-            openModal('empresa', $(this).data('id'), 'edit');
-        });
-        $(document).on('click', '.btn-excluir-empresa', function() {
-            if(confirm('Tem certeza que deseja excluir esta empresa?')) {
-                const $btn = $(this);
-                $.ajax({
-                    url: `/admin/empresa/${$btn.data('id')}`,
-                    method: 'DELETE',
-                    success: function(data) {
-                        if(data.success) {
-                            $btn.closest('tr').fadeOut();
-                        } else {
-                            alert('Erro ao excluir empresa!');
-                        }
-                    }
-                });
-            }
-        });
-
-        // Mesmos listeners para pedido
-        $(document).on('click', '.btn-visualizar-pedido', function() {
-            openModal('pedido', $(this).data('id'), 'view');
-        });
-        $(document).on('click', '.btn-editar-pedido', function() {
-            openModal('pedido', $(this).data('id'), 'edit');
-        });
-        $(document).on('click', '.btn-excluir-pedido', function() {
-            if(confirm('Tem certeza que deseja excluir este pedido?')) {
-                const $btn = $(this);
-                $.ajax({
-                    url: `/admin/pedido/${$btn.data('id')}`,
-                    method: 'DELETE',
-                    success: function(data) {
-                        if(data.success) {
-                            $btn.closest('tr').fadeOut();
-                        } else {
-                            alert('Erro ao excluir pedido!');
-                        }
-                    }
-                });
-            }
-        });
-
-        // Salvar edições
-        $('#formAdmin').on('submit', function(e) {
-            e.preventDefault();
-            const $form = $(this);
-            const tipo = $form.find('[name="tipo"]').val();
-            const id = $form.find('[name="id"]').val();
-            
-            $.ajax({
-                url: `/admin/${tipo}/${id}`,
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(Object.fromEntries(new FormData($form[0]))),
-                success: function(data) {
-                    if(data.success) {
-                        location.reload();
-                    } else {
-                        alert('Erro ao salvar!');
+            // Navegação suave para âncoras do menu lateral
+            $('.sidebar .nav-link').on('click', function(e) {
+                const target = $(this).attr('href');
+                if(target.startsWith('#')) {
+                    e.preventDefault();
+                    const $el = $(target);
+                    if($el.length) {
+                        $('html, body').animate({
+                            scrollTop: $el.offset().top - 30
+                        }, 500);
                     }
                 }
             });
-        });
 
-        // Atualizar notificações a cada 30 segundos
-        function atualizarNotificacoes() {
-            $.get('/admin/notificacoes/nao-lidas', function(data) {
-                if (data.success) {
-                    const $lista = $('#notificacoes-lista');
-                    $lista.empty();
+            // Função para abrir modal
+            function openModal(tipo, id, modo) {
+                $.get(`/admin/${tipo}/${id}`, function(data) {
+                    if(!data.success) {
+                        alert('Erro ao carregar dados!');
+                        return;
+                    }
                     
-                    data.notificacoes.forEach(function(notif) {
-                        const $tr = $('<tr>')
-                            .addClass(notif.lida ? '' : 'table-warning')
-                            .attr('data-id', notif.id);
-                            
-                        $tr.append($('<td>').text(notif.tipo));
-                        $tr.append($('<td>').text(notif.titulo));
-                        $tr.append($('<td>').text(notif.mensagem));
-                        $tr.append($('<td>').text(new Date(notif.data_criacao).toLocaleString()));
-                        
-                        const $status = $('<td>').append(
-                            $('<span>')
-                                .addClass('badge ' + (notif.lida ? 'bg-success' : 'bg-warning'))
-                                .text(notif.lida ? 'Lida' : 'Não lida')
-                        );
-                        $tr.append($status);
-                        
-                        const $acoes = $('<td>');
-                        if (!notif.lida) {
-                            $acoes.append(
-                                $('<button>')
-                                    .addClass('btn btn-sm btn-success btn-marcar-lida')
-                                    .attr('title', 'Marcar como lida')
-                                    .append($('<i>').addClass('bi bi-check-lg'))
-                            );
+                    const obj = data[tipo];
+                    const $form = $('#formAdmin');
+                    $form.empty();
+                    $form.append(`<input type="hidden" name="id" value="${id}">`);
+                    $form.append(`<input type="hidden" name="tipo" value="${tipo}">`);
+                    
+                    if(tipo === 'usuario') {
+                        $form.append(`
+                            <div class="mb-3">
+                                <label class="form-label">Nome</label>
+                                <input type="text" class="form-control" name="nome" value="${obj.nome}" ${modo === 'view' ? 'readonly' : ''}>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">CPF</label>
+                                <input type="text" class="form-control" name="cpf" value="${obj.cpf}" ${modo === 'view' ? 'readonly' : ''}>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" name="email" value="${obj.email}" ${modo === 'view' ? 'readonly' : ''}>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Endereço</label>
+                                <input type="text" class="form-control" name="endereco" value="${obj.endereco}" ${modo === 'view' ? 'readonly' : ''}>
+                            </div>
+                        `);
+                    } else if(tipo === 'empresa') {
+                        $form.append(`
+                            <div class="mb-3">
+                                <label class="form-label">Nome</label>
+                                <input type="text" class="form-control" name="nome" value="${obj.nome}" ${modo === 'view' ? 'readonly' : ''}>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">CNPJ</label>
+                                <input type="text" class="form-control" name="cnpj" value="${obj.cnpj}" ${modo === 'view' ? 'readonly' : ''}>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" name="email" value="${obj.email}" ${modo === 'view' ? 'readonly' : ''}>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Endereço</label>
+                                <input type="text" class="form-control" name="endereco" value="${obj.endereco}" ${modo === 'view' ? 'readonly' : ''}>
+                            </div>
+                        `);
+                    } else if(tipo === 'pedido') {
+                        $form.append(`
+                            <div class="mb-3">
+                                <label class="form-label">Descrição</label>
+                                <input type="text" class="form-control" name="descricao" value="${obj.descricao}" ${modo === 'view' ? 'readonly' : ''}>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Quantidade</label>
+                                <input type="number" class="form-control" name="quantidade" value="${obj.quantidade}" ${modo === 'view' ? 'readonly' : ''}>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Status</label>
+                                <input type="text" class="form-control" name="status" value="${obj.status}" ${modo === 'view' ? 'readonly' : ''}>
+                            </div>
+                        `);
+                    }
+
+                    $('#btnSalvar').toggle(modo !== 'view');
+                    $('.modal-title').text(modo === 'view' ? 'Visualizar' : 'Editar');
+                    
+                    const modal = new bootstrap.Modal('#modalAdmin');
+                    modal.show();
+                });
+            }
+
+            // Event listeners para os botões de ação
+            $(document).on('click', '.btn-visualizar-usuario', function() {
+                openModal('usuario', $(this).data('id'), 'view');
+            });
+            $(document).on('click', '.btn-editar-usuario', function() {
+                openModal('usuario', $(this).data('id'), 'edit');
+            });
+            $(document).on('click', '.btn-excluir-usuario', function() {
+                if(confirm('Tem certeza que deseja excluir este usuário?')) {
+                    const $btn = $(this);
+                    $.ajax({
+                        url: `/admin/usuario/${$btn.data('id')}`,
+                        method: 'DELETE',
+                        success: function(data) {
+                            if(data.success) {
+                                $btn.closest('tr').fadeOut();
+                            } else {
+                                alert('Erro ao excluir usuário!');
+                            }
                         }
-                        $tr.append($acoes);
-                        
-                        $lista.append($tr);
                     });
                 }
             });
-        }
-        
-        setInterval(atualizarNotificacoes, 30000);
 
-        // Marcar notificação como lida
-        $(document).on('click', '.btn-marcar-lida', function() {
-            const $btn = $(this);
-            const $tr = $btn.closest('tr');
-            const id = $tr.data('id');
-            
-            $.post(`/admin/notificacoes/${id}/marcar-lida`, function(data) {
-                if (data.success) {
-                    $tr.removeClass('table-warning');
-                    $tr.find('.badge')
-                        .removeClass('bg-warning')
-                        .addClass('bg-success')
-                        .text('Lida');
-                    $btn.remove();
+            // Mesmos listeners para empresa
+            $(document).on('click', '.btn-visualizar-empresa', function() {
+                openModal('empresa', $(this).data('id'), 'view');
+            });
+            $(document).on('click', '.btn-editar-empresa', function() {
+                openModal('empresa', $(this).data('id'), 'edit');
+            });
+            $(document).on('click', '.btn-excluir-empresa', function() {
+                if(confirm('Tem certeza que deseja excluir esta empresa?')) {
+                    const $btn = $(this);
+                    $.ajax({
+                        url: `/admin/empresa/${$btn.data('id')}`,
+                        method: 'DELETE',
+                        success: function(data) {
+                            if(data.success) {
+                                $btn.closest('tr').fadeOut();
+                            } else {
+                                alert('Erro ao excluir empresa!');
+                            }
+                        }
+                    });
                 }
             });
-        });
 
-        // Salvar configurações
-        $('#form-configuracoes').on('submit', function(e) {
-            e.preventDefault();
-            
-            const promises = [];
-            $('.config-input').each(function() {
-                const $input = $(this);
-                const chave = $input.data('chave');
-                const valor = $input.val();
-                
-                promises.push(
-                    $.ajax({
-                        url: `/admin/configuracoes/${chave}`,
-                        method: 'POST',
-                        contentType: 'application/json',
-                        data: JSON.stringify({ valor: valor })
-                    })
-                );
+            // Mesmos listeners para pedido
+            $(document).on('click', '.btn-visualizar-pedido', function() {
+                openModal('pedido', $(this).data('id'), 'view');
             });
+            $(document).on('click', '.btn-editar-pedido', function() {
+                openModal('pedido', $(this).data('id'), 'edit');
+            });
+            $(document).on('click', '.btn-excluir-pedido', function() {
+                if(confirm('Tem certeza que deseja excluir este pedido?')) {
+                    const $btn = $(this);
+                    $.ajax({
+                        url: `/admin/pedido/${$btn.data('id')}`,
+                        method: 'DELETE',
+                        success: function(data) {
+                            if(data.success) {
+                                $btn.closest('tr').fadeOut();
+                            } else {
+                                alert('Erro ao excluir pedido!');
+                            }
+                        }
+                    });
+                }
+            });
+
+            // Salvar edições
+            $('#formAdmin').on('submit', function(e) {
+                e.preventDefault();
+                const $form = $(this);
+                const tipo = $form.find('[name="tipo"]').val();
+                const id = $form.find('[name="id"]').val();
+                
+                $.ajax({
+                    url: `/admin/${tipo}/${id}`,
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(Object.fromEntries(new FormData($form[0]))),
+                    success: function(data) {
+                        if(data.success) {
+                            location.reload();
+                        } else {
+                            alert('Erro ao salvar!');
+                        }
+                    }
+                });
+            });
+
+            // Atualizar notificações a cada 30 segundos
+            function atualizarNotificacoes() {
+                $.get('/admin/notificacoes/nao-lidas', function(data) {
+                    if (data.success) {
+                        const $lista = $('#notificacoes-lista');
+                        $lista.empty();
+                        
+                        data.notificacoes.forEach(function(notif) {
+                            const $tr = $('<tr>')
+                                .addClass(notif.lida ? '' : 'table-warning')
+                                .attr('data-id', notif.id);
+                                
+                            $tr.append($('<td>').text(notif.tipo));
+                            $tr.append($('<td>').text(notif.titulo));
+                            $tr.append($('<td>').text(notif.mensagem));
+                            $tr.append($('<td>').text(new Date(notif.data_criacao).toLocaleString()));
+                            
+                            const $status = $('<td>').append(
+                                $('<span>')
+                                    .addClass('badge ' + (notif.lida ? 'bg-success' : 'bg-warning'))
+                                    .text(notif.lida ? 'Lida' : 'Não lida')
+                            );
+                            $tr.append($status);
+                            
+                            const $acoes = $('<td>');
+                            if (!notif.lida) {
+                                $acoes.append(
+                                    $('<button>')
+                                        .addClass('btn btn-sm btn-success btn-marcar-lida')
+                                        .attr('title', 'Marcar como lida')
+                                        .append($('<i>').addClass('bi bi-check-lg'))
+                                );
+                            }
+                            $tr.append($acoes);
+                            
+                            $lista.append($tr);
+                        });
+                    }
+                });
+            }
             
-            Promise.all(promises).then(function() {
-                alert('Configurações salvas com sucesso!');
-                location.reload();
-            }).catch(function() {
-                alert('Erro ao salvar algumas configurações.');
+            setInterval(atualizarNotificacoes, 30000);
+
+            // Marcar notificação como lida
+            $(document).on('click', '.btn-marcar-lida', function() {
+                const $btn = $(this);
+                const $tr = $btn.closest('tr');
+                const id = $tr.data('id');
+                
+                $.post(`/admin/notificacoes/${id}/marcar-lida`, function(data) {
+                    if (data.success) {
+                        $tr.removeClass('table-warning');
+                        $tr.find('.badge')
+                            .removeClass('bg-warning')
+                            .addClass('bg-success')
+                            .text('Lida');
+                        $btn.remove();
+                    }
+                });
+            });
+
+            // Salvar configurações
+            $('#form-configuracoes').on('submit', function(e) {
+                e.preventDefault();
+                
+                const promises = [];
+                $('.config-input').each(function() {
+                    const $input = $(this);
+                    const chave = $input.data('chave');
+                    const valor = $input.val();
+                    
+                    promises.push(
+                        $.ajax({
+                            url: `/admin/configuracoes/${chave}`,
+                            method: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify({ valor: valor })
+                        })
+                    );
+                });
+                
+                Promise.all(promises).then(function() {
+                    alert('Configurações salvas com sucesso!');
+                    location.reload();
+                }).catch(function() {
+                    alert('Erro ao salvar algumas configurações.');
+                });
             });
         });
-    });
     </script>
 </body>
 </html>

@@ -7,133 +7,363 @@
     <title>Perfil da Empresa - Sensorium</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
     <style>
         :root {
-            --primary-blue: #1565C0;
+            --primary-blue: #0066cc;
             --secondary-blue: #4FC3F7;
             --dark-blue: #003366;
-            --light-bg: #c5d0d6;
-            --card-bg: #f9fafc;
+            --light-bg: #f8faff;
+            --card-bg: #ffffff;
+            --accent-color: #00E676;
+            --error-red: #ff3b30;
+            --success-green: #34c759;
+            --warning-yellow: #ffcc00;
+            --transition: all 0.3s ease;
         }
+
         body {
             font-family: 'Poppins', sans-serif;
-            background: var(--light-bg);
+            background: linear-gradient(135deg, var(--light-bg) 0%, #ffffff 100%);
             min-height: 100vh;
         }
+
         .sidebar {
-            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
             min-height: 100vh;
             color: #fff;
             padding: 2rem 1rem;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
         }
+
         .sidebar .nav-link {
-            color: #fff;
-            margin-bottom: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 0.8rem;
+            padding: 1rem 1.2rem;
+            border-radius: 12px;
+            transition: var(--transition);
             font-weight: 500;
-            border-radius: 8px;
-            transition: background 0.2s;
-            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
         }
-        .sidebar .nav-link.active, 
-        .sidebar .nav-link:hover {
-            background: rgba(255,255,255,0.18);
-            color: #fff;
+
+        .sidebar .nav-link::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background: rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
         }
+
+        .sidebar .nav-link:hover::before,
+        .sidebar .nav-link.active::before {
+            width: 100%;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 1rem;
+            font-size: 1.25rem;
+            transition: var(--transition);
+        }
+
+        .sidebar .nav-link:hover i,
+        .sidebar .nav-link.active i {
+            transform: scale(1.1);
+        }
+
         .content {
             padding: 2rem;
-            background: var(--light-bg);
+            background: transparent;
             min-height: 100vh;
         }
+
         .section-panel {
             display: none;
             background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 4px 16px rgba(21, 101, 192, 0.08);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             padding: 2rem;
             margin-bottom: 2rem;
             color: var(--dark-blue);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            animation: fadeIn 0.4s ease;
         }
+
         .section-panel.active {
             display: block;
-            animation: fadeIn 0.4s;
         }
+
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
+
         .dashboard-icon {
-            font-size: 2.3rem;
+            font-size: 2.5rem;
             color: var(--primary-blue);
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+            transition: var(--transition);
         }
+
+        .section-panel:hover .dashboard-icon {
+            transform: scale(1.1) rotate(10deg);
+            color: var(--accent-color);
+        }
+
         .logout-link {
-            color: #fff;
+            color: rgba(255, 255, 255, 0.9);
             text-decoration: none;
             font-weight: 500;
             margin-top: 2rem;
-            display: inline-block;
-            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.2rem;
+            border-radius: 12px;
+            transition: var(--transition);
         }
+
         .logout-link:hover {
-            color: #000000;
-            text-decoration: underline;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            transform: translateX(5px);
         }
+
+        .logout-link i {
+            margin-right: 1rem;
+            font-size: 1.25rem;
+            transition: var(--transition);
+        }
+
+        .logout-link:hover i {
+            transform: scale(1.1);
+        }
+
+        .table {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
         .table thead {
-            background: var(--secondary-blue);
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
             color: #fff;
         }
-        .table-striped > tbody > tr:nth-of-type(odd) > * {
-            background-color: #f2f6fa;
-        }
-        .btn-outline-primary {
-            border-color: var(--primary-blue);
-            color: var(--primary-blue);
-        }
-        .btn-outline-primary:hover {
-            background: var(--primary-blue);
-            color: #fff;
-        }
-        .btn-custom {
-            background-color: var(--primary-blue);
-            color: white;
-            border-radius: 8px;
-            padding: 0.75rem 1.5rem;
-            transition: all 0.3s ease;
+
+        .table thead th {
+            font-weight: 500;
+            padding: 1rem;
             border: none;
         }
-        .btn-custom:hover {
-            background-color: var(--secondary-blue);
-            color: #fff;
+
+        .table-striped > tbody > tr:nth-of-type(odd) > * {
+            background-color: rgba(0, 102, 204, 0.05);
+        }
+
+        .btn {
+            border-radius: 50px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: var(--transition);
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary:hover {
+            background: var(--dark-blue);
             transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
+
         .card {
-            transition: transform 0.3s ease;
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+            overflow: hidden;
         }
+
         .card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
+
+        .card-header {
+            background: transparent;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            padding: 1.5rem;
+            font-weight: 600;
+        }
+
+        .card-header.bg-primary {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%) !important;
+            border-bottom: none;
+            color: white;
+        }
+
         .list-group-item {
             border: none;
-            margin-bottom: 0.5rem;
-            border-radius: 8px !important;
+            margin-bottom: 0.75rem;
+            border-radius: 12px !important;
+            transition: var(--transition);
+            background: var(--card-bg);
         }
+
+        .list-group-item:hover {
+            background: var(--light-bg);
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
         .badge {
             padding: 0.5rem 1rem;
-            border-radius: 20px;
+            border-radius: 50px;
+            font-weight: 500;
         }
+
+        .form-control {
+            border-radius: 12px;
+            padding: 0.75rem 1.25rem;
+            border: 2px solid rgba(0, 0, 0, 0.08);
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.1);
+        }
+
+        .form-select {
+            border-radius: 12px;
+            padding: 0.75rem 1.25rem;
+            border: 2px solid rgba(0, 0, 0, 0.08);
+            transition: var(--transition);
+        }
+
+        .form-select:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.1);
+        }
+
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
+            color: white;
+            border-bottom: none;
+            border-radius: 20px 20px 0 0;
+            padding: 1.5rem;
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .modal-footer {
+            border-top: 1px solid rgba(0, 0, 0, 0.08);
+            padding: 1.5rem;
+        }
+
+        .btn-close {
+            filter: brightness(0) invert(1);
+            opacity: 0.8;
+            transition: var(--transition);
+        }
+
+        .btn-close:hover {
+            opacity: 1;
+            transform: rotate(90deg);
+        }
+
+        @media (max-width: 991px) {
+            .sidebar {
+                min-height: 100vh;
+                padding: 1.5rem 1rem;
+            }
+            
+            .content {
+                padding: 1.5rem;
+            }
+
+            .table-responsive {
+                font-size: 0.9rem;
+            }
+
+            .btn-group {
+                display: flex;
+                gap: 0.5rem;
+            }
+
+            .card {
+                margin-bottom: 1rem;
+            }
+        }
+
         @media (max-width: 767px) {
             .sidebar {
                 min-height: auto;
-                padding: 1rem 0.5rem;
+                width: 100%;
+                padding: 1rem;
             }
+            
             .content {
                 padding: 1rem;
             }
+
             .section-panel {
                 padding: 1rem;
+            }
+
+            .table-responsive {
+                font-size: 0.8rem;
+            }
+
+            .btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+
+            .card-body {
+                padding: 1rem;
+            }
+
+            .display-4 {
+                font-size: 2rem;
+            }
+
+            .display-6 {
+                font-size: 1.5rem;
             }
         }
     </style>
@@ -142,49 +372,132 @@
     <div class="container-fluid">
         <div class="row flex-nowrap">
             <!-- Sidebar -->
-            <div class="col-auto sidebar d-flex flex-column align-items-start">
-                <a href="{{ url_for('pagina_inicial') }}" class="mb-4 text-decoration-none text-white">
+            <div class="col-auto sidebar d-flex flex-column align-items-start" data-aos="fade-right">
+                <a href="{{ url_for('pagina_inicial') }}" class="mb-4 text-decoration-none text-white d-flex align-items-center">
                     <i class="bi bi-droplet fs-1"></i>
                     <span class="fs-4 ms-2">Sensorium</span>
                 </a>
                 <nav class="nav flex-column w-100">
                     <a class="nav-link active" onclick="showSection(event, 'empresa-info')" role="button">
-                        <i class="bi bi-building me-2"></i>Informações
+                        <i class="bi bi-building"></i>
+                        <span>Informações</span>
                     </a>
                     <a class="nav-link" onclick="showSection(event, 'avisos')" role="button">
-                        <i class="bi bi-bell me-2"></i>Avisos
+                        <i class="bi bi-bell"></i>
+                        <span>Avisos</span>
                     </a>
                     <a class="nav-link" onclick="showSection(event, 'pedidos')" role="button">
-                        <i class="bi bi-box-seam me-2"></i>Pedidos
+                        <i class="bi bi-box-seam"></i>
+                        <span>Pedidos</span>
                     </a>
                     <a class="nav-link" onclick="showSection(event, 'cisterna')" role="button">
-                        <i class="bi bi-water me-2"></i>Cisterna
+                        <i class="bi bi-water"></i>
+                        <span>Cisterna</span>
                     </a>
                 </nav>
                 <a href="{{ url_for('logout') }}" class="logout-link mt-auto">
-                    <i class="bi bi-box-arrow-right me-2"></i>Sair
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Sair</span>
                 </a>
             </div>
 
             <!-- Main Content -->
             <div class="col content">
-                <h3 class="mb-4 text-primary">Bem-vindo(a), {{ company.nome }}!</h3>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="text-primary mb-0" data-aos="fade-down">Bem-vindo(a), {{ company.nome }}!</h3>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalEditarEmpresa">
+                            <i class="bi bi-pencil me-2"></i>Editar Perfil
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="window.location.reload()">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Atualizar
+                        </button>
+                    </div>
+                </div>
 
                 <!-- Informações da Empresa -->
-                <div id="empresa-info" class="section-panel active">
+                <div id="empresa-info" class="section-panel active" data-aos="fade-up">
                     <div class="dashboard-icon">
                         <i class="bi bi-building"></i>
                     </div>
-                    <h4 class="mb-3">Informações da Empresa</h4>
-                    <div class="card border-0 shadow-sm p-3">
-                        <div class="card-body">
-                            <p><strong>Nome:</strong> {{ company.nome }}</p>
-                            <p><strong>CNPJ:</strong> {{ company.cnpj }}</p>
-                            <p><strong>Email:</strong> {{ company.email }}</p>
-                            <p><strong>Endereço:</strong> {{ company.endereco }}</p>
-                            <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditarEmpresa">
-                                <i class="bi bi-pencil me-2"></i>Editar Dados
-                            </button>
+                    <h4 class="mb-4">Informações da Empresa</h4>
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="card border-0 shadow-sm h-100" data-aos="fade-right" data-aos-delay="100">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-4">
+                                        <i class="bi bi-info-circle text-primary me-2"></i>
+                                        Dados Principais
+                                    </h5>
+                                    <div class="mb-3">
+                                        <label class="text-muted mb-1">Nome da Empresa</label>
+                                        <p class="h5">{{ company.nome }}</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="text-muted mb-1">CNPJ</label>
+                                        <p class="h5">{{ company.cnpj }}</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="text-muted mb-1">Email</label>
+                                        <p class="h5">{{ company.email }}</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="text-muted mb-1">Endereço</label>
+                                        <p class="h5">{{ company.endereco }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="card border-0 shadow-sm h-100" data-aos="fade-left" data-aos-delay="200">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-4">
+                                        <i class="bi bi-graph-up text-primary me-2"></i>
+                                        Resumo de Atividades
+                                    </h5>
+                                    <div class="row g-3">
+                                        <div class="col-6">
+                                            <div class="p-3 bg-light rounded-3">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bi bi-box-seam fs-1 text-primary me-3"></i>
+                                                    <div>
+                                                        <h6 class="mb-0">Pedidos</h6>
+                                                        <p class="h4 mb-0">{{ pedidos|length }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="p-3 bg-light rounded-3">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bi bi-bell fs-1 text-primary me-3"></i>
+                                                    <div>
+                                                        <h6 class="mb-0">Avisos</h6>
+                                                        <p class="h4 mb-0">{{ comunicados_gerais|length }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="p-3 bg-light rounded-3">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bi bi-water fs-1 text-primary me-3"></i>
+                                                    <div>
+                                                        <h6 class="mb-0">Status da Cisterna</h6>
+                                                        <p class="h4 mb-0">
+                                                            {% if nivel_atual and nivel_atual.status == 'ALTO' %}
+                                                                <span class="text-success">Normal</span>
+                                                            {% else %}
+                                                                <span class="text-warning">Atenção</span>
+                                                            {% endif %}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -222,12 +535,12 @@
                 </div>
 
                 <!-- Seção Avisos -->
-                <div id="avisos" class="section-panel">
+                <div id="avisos" class="section-panel" data-aos="fade-up">
                     <div class="dashboard-icon">
                         <i class="bi bi-bell-fill"></i>
                     </div>
-                    <h4 class="mb-3">Avisos Gerais</h4>
-                    <div class="card border-0 shadow-sm">
+                    <h4 class="mb-4">Avisos Gerais</h4>
+                    <div class="card border-0 shadow-sm" data-aos="fade-up" data-aos-delay="100">
                         <div class="card-body">
                             <div class="mb-4">
                                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCriarAviso">
@@ -236,27 +549,32 @@
                             </div>
                             <div class="list-group">
                                 {% for comunicado in comunicados_gerais %}
-                                    <div class="list-group-item mb-3">
+                                    <div class="list-group-item mb-3" data-aos="fade-up" data-aos-delay="{{ loop.index * 50 }}">
                                         <div class="d-flex justify-content-between align-items-start">
                                             <div class="flex-grow-1">
-                                                <h6 class="mb-1 text-primary">{{ comunicado.assunto }}</h6>
-                                                <p class="mb-1">{{ comunicado.mensagem }}</p>
-                                                <small class="text-muted">
-                                                    <i class="bi bi-clock me-1"></i>
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <i class="bi bi-info-circle text-primary me-2 fs-5"></i>
+                                                    <h6 class="mb-0 text-primary">{{ comunicado.assunto }}</h6>
+                                                </div>
+                                                <p class="mb-2">{{ comunicado.mensagem }}</p>
+                                                <small class="text-muted d-flex align-items-center">
+                                                    <i class="bi bi-clock me-2"></i>
                                                     {{ comunicado.data|dateformat }}
                                                 </small>
                                             </div>
-                                            <form action="{{ url_for('excluir_comunicado_geral_view', comunicado_id=comunicado.id) }}" method="POST" class="ms-3">
-                                                <button type="submit" class="btn btn-danger btn-sm" onclick="if(confirm('Tem certeza que deseja excluir este aviso?')) { this.form.submit(); }; return false;">
+                                            <form action="{{ url_for('excluir_comunicado_geral_view', comunicado_id=comunicado.id) }}" 
+                                                  method="POST" class="ms-3">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm"
+                                                        onclick="return confirm('Tem certeza que deseja excluir este aviso?')">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </form>
                                         </div>
                                     </div>
                                 {% else %}
-                                    <div class="text-center text-muted">
-                                        <i class="bi bi-info-circle fs-4"></i>
-                                        <p class="mt-2">Nenhum aviso enviado.</p>
+                                    <div class="text-center py-5" data-aos="fade-up">
+                                        <i class="bi bi-info-circle fs-1 text-muted mb-3"></i>
+                                        <p class="text-muted mb-0">Nenhum aviso enviado.</p>
                                     </div>
                                 {% endfor %}
                             </div>
@@ -293,70 +611,75 @@
                 </div>
 
                 <!-- Seção Pedidos -->
-                <div id="pedidos" class="section-panel">
+                <div id="pedidos" class="section-panel" data-aos="fade-up">
                     <div class="dashboard-icon">
                         <i class="bi bi-box-seam"></i>
                     </div>
-                    <h4 class="mb-3">Pedidos Recentes</h4>
-                    <div class="table-responsive">
-                        <table class="table table-striped align-middle">
-                            <thead>
-                                <tr>
-                                    <th>Descrição</th>
-                                    <th>Quantidade</th>
-                                    <th>Status</th>
-                                    <th>Cliente</th>
-                                    <th>Data</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for pedido in pedidos %}
-                                    <tr>
-                                        <td>{{ pedido.descricao }}</td>
-                                        <td>{{ pedido.quantidade }}</td>
-                                        <td>
-                                            <span class="badge {% if pedido.status == 'pendente' %}bg-warning{% elif pedido.status == 'aceito' %}bg-success{% else %}bg-danger{% endif %}">
-                                                {{ pedido.status }}
-                                            </span>
-                                        </td>
-                                        <td>{{ pedido.usuario_nome }}</td>
-                                        <td>{{ pedido.data|dateformat }}</td>
-                                        <td>
-                                            <div class="btn-group">
-                                                <a href="{{ url_for('visualizar_pedido', pedido_id=pedido.id) }}" class="btn btn-info btn-sm">
-                                                    <i class="bi bi-eye"></i>
-                                                </a>
-                                                <form action="{{ url_for('alterar_status', pedido_id=pedido.id, cnpj=company.cnpj) }}" method="POST" class="d-inline">
-                                                    <select name="novo_status" class="form-select form-select-sm" required>
-                                                        <option value="pendente" {% if pedido.status == 'pendente' %}selected{% endif %}>Pendente</option>
-                                                        <option value="aceito" {% if pedido.status == 'aceito' %}selected{% endif %}>Aceito</option>
-                                                        <option value="cancelado" {% if pedido.status == 'cancelado' %}selected{% endif %}>Cancelado</option>
-                                                    </select>
-                                                    <button type="submit" class="btn btn-primary btn-sm">
-                                                        <i class="bi bi-check2"></i>
-                                                    </button>
-                                                </form>
-                                                <form action="{{ url_for('excluir_pedido_view', pedido_id=pedido.id, cnpj=company.cnpj) }}" method="POST" class="d-inline">
-                                                    <button type="submit" class="btn btn-danger btn-sm">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                {% else %}
-                                    <tr>
-                                        <td colspan="6" class="text-center">Nenhum pedido encontrado.</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                    <h4 class="mb-4">Pedidos Recentes</h4>
+                    <div class="card border-0 shadow-sm" data-aos="fade-up" data-aos-delay="100">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Descrição</th>
+                                            <th>Quantidade</th>
+                                            <th>Status</th>
+                                            <th>Cliente</th>
+                                            <th>Data</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for pedido in pedidos %}
+                                            <tr data-aos="fade-up" data-aos-delay="{{ loop.index * 50 }}">
+                                                <td>{{ pedido.descricao }}</td>
+                                                <td>{{ pedido.quantidade }}</td>
+                                                <td>
+                                                    <span class="badge {% if pedido.status == 'pendente' %}bg-warning{% elif pedido.status == 'aceito' %}bg-success{% else %}bg-danger{% endif %}">
+                                                        {{ pedido.status }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ pedido.usuario_nome }}</td>
+                                                <td>{{ pedido.data|dateformat }}</td>
+                                                <td>
+                                                    <div class="btn-group">
+                                                        <a href="{{ url_for('visualizar_pedido', pedido_id=pedido.id) }}" 
+                                                           class="btn btn-outline-primary btn-sm" 
+                                                           title="Visualizar Detalhes">
+                                                            <i class="bi bi-eye"></i>
+                                                        </a>
+                                                        <form action="{{ url_for('alterar_status', pedido_id=pedido.id, cnpj=company.cnpj) }}" 
+                                                              method="POST" class="d-inline">
+                                                            <select name="novo_status" class="form-select form-select-sm" required>
+                                                                <option value="pendente" {% if pedido.status == 'pendente' %}selected{% endif %}>Pendente</option>
+                                                                <option value="aceito" {% if pedido.status == 'aceito' %}selected{% endif %}>Aceito</option>
+                                                                <option value="cancelado" {% if pedido.status == 'cancelado' %}selected{% endif %}>Cancelado</option>
+                                                            </select>
+                                                            <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                                <i class="bi bi-check2"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% else %}
+                                            <tr>
+                                                <td colspan="6" class="text-center py-5">
+                                                    <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
+                                                    <p class="text-muted mb-0">Nenhum pedido encontrado.</p>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Seção Cisterna -->
-                <div id="cisterna" class="section-panel">
+                <div id="cisterna" class="section-panel" data-aos="fade-up">
                     <div class="dashboard-icon">
                         <i class="bi bi-water"></i>
                     </div>
@@ -364,26 +687,30 @@
                     <div class="row">
                         <!-- Card pH da Água -->
                         <div class="col-md-6 mb-4">
-                            <div class="card border-0 shadow">
+                            <div class="card border-0 shadow-sm h-100" data-aos="fade-right" data-aos-delay="100">
                                 <div class="card-header bg-primary text-white">
                                     <i class="bi bi-droplet-half me-2"></i>pH da Água
                                 </div>
                                 <div class="card-body">
                                     {% if ph_atual %}
-                                        <div class="text-center mb-3">
-                                            <h2 class="display-4 text-primary">{{ ph_atual.ph }}</h2>
-                                            <span class="badge {% if ph_atual.ph < 6.5 %}bg-danger{% elif ph_atual.ph > 8.5 %}bg-warning{% else %}bg-success{% endif %}">
+                                        <div class="text-center mb-4">
+                                            <div class="display-4 text-primary mb-2">{{ ph_atual.ph }}</div>
+                                            <span class="badge {% if ph_atual.ph < 6.5 %}bg-danger{% elif ph_atual.ph > 8.5 %}bg-warning{% else %}bg-success{% endif %} fs-6">
                                                 {% if ph_atual.ph < 6.5 %}Ácido{% elif ph_atual.ph > 8.5 %}Alcalino{% else %}Neutro{% endif %}
                                             </span>
+                                            <p class="text-muted mt-3 mb-0">
+                                                <i class="bi bi-clock me-1"></i>
+                                                Última atualização: {{ ph_atual.data|dateformat }}
+                                            </p>
                                         </div>
-                                        <p class="text-muted text-center">
-                                            Última atualização: {{ ph_atual.data|dateformat }}
-                                        </p>
                                         <div class="mt-4">
-                                            <canvas id="phChart"></canvas>
+                                            <canvas id="phChart" height="200"></canvas>
                                         </div>
                                     {% else %}
-                                        <p class="text-center">Nenhum dado de pH disponível.</p>
+                                        <div class="text-center py-5">
+                                            <i class="bi bi-exclamation-circle fs-1 text-muted mb-3"></i>
+                                            <p class="text-muted mb-0">Nenhum dado de pH disponível.</p>
+                                        </div>
                                     {% endif %}
                                 </div>
                             </div>
@@ -391,28 +718,37 @@
 
                         <!-- Card Nível de Água -->
                         <div class="col-md-6 mb-4">
-                            <div class="card border-0 shadow">
+                            <div class="card border-0 shadow-sm h-100" data-aos="fade-left" data-aos-delay="200">
                                 <div class="card-header bg-primary text-white">
                                     <i class="bi bi-water me-2"></i>Nível de Água
                                 </div>
                                 <div class="card-body">
                                     {% if nivel_atual %}
-                                        <div class="text-center mb-3">
-                                            <span class="badge {% if nivel_atual.status == 'ALTO' %}bg-success{% else %}bg-danger{% endif %} fs-4">
-                                                {{ nivel_atual.status }}
-                                            </span>
-                                            <p class="mt-3">
-                                                Boia: 
-                                                <span class="badge {% if nivel_atual.boia == 1 %}bg-primary{% else %}bg-secondary{% endif %}">
+                                        <div class="text-center mb-4">
+                                            <div class="mb-4">
+                                                <i class="bi bi-water fs-1 {% if nivel_atual.status == 'ALTO' %}text-success{% else %}text-warning{% endif %}"></i>
+                                            </div>
+                                            <div class="display-6 mb-2">
+                                                <span class="badge {% if nivel_atual.status == 'ALTO' %}bg-success{% else %}bg-warning{% endif %} fs-5">
+                                                    {{ nivel_atual.status }}
+                                                </span>
+                                            </div>
+                                            <div class="mt-4">
+                                                <p class="mb-2">Status da Boia:</p>
+                                                <span class="badge {% if nivel_atual.boia == 1 %}bg-primary{% else %}bg-secondary{% endif %} fs-6">
                                                     {% if nivel_atual.boia == 1 %}Ativada{% else %}Desativada{% endif %}
                                                 </span>
+                                            </div>
+                                            <p class="text-muted mt-4 mb-0">
+                                                <i class="bi bi-clock me-1"></i>
+                                                Última atualização: {{ nivel_atual.data|dateformat }}
                                             </p>
                                         </div>
-                                        <p class="text-muted text-center">
-                                            Última atualização: {{ nivel_atual.data|dateformat }}
-                                        </p>
                                     {% else %}
-                                        <p class="text-center">Nenhum dado de nível disponível.</p>
+                                        <div class="text-center py-5">
+                                            <i class="bi bi-exclamation-circle fs-1 text-muted mb-3"></i>
+                                            <p class="text-muted mb-0">Nenhum dado de nível disponível.</p>
+                                        </div>
                                     {% endif %}
                                 </div>
                             </div>
@@ -422,111 +758,137 @@
                     <!-- Históricos -->
                     <div class="row">
                         <div class="col-md-6 mb-4">
-                            <div class="card border-0 shadow">
+                            <div class="card border-0 shadow-sm" data-aos="fade-up" data-aos-delay="300">
                                 <div class="card-header bg-primary text-white">
                                     <i class="bi bi-clock-history me-2"></i>Histórico de Nível
                                 </div>
                                 <div class="card-body">
-                                    <ul class="list-group list-group-flush">
+                                    <div class="list-group list-group-flush">
                                         {% for nivel in historico_nivel %}
-                                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                {{ nivel.data|dateformat }}
-                                                <span class="badge {% if nivel.status == 'ALTO' %}bg-success{% else %}bg-danger{% endif %}">
+                                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <i class="bi bi-calendar me-2"></i>
+                                                    {{ nivel.data|dateformat }}
+                                                </div>
+                                                <span class="badge {% if nivel.status == 'ALTO' %}bg-success{% else %}bg-warning{% endif %}">
                                                     {{ nivel.status }}
                                                 </span>
-                                            </li>
+                                            </div>
                                         {% else %}
-                                            <li class="list-group-item text-center">Nenhum registro encontrado</li>
+                                            <div class="text-center py-4">
+                                                <p class="text-muted mb-0">Nenhum registro encontrado</p>
+                                            </div>
                                         {% endfor %}
-                                    </ul>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="col-md-6 mb-4">
-                            <div class="card border-0 shadow">
+                            <div class="card border-0 shadow-sm" data-aos="fade-up" data-aos-delay="400">
                                 <div class="card-header bg-primary text-white">
                                     <i class="bi bi-graph-up me-2"></i>Histórico de pH
                                 </div>
                                 <div class="card-body">
-                                    <ul class="list-group list-group-flush">
+                                    <div class="list-group list-group-flush">
                                         {% for ph in historico_ph %}
-                                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                {{ ph.data|dateformat }}
-                                                <span class="badge bg-primary">pH {{ ph.ph }}</span>
-                                            </li>
+                                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <i class="bi bi-calendar me-2"></i>
+                                                    {{ ph.data|dateformat }}
+                                                </div>
+                                                <span class="badge bg-primary">
+                                                    pH {{ ph.ph }}
+                                                </span>
+                                            </div>
                                         {% else %}
-                                            <li class="list-group-item text-center">Nenhum registro encontrado</li>
+                                            <div class="text-center py-4">
+                                                <p class="text-muted mb-0">Nenhum registro encontrado</p>
+                                            </div>
                                         {% endfor %}
-                                    </ul>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Notificações -->
-                    <div class="card border-0 shadow mt-4">
+                    <div class="card border-0 shadow-sm mt-4" data-aos="fade-up" data-aos-delay="500">
                         <div class="card-header bg-primary text-white">
                             <i class="bi bi-tools me-2"></i>Notificações de Manutenção
                         </div>
                         <div class="card-body">
                             {% if notificacoes %}
-                                <ul class="list-group list-group-flush">
+                                <div class="list-group list-group-flush">
                                     {% for notificacao in notificacoes %}
-                                        <li class="list-group-item">
-                                            <div class="d-flex justify-content-between align-items-center">
+                                        <div class="list-group-item" data-aos="fade-up" data-aos-delay="{{ loop.index * 50 }}">
+                                            <div class="d-flex justify-content-between align-items-start mb-3">
                                                 <div>
-                                                    <h6 class="mb-1">{{ notificacao.mensagem }}</h6>
-                                                    <small class="text-muted">
-                                                        Data: {{ notificacao.data_criacao|dateformat }}
+                                                    <h6 class="mb-1">
+                                                        <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                                                        {{ notificacao.mensagem }}
+                                                    </h6>
+                                                    <small class="text-muted d-flex align-items-center">
+                                                        <i class="bi bi-clock me-2"></i>
+                                                        {{ notificacao.data_criacao|dateformat }}
                                                     </small>
                                                 </div>
-                                                <div>
+                                                <div class="d-flex gap-2">
                                                     <a href="{{ url_for('rachaduras', pedido_id=notificacao.pedido_id) }}" 
-                                                       class="btn btn-primary btn-sm me-2">
-                                                        Ver Pedido
+                                                       class="btn btn-outline-primary btn-sm">
+                                                        <i class="bi bi-eye me-1"></i>Ver Pedido
                                                     </a>
-                                                    <button class="btn btn-danger btn-sm" 
+                                                    <button class="btn btn-outline-danger btn-sm" 
                                                             onclick="limparNotificacao({{ notificacao.id }})">
-                                                        Limpar
+                                                        <i class="bi bi-x-circle me-1"></i>Limpar
                                                     </button>
                                                 </div>
                                             </div>
                                             {% if notificacao.imagens %}
-                                                <div class="mt-3">
-                                                    <h6>Imagens Processadas:</h6>
+                                                <div class="row g-3 mt-2">
                                                     {% for imagem in notificacao.imagens %}
-                                                        <div class="mb-2">
-                                                            <img src="{{ url_for('static', filename=imagem.caminho) }}" 
-                                                                 alt="Imagem Processada" 
-                                                                 class="img-fluid rounded">
-                                                            <p class="mb-0">
-                                                                <strong>Tipo:</strong> {{ imagem.tipo_imagem }}
-                                                            </p>
-                                                            {% if imagem.tipo_imagem == "rachadura" %}
-                                                                {% if imagem.tem_rachadura %}
-                                                                    <p class="text-danger mb-0">
-                                                                        <strong>Rachaduras detectadas!</strong>
-                                                                    </p>
-                                                                {% else %}
-                                                                    <p class="text-success mb-0">
-                                                                        <strong>Nenhuma rachadura detectada.</strong>
-                                                                    </p>
-                                                                {% endif %}
-                                                            {% elif imagem.tipo_imagem == "objeto" %}
-                                                                <p class="text-info mb-0">
-                                                                    <strong>Objeto detectado!</strong>
-                                                                </p>
-                                                            {% endif %}
+                                                        <div class="col-md-6">
+                                                            <div class="card">
+                                                                <img src="{{ url_for('static', filename=imagem.caminho) }}" 
+                                                                     alt="Imagem Processada" 
+                                                                     class="img-fluid rounded">
+                                                                <div class="card-body">
+                                                                    <h6 class="card-title">
+                                                                        <i class="bi bi-image me-2"></i>
+                                                                        {{ imagem.tipo_imagem|title }}
+                                                                    </h6>
+                                                                    {% if imagem.tipo_imagem == "rachadura" %}
+                                                                        {% if imagem.tem_rachadura %}
+                                                                            <p class="text-danger mb-0">
+                                                                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                                                                Rachaduras detectadas!
+                                                                            </p>
+                                                                        {% else %}
+                                                                            <p class="text-success mb-0">
+                                                                                <i class="bi bi-check-circle me-2"></i>
+                                                                                Nenhuma rachadura detectada.
+                                                                            </p>
+                                                                        {% endif %}
+                                                                    {% elif imagem.tipo_imagem == "objeto" %}
+                                                                        <p class="text-info mb-0">
+                                                                            <i class="bi bi-box me-2"></i>
+                                                                            Objeto detectado!
+                                                                        </p>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     {% endfor %}
                                                 </div>
                                             {% endif %}
-                                        </li>
+                                        </div>
                                     {% endfor %}
-                                </ul>
+                                </div>
                             {% else %}
-                                <p class="text-center mb-0">Nenhuma notificação de manutenção no momento.</p>
+                                <div class="text-center py-5">
+                                    <i class="bi bi-check-circle fs-1 text-muted mb-3"></i>
+                                    <p class="text-muted mb-0">Nenhuma notificação de manutenção no momento.</p>
+                                </div>
                             {% endif %}
                         </div>
                     </div>
@@ -538,15 +900,33 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
 
     <script>
+        // Inicializa as animações AOS
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+
         // Função para mostrar/ocultar seções
         function showSection(event, sectionId) {
             event.preventDefault();
             document.querySelectorAll('.sidebar .nav-link').forEach(link => link.classList.remove('active'));
-            document.querySelectorAll('.section-panel').forEach(panel => panel.classList.remove('active'));
+            document.querySelectorAll('.section-panel').forEach(panel => {
+                panel.classList.remove('active');
+                panel.style.display = 'none';
+            });
             event.currentTarget.classList.add('active');
-            document.getElementById(sectionId).classList.add('active');
+            const targetPanel = document.getElementById(sectionId);
+            targetPanel.style.display = 'block';
+            targetPanel.classList.add('active');
+            
+            // Reinicia as animações AOS na nova seção
+            setTimeout(() => {
+                AOS.refresh();
+            }, 100);
         }
 
         // Configuração do gráfico de pH
@@ -554,8 +934,8 @@
             const ctx = document.getElementById('phChart')?.getContext('2d');
             if (ctx) {
                 const gradient = ctx.createLinearGradient(0, 0, 0, 220);
-                gradient.addColorStop(0, 'rgba(21, 101, 192, 0.25)');
-                gradient.addColorStop(1, 'rgba(21, 101, 192, 0.01)');
+                gradient.addColorStop(0, 'rgba(0, 102, 204, 0.25)');
+                gradient.addColorStop(1, 'rgba(0, 102, 204, 0.01)');
 
                 const datas = [];
                 const valores = [];
@@ -571,15 +951,15 @@
                         datasets: [{
                             label: 'Histórico de pH',
                             data: valores,
-                            borderColor: '#1565C0',
+                            borderColor: '#0066cc',
                             backgroundColor: gradient,
                             borderWidth: 3,
-                            pointBackgroundColor: '#1565C0',
+                            pointBackgroundColor: '#0066cc',
                             pointBorderColor: '#fff',
-                            pointRadius: 5,
-                            pointHoverRadius: 7,
+                            pointRadius: 6,
+                            pointHoverRadius: 8,
                             fill: true,
-                            tension: 0.3
+                            tension: 0.4
                         }]
                     },
                     options: {
@@ -588,31 +968,43 @@
                         plugins: {
                             legend: { display: false },
                             tooltip: {
-                                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
                                 titleFont: { family: "'Poppins', sans-serif", size: 14 },
                                 bodyFont: { family: "'Poppins', sans-serif", size: 13 },
-                                padding: 10,
-                                cornerRadius: 6
+                                padding: 12,
+                                cornerRadius: 8,
+                                displayColors: false
                             }
                         },
                         scales: {
                             y: {
                                 beginAtZero: false,
-                                grid: { color: 'rgba(200, 200, 200, 0.2)' },
-                                ticks: { font: { family: "'Poppins', sans-serif" } }
+                                grid: { 
+                                    color: 'rgba(0, 0, 0, 0.05)',
+                                    drawBorder: false
+                                },
+                                ticks: { 
+                                    font: { family: "'Poppins', sans-serif" },
+                                    padding: 10
+                                }
                             },
                             x: {
                                 grid: { display: false },
                                 ticks: {
                                     font: { family: "'Poppins', sans-serif" },
                                     maxRotation: 45,
-                                    minRotation: 45
+                                    minRotation: 45,
+                                    padding: 10
                                 }
                             }
                         },
                         animation: {
                             duration: 2000,
                             easing: 'easeOutQuart'
+                        },
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
                         }
                     }
                 });
@@ -642,45 +1034,6 @@
                 });
             }
         }
-
-        // Função para atualizar a página após criar/excluir avisos
-        function atualizarPagina() {
-            window.location.reload();
-        }
-
-        // Adiciona listener para o formulário de criar aviso
-        document.querySelector('#modalCriarAviso form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            
-            fetch(this.action, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                if (response.ok) {
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('modalCriarAviso'));
-                    modal.hide();
-                    atualizarPagina();
-                }
-            });
-        });
-
-        // Adiciona listener para os formulários de excluir aviso
-        document.querySelectorAll('form[action*="excluir_comunicado_geral"]').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                fetch(this.action, {
-                    method: 'POST'
-                })
-                .then(response => {
-                    if (response.ok) {
-                        atualizarPagina();
-                    }
-                });
-            });
-        });
     </script>
 </body>
 </html>
