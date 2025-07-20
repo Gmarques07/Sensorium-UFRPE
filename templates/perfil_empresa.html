@@ -684,213 +684,373 @@
                         <i class="bi bi-water"></i>
                     </div>
                     <h4 class="mb-4">Detalhes da Cisterna</h4>
-                    <div class="row">
-                        <!-- Card pH da Água -->
-                        <div class="col-md-6 mb-4">
-                            <div class="card border-0 shadow-sm h-100" data-aos="fade-right" data-aos-delay="100">
-                                <div class="card-header bg-primary text-white">
-                                    <i class="bi bi-droplet-half me-2"></i>pH da Água
-                                </div>
-                                <div class="card-body">
-                                    {% if ph_atual %}
-                                        <div class="text-center mb-4">
-                                            <div class="display-4 text-primary mb-2">{{ ph_atual.ph }}</div>
-                                            <span class="badge {% if ph_atual.ph < 6.5 %}bg-danger{% elif ph_atual.ph > 8.5 %}bg-warning{% else %}bg-success{% endif %} fs-6">
-                                                {% if ph_atual.ph < 6.5 %}Ácido{% elif ph_atual.ph > 8.5 %}Alcalino{% else %}Neutro{% endif %}
-                                            </span>
-                                            <p class="text-muted mt-3 mb-0">
-                                                <i class="bi bi-clock me-1"></i>
-                                                Última atualização: {{ ph_atual.data|dateformat }}
-                                            </p>
-                                        </div>
-                                        <div class="mt-4">
-                                            <canvas id="phChart" height="200"></canvas>
-                                        </div>
-                                    {% else %}
-                                        <div class="text-center py-5">
-                                            <i class="bi bi-exclamation-circle fs-1 text-muted mb-3"></i>
-                                            <p class="text-muted mb-0">Nenhum dado de pH disponível.</p>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
+                    {% if dispositivos %}
+                        <div class="mb-4">
+                            <label for="selectDispositivo" class="form-label fw-semibold">Selecione o Dispositivo:</label>
+                            <select class="form-select w-auto d-inline-block" id="selectDispositivo" onchange="mostrarDispositivoSelecionado()">
+                                {% for disp in dispositivos %}
+                                    <option value="{{ disp.dispositivo }}">{{ disp.dispositivo }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
-
-                        <!-- Card Nível de Água -->
-                        <div class="col-md-6 mb-4">
-                            <div class="card border-0 shadow-sm h-100" data-aos="fade-left" data-aos-delay="200">
-                                <div class="card-header bg-primary text-white">
-                                    <i class="bi bi-water me-2"></i>Nível de Água
-                                </div>
-                                <div class="card-body">
-                                    {% if nivel_atual %}
-                                        <div class="text-center mb-4">
-                                            <div class="mb-4">
-                                                <i class="bi bi-water fs-1 {% if nivel_atual.status == 'ALTO' %}text-success{% else %}text-warning{% endif %}"></i>
+                        {% for disp in dispositivos %}
+                            <div class="dispositivo-panel" id="panel-{{ disp.dispositivo|replace(' ', '_') }}" style="display: {% if loop.first %}block{% else %}none{% endif %};">
+                                <div class="row g-4">
+                                    <!-- Card pH -->
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card border-0 shadow-sm h-100">
+                                            <div class="card-header bg-primary text-white">
+                                                <i class="bi bi-droplet-half me-2"></i>pH da Água
                                             </div>
-                                            <div class="display-6 mb-2">
-                                                <span class="badge {% if nivel_atual.status == 'ALTO' %}bg-success{% else %}bg-warning{% endif %} fs-5">
-                                                    {{ nivel_atual.status }}
-                                                </span>
+                                            <div class="card-body">
+                                                {% set ph = ph_por_dispositivo[disp.dispositivo]['atual'] %}
+                                                {% if ph %}
+                                                    <div class="text-center mb-4">
+                                                        <div class="display-4 text-primary mb-2">{{ ph.ph }}</div>
+                                                        <span class="badge {% if ph.ph < 6.5 %}bg-danger{% elif ph.ph > 8.5 %}bg-warning{% else %}bg-success{% endif %} fs-6">
+                                                            {% if ph.ph < 6.5 %}Ácido{% elif ph.ph > 8.5 %}Alcalino{% else %}Neutro{% endif %}
+                                                        </span>
+                                                        <p class="text-muted mt-3 mb-0">
+                                                            <i class="bi bi-clock me-1"></i>
+                                                            Última atualização: {{ ph.data|dateformat }}
+                                                        </p>
+                                                    </div>
+                                                    <div class="mt-4">
+                                                        <canvas id="phChart-{{ disp.dispositivo|replace(' ', '_') }}" height="200"></canvas>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="text-center py-5">
+                                                        <i class="bi bi-exclamation-circle fs-1 text-muted mb-3"></i>
+                                                        <p class="text-muted mb-0">Nenhum dado de pH disponível.</p>
+                                                    </div>
+                                                {% endif %}
                                             </div>
-                                            <div class="mt-4">
-                                                <p class="mb-2">Status da Boia:</p>
-                                                <span class="badge {% if nivel_atual.boia == 1 %}bg-primary{% else %}bg-secondary{% endif %} fs-6">
-                                                    {% if nivel_atual.boia == 1 %}Ativada{% else %}Desativada{% endif %}
-                                                </span>
-                                            </div>
-                                            <p class="text-muted mt-4 mb-0">
-                                                <i class="bi bi-clock me-1"></i>
-                                                Última atualização: {{ nivel_atual.data|dateformat }}
-                                            </p>
                                         </div>
-                                    {% else %}
-                                        <div class="text-center py-5">
-                                            <i class="bi bi-exclamation-circle fs-1 text-muted mb-3"></i>
-                                            <p class="text-muted mb-0">Nenhum dado de nível disponível.</p>
+                                    </div>
+                                    <!-- Card Nível -->
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card border-0 shadow-sm h-100">
+                                            <div class="card-header bg-primary text-white">
+                                                <i class="bi bi-water me-2"></i>Nível de Água
+                                            </div>
+                                            <div class="card-body">
+                                                {% set nivel = nivel_por_dispositivo[disp.dispositivo]['atual'] %}
+                                                {% if nivel %}
+                                                    <div class="text-center mb-4">
+                                                        <div class="mb-4">
+                                                            <i class="bi bi-water fs-1 {% if nivel.status == 'ALTO' %}text-success{% else %}text-warning{% endif %}"></i>
+                                                        </div>
+                                                        <div class="display-6 mb-2">
+                                                            <span class="badge {% if nivel.status == 'ALTO' %}bg-success{% else %}bg-warning{% endif %} fs-5">
+                                                                {{ nivel.status }}
+                                                            </span>
+                                                        </div>
+                                                        <div class="mt-4">
+                                                            <p class="mb-2">Status da Boia:</p>
+                                                            <span class="badge {% if nivel.boia == 1 %}bg-primary{% else %}bg-secondary{% endif %} fs-6">
+                                                                {% if nivel.boia == 1 %}Ativada{% else %}Desativada{% endif %}
+                                                            </span>
+                                                        </div>
+                                                        <p class="text-muted mt-4 mb-0">
+                                                            <i class="bi bi-clock me-1"></i>
+                                                            Última atualização: {{ nivel.data|dateformat }}
+                                                        </p>
+                                                    </div>
+                                                    <div class="mt-4">
+                                                        <canvas id="nivelChart-{{ disp.dispositivo|replace(' ', '_') }}" height="200"></canvas>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="text-center py-5">
+                                                        <i class="bi bi-exclamation-circle fs-1 text-muted mb-3"></i>
+                                                        <p class="text-muted mb-0">Nenhum dado de nível disponível.</p>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
                                         </div>
-                                    {% endif %}
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Históricos -->
-                    <div class="row">
-                        <div class="col-md-6 mb-4">
-                            <div class="card border-0 shadow-sm" data-aos="fade-up" data-aos-delay="300">
-                                <div class="card-header bg-primary text-white">
-                                    <i class="bi bi-clock-history me-2"></i>Histórico de Nível
-                                </div>
-                                <div class="card-body">
-                                    <div class="list-group list-group-flush">
-                                        {% for nivel in historico_nivel %}
-                                            <div class="list-group-item d-flex justify-content-between align-items-center">
-                                                <div>
-                                                    <i class="bi bi-calendar me-2"></i>
-                                                    {{ nivel.data|dateformat }}
-                                                </div>
-                                                <span class="badge {% if nivel.status == 'ALTO' %}bg-success{% else %}bg-warning{% endif %}">
-                                                    {{ nivel.status }}
-                                                </span>
+                                <!-- Histórico detalhado -->
+                                <div class="row g-4 mt-2">
+                                    <div class="col-md-6">
+                                        <div class="card border-0 shadow-sm">
+                                            <div class="card-header bg-primary text-white">
+                                                <i class="bi bi-graph-up me-2"></i>Histórico de pH
                                             </div>
-                                        {% else %}
-                                            <div class="text-center py-4">
-                                                <p class="text-muted mb-0">Nenhum registro encontrado</p>
+                                            <div class="card-body">
+                                                <ul class="list-group list-group-flush">
+                                                    {% for item in ph_por_dispositivo[disp.dispositivo]['historico'] %}
+                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                            <span><i class="bi bi-calendar me-2"></i>{{ item.data|dateformat }}</span>
+                                                            <span class="badge bg-primary">pH {{ item.ph }}</span>
+                                                        </li>
+                                                    {% else %}
+                                                        <li class="list-group-item text-muted">Nenhum registro encontrado</li>
+                                                    {% endfor %}
+                                                </ul>
                                             </div>
-                                        {% endfor %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card border-0 shadow-sm">
+                                            <div class="card-header bg-primary text-white">
+                                                <i class="bi bi-clock-history me-2"></i>Histórico de Nível
+                                            </div>
+                                            <div class="card-body">
+                                                <ul class="list-group list-group-flush">
+                                                    {% for item in nivel_por_dispositivo[disp.dispositivo]['historico'] %}
+                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                            <span><i class="bi bi-calendar me-2"></i>{{ item.data|dateformat }}</span>
+                                                            <span class="badge {% if item.status == 'ALTO' %}bg-success{% else %}bg-warning{% endif %}">{{ item.status }}</span>
+                                                        </li>
+                                                    {% else %}
+                                                        <li class="list-group-item text-muted">Nenhum registro encontrado</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                        {% endfor %}
+                        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                        <script>
+                            function mostrarDispositivoSelecionado() {
+                                var select = document.getElementById('selectDispositivo');
+                                var valor = select.value.replace(/\s/g, '_');
+                                var paineis = document.querySelectorAll('.dispositivo-panel');
+                                paineis.forEach(function(p) { p.style.display = 'none'; });
+                                var painelAtivo = document.getElementById('panel-' + valor);
+                                if (painelAtivo) painelAtivo.style.display = 'block';
+                            }
+                            var historicoPh = {};
+                            var historicoNivel = {};
+                            {% for disp in dispositivos %}
+                                historicoPh['{{ disp.dispositivo|replace(' ', '_') }}'] = {
+                                    labels: [
+                                        {% for item in ph_por_dispositivo[disp.dispositivo]['historico']|reverse %}'{{ item.data|dateformat }}'{% if not loop.last %},{% endif %}{% endfor %}
+                                    ],
+                                    data: [
+                                        {% for item in ph_por_dispositivo[disp.dispositivo]['historico']|reverse %}{{ item.ph }}{% if not loop.last %},{% endif %}{% endfor %}
+                                    ]
+                                };
+                                historicoNivel['{{ disp.dispositivo|replace(' ', '_') }}'] = {
+                                    labels: [
+                                        {% for item in nivel_por_dispositivo[disp.dispositivo]['historico']|reverse %}'{{ item.data|dateformat }}'{% if not loop.last %},{% endif %}{% endfor %}
+                                    ],
+                                    data: [
+                                        {% for item in nivel_por_dispositivo[disp.dispositivo]['historico']|reverse %}{% if item.status == 'ALTO' %}2{% elif item.status == 'BAIXO' %}1{% else %}0{% endif %}{% if not loop.last %},{% endif %}{% endfor %}
+                                    ]
+                                };
+                            {% endfor %}
+                            document.addEventListener('DOMContentLoaded', function() {
+                                {% for disp in dispositivos %}
+                                    var phCtx = document.getElementById('phChart-{{ disp.dispositivo|replace(' ', '_') }}');
+                                    if (phCtx) {
+                                        new Chart(phCtx, {
+                                            type: 'line',
+                                            data: {
+                                                labels: historicoPh['{{ disp.dispositivo|replace(' ', '_') }}'].labels,
+                                                datasets: [{
+                                                    label: 'Histórico de pH',
+                                                    data: historicoPh['{{ disp.dispositivo|replace(' ', '_') }}'].data,
+                                                    borderColor: '#0066cc',
+                                                    backgroundColor: 'rgba(0,102,204,0.1)',
+                                                    borderWidth: 3,
+                                                    pointBackgroundColor: '#0066cc',
+                                                    pointBorderColor: '#fff',
+                                                    pointRadius: 6,
+                                                    pointHoverRadius: 8,
+                                                    fill: true,
+                                                    tension: 0.4
+                                                }]
+                                            },
+                                            options: {
+                                                responsive: true,
+                                                maintainAspectRatio: false,
+                                                plugins: {
+                                                    legend: { display: false },
+                                                    tooltip: {
+                                                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                                        titleFont: { family: "'Poppins', sans-serif", size: 14 },
+                                                        bodyFont: { family: "'Poppins', sans-serif", size: 13 },
+                                                        padding: 12,
+                                                        cornerRadius: 8,
+                                                        displayColors: false
+                                                    }
+                                                },
+                                                scales: {
+                                                    y: {
+                                                        beginAtZero: false,
+                                                        grid: { color: 'rgba(0, 0, 0, 0.05)', drawBorder: false },
+                                                        ticks: { font: { family: "'Poppins', sans-serif" }, padding: 10 }
+                                                    },
+                                                    x: {
+                                                        grid: { display: false },
+                                                        ticks: { font: { family: "'Poppins', sans-serif" }, maxRotation: 45, minRotation: 45, padding: 10 }
+                                                    }
+                                                },
+                                                animation: { duration: 2000, easing: 'easeOutQuart' },
+                                                interaction: { intersect: false, mode: 'index' }
+                                            }
+                                        });
+                                    }
+                                    var nivelCtx = document.getElementById('nivelChart-{{ disp.dispositivo|replace(' ', '_') }}');
+                                    if (nivelCtx) {
+                                        new Chart(nivelCtx, {
+                                            type: 'line',
+                                            data: {
+                                                labels: historicoNivel['{{ disp.dispositivo|replace(' ', '_') }}'].labels,
+                                                datasets: [{
+                                                    label: 'Histórico de Nível',
+                                                    data: historicoNivel['{{ disp.dispositivo|replace(' ', '_') }}'].data,
+                                                    borderColor: '#34c759',
+                                                    backgroundColor: 'rgba(52,199,89,0.1)',
+                                                    borderWidth: 3,
+                                                    pointBackgroundColor: '#34c759',
+                                                    pointBorderColor: '#fff',
+                                                    pointRadius: 6,
+                                                    pointHoverRadius: 8,
+                                                    fill: true,
+                                                    tension: 0.4
+                                                }]
+                                            },
+                                            options: {
+                                                responsive: true,
+                                                maintainAspectRatio: false,
+                                                plugins: {
+                                                    legend: { display: false },
+                                                    tooltip: {
+                                                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                                        titleFont: { family: "'Poppins', sans-serif", size: 14 },
+                                                        bodyFont: { family: "'Poppins', sans-serif", size: 13 },
+                                                        padding: 12,
+                                                        cornerRadius: 8,
+                                                        displayColors: false,
+                                                        callbacks: {
+                                                            label: function(context) {
+                                                                var v = context.parsed.y;
+                                                                if (v === 2) return 'ALTO';
+                                                                if (v === 1) return 'BAIXO';
+                                                                return 'Desconhecido';
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                scales: {
+                                                    y: {
+                                                        beginAtZero: true,
+                                                        min: 0,
+                                                        max: 2,
+                                                        grid: { color: 'rgba(0, 0, 0, 0.05)', drawBorder: false },
+                                                        ticks: {
+                                                            font: { family: "'Poppins', sans-serif" },
+                                                            padding: 10,
+                                                            callback: function(value) {
+                                                                if (value === 2) return 'ALTO';
+                                                                if (value === 1) return 'BAIXO';
+                                                                return '';
+                                                            }
+                                                        }
+                                                    },
+                                                    x: {
+                                                        grid: { display: false },
+                                                        ticks: { font: { family: "'Poppins', sans-serif" }, maxRotation: 45, minRotation: 45, padding: 10 }
+                                                    }
+                                                },
+                                                animation: { duration: 2000, easing: 'easeOutQuart' },
+                                                interaction: { intersect: false, mode: 'index' }
+                                            }
+                                        });
+                                    }
+                                {% endfor %}
+                            });
+                        </script>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-exclamation-circle text-muted fs-1 mb-2 d-block"></i>
+                            <p class="mb-0">Nenhum dispositivo encontrado.</p>
                         </div>
+                    {% endif %}
+                </div>
 
-                        <div class="col-md-6 mb-4">
-                            <div class="card border-0 shadow-sm" data-aos="fade-up" data-aos-delay="400">
-                                <div class="card-header bg-primary text-white">
-                                    <i class="bi bi-graph-up me-2"></i>Histórico de pH
-                                </div>
-                                <div class="card-body">
-                                    <div class="list-group list-group-flush">
-                                        {% for ph in historico_ph %}
-                                            <div class="list-group-item d-flex justify-content-between align-items-center">
-                                                <div>
-                                                    <i class="bi bi-calendar me-2"></i>
-                                                    {{ ph.data|dateformat }}
-                                                </div>
-                                                <span class="badge bg-primary">
-                                                    pH {{ ph.ph }}
-                                                </span>
-                                            </div>
-                                        {% else %}
-                                            <div class="text-center py-4">
-                                                <p class="text-muted mb-0">Nenhum registro encontrado</p>
-                                            </div>
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                <!-- Notificações -->
+                <div class="card border-0 shadow-sm mt-4" data-aos="fade-up" data-aos-delay="500">
+                    <div class="card-header bg-primary text-white">
+                        <i class="bi bi-tools me-2"></i>Notificações de Manutenção
                     </div>
-
-                    <!-- Notificações -->
-                    <div class="card border-0 shadow-sm mt-4" data-aos="fade-up" data-aos-delay="500">
-                        <div class="card-header bg-primary text-white">
-                            <i class="bi bi-tools me-2"></i>Notificações de Manutenção
-                        </div>
-                        <div class="card-body">
-                            {% if notificacoes %}
-                                <div class="list-group list-group-flush">
-                                    {% for notificacao in notificacoes %}
-                                        <div class="list-group-item" data-aos="fade-up" data-aos-delay="{{ loop.index * 50 }}">
-                                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                                <div>
-                                                    <h6 class="mb-1">
-                                                        <i class="bi bi-exclamation-triangle text-warning me-2"></i>
-                                                        {{ notificacao.mensagem }}
-                                                    </h6>
-                                                    <small class="text-muted d-flex align-items-center">
-                                                        <i class="bi bi-clock me-2"></i>
-                                                        {{ notificacao.data_criacao|dateformat }}
-                                                    </small>
-                                                </div>
-                                                <div class="d-flex gap-2">
-                                                    <a href="{{ url_for('rachaduras', pedido_id=notificacao.pedido_id) }}" 
-                                                       class="btn btn-outline-primary btn-sm">
-                                                        <i class="bi bi-eye me-1"></i>Ver Pedido
-                                                    </a>
-                                                    <button class="btn btn-outline-danger btn-sm" 
-                                                            onclick="limparNotificacao({{ notificacao.id }})">
-                                                        <i class="bi bi-x-circle me-1"></i>Limpar
-                                                    </button>
-                                                </div>
+                    <div class="card-body">
+                        {% if notificacoes %}
+                            <div class="list-group list-group-flush">
+                                {% for notificacao in notificacoes %}
+                                    <div class="list-group-item" data-aos="fade-up" data-aos-delay="{{ loop.index * 50 }}">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <div>
+                                                <h6 class="mb-1">
+                                                    <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                                                    {{ notificacao.mensagem }}
+                                                </h6>
+                                                <small class="text-muted d-flex align-items-center">
+                                                    <i class="bi bi-clock me-2"></i>
+                                                    {{ notificacao.data_criacao|dateformat }}
+                                                </small>
                                             </div>
-                                            {% if notificacao.imagens %}
-                                                <div class="row g-3 mt-2">
-                                                    {% for imagem in notificacao.imagens %}
-                                                        <div class="col-md-6">
-                                                            <div class="card">
-                                                                <img src="{{ url_for('static', filename=imagem.caminho) }}" 
-                                                                     alt="Imagem Processada" 
-                                                                     class="img-fluid rounded">
-                                                                <div class="card-body">
-                                                                    <h6 class="card-title">
-                                                                        <i class="bi bi-image me-2"></i>
-                                                                        {{ imagem.tipo_imagem|title }}
-                                                                    </h6>
-                                                                    {% if imagem.tipo_imagem == "rachadura" %}
-                                                                        {% if imagem.tem_rachadura %}
-                                                                            <p class="text-danger mb-0">
-                                                                                <i class="bi bi-exclamation-triangle me-2"></i>
-                                                                                Rachaduras detectadas!
-                                                                            </p>
-                                                                        {% else %}
-                                                                            <p class="text-success mb-0">
-                                                                                <i class="bi bi-check-circle me-2"></i>
-                                                                                Nenhuma rachadura detectada.
-                                                                            </p>
-                                                                        {% endif %}
-                                                                    {% elif imagem.tipo_imagem == "objeto" %}
-                                                                        <p class="text-info mb-0">
-                                                                            <i class="bi bi-box me-2"></i>
-                                                                            Objeto detectado!
+                                            <div class="d-flex gap-2">
+                                                <a href="{{ url_for('rachaduras', pedido_id=notificacao.pedido_id) }}" 
+                                                   class="btn btn-outline-primary btn-sm">
+                                                    <i class="bi bi-eye me-1"></i>Ver Pedido
+                                                </a>
+                                                <button class="btn btn-outline-danger btn-sm" 
+                                                        onclick="limparNotificacao({{ notificacao.id }})">
+                                                    <i class="bi bi-x-circle me-1"></i>Limpar
+                                                </button>
+                                            </div>
+                                        </div>
+                                        {% if notificacao.imagens %}
+                                            <div class="row g-3 mt-2">
+                                                {% for imagem in notificacao.imagens %}
+                                                    <div class="col-md-6">
+                                                        <div class="card">
+                                                            <img src="{{ url_for('static', filename=imagem.caminho) }}" 
+                                                                 alt="Imagem Processada" 
+                                                                 class="img-fluid rounded">
+                                                            <div class="card-body">
+                                                                <h6 class="card-title">
+                                                                    <i class="bi bi-image me-2"></i>
+                                                                    {{ imagem.tipo_imagem|title }}
+                                                                </h6>
+                                                                {% if imagem.tipo_imagem == "rachadura" %}
+                                                                    {% if imagem.tem_rachadura %}
+                                                                        <p class="text-danger mb-0">
+                                                                            <i class="bi bi-exclamation-triangle me-2"></i>
+                                                                            Rachaduras detectadas!
+                                                                        </p>
+                                                                    {% else %}
+                                                                        <p class="text-success mb-0">
+                                                                            <i class="bi bi-check-circle me-2"></i>
+                                                                            Nenhuma rachadura detectada.
                                                                         </p>
                                                                     {% endif %}
-                                                                </div>
+                                                                {% elif imagem.tipo_imagem == "objeto" %}
+                                                                    <p class="text-info mb-0">
+                                                                        <i class="bi bi-box me-2"></i>
+                                                                        Objeto detectado!
+                                                                    </p>
+                                                                {% endif %}
                                                             </div>
                                                         </div>
-                                                    {% endfor %}
-                                                </div>
-                                            {% endif %}
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                <div class="text-center py-5">
-                                    <i class="bi bi-check-circle fs-1 text-muted mb-3"></i>
-                                    <p class="text-muted mb-0">Nenhuma notificação de manutenção no momento.</p>
-                                </div>
-                            {% endif %}
-                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="bi bi-check-circle fs-1 text-muted mb-3"></i>
+                                <p class="text-muted mb-0">Nenhuma notificação de manutenção no momento.</p>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -928,88 +1088,6 @@
                 AOS.refresh();
             }, 100);
         }
-
-        // Configuração do gráfico de pH
-        document.addEventListener('DOMContentLoaded', function() {
-            const ctx = document.getElementById('phChart')?.getContext('2d');
-            if (ctx) {
-                const gradient = ctx.createLinearGradient(0, 0, 0, 220);
-                gradient.addColorStop(0, 'rgba(0, 102, 204, 0.25)');
-                gradient.addColorStop(1, 'rgba(0, 102, 204, 0.01)');
-
-                const datas = [];
-                const valores = [];
-                {% for item in historico_ph %}
-                    datas.push("{{ item.data|dateformat }}");
-                    valores.push({{ item.ph }});
-                {% endfor %}
-
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: datas,
-                        datasets: [{
-                            label: 'Histórico de pH',
-                            data: valores,
-                            borderColor: '#0066cc',
-                            backgroundColor: gradient,
-                            borderWidth: 3,
-                            pointBackgroundColor: '#0066cc',
-                            pointBorderColor: '#fff',
-                            pointRadius: 6,
-                            pointHoverRadius: 8,
-                            fill: true,
-                            tension: 0.4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                titleFont: { family: "'Poppins', sans-serif", size: 14 },
-                                bodyFont: { family: "'Poppins', sans-serif", size: 13 },
-                                padding: 12,
-                                cornerRadius: 8,
-                                displayColors: false
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: false,
-                                grid: { 
-                                    color: 'rgba(0, 0, 0, 0.05)',
-                                    drawBorder: false
-                                },
-                                ticks: { 
-                                    font: { family: "'Poppins', sans-serif" },
-                                    padding: 10
-                                }
-                            },
-                            x: {
-                                grid: { display: false },
-                                ticks: {
-                                    font: { family: "'Poppins', sans-serif" },
-                                    maxRotation: 45,
-                                    minRotation: 45,
-                                    padding: 10
-                                }
-                            }
-                        },
-                        animation: {
-                            duration: 2000,
-                            easing: 'easeOutQuart'
-                        },
-                        interaction: {
-                            intersect: false,
-                            mode: 'index'
-                        }
-                    }
-                });
-            }
-        });
 
         // Função para limpar notificação
         function limparNotificacao(notificacaoId) {

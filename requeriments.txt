@@ -14,3 +14,4 @@ opencv-python==4.11.0.86
 SQLAlchemy==2.0.32
 typing_extensions==4.12.2
 Werkzeug==3.0.4
+pytz

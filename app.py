@@ -1,7 +1,7 @@
 import os
 import re
 import mysql.connector
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask, jsonify, request, session, redirect, url_for, render_template, flash
 from werkzeug.security import generate_password_hash, check_password_hash 
 import cv2
@@ -17,6 +17,7 @@ from mysql.connector.types import RowType, MySQLConvertibleType, RowItemType
 from decimal import Decimal
 from datetime import date, timedelta
 from mysql.connector.cursor import MySQLCursorDict
+import pytz
 
 
 app = Flask(__name__)
@@ -1016,19 +1017,57 @@ def perfil_empresa(cnpj):
             logout_user() 
             return redirect(url_for('login_usuario')) 
         
-        ph_atual, historico_ph, nivel_atual, historico_nivel = buscar_dados_cisterna(current_user.id)
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Dispositivos fixos
+        dispositivos = [
+            {'dispositivo_id': 1, 'dispositivo': 'Sensor 1'},
+            {'dispositivo_id': 2, 'dispositivo': 'Sensor 2'},
+            {'dispositivo_id': 3, 'dispositivo': 'Sensor 3'},
+        ]
+
+        ph_por_dispositivo = {}
+        nivel_por_dispositivo = {}
+        for disp in dispositivos:
+            dispositivo_id = disp['dispositivo_id']
+            dispositivo_nome = disp['dispositivo']
+            # pH atual
+            cursor.execute("""
+                SELECT * FROM ph_niveis WHERE dispositivo_id = %s ORDER BY data DESC LIMIT 1
+            """, (dispositivo_id,))
+            ph_atual = convert_row_to_dict(cursor.fetchone())
+            # Histórico pH
+            cursor.execute("""
+                SELECT * FROM ph_niveis WHERE dispositivo_id = %s ORDER BY data DESC LIMIT 5
+            """, (dispositivo_id,))
+            historico_ph = [convert_row_to_dict(row) for row in cursor.fetchall()]
+            ph_por_dispositivo[dispositivo_nome] = {'atual': ph_atual, 'historico': historico_ph}
+            # Nível atual
+            cursor.execute("""
+                SELECT * FROM niveis_agua WHERE dispositivo_id = %s ORDER BY data DESC LIMIT 1
+            """, (dispositivo_id,))
+            nivel_atual = convert_row_to_dict(cursor.fetchone())
+            # Histórico nível
+            cursor.execute("""
+                SELECT * FROM niveis_agua WHERE dispositivo_id = %s ORDER BY data DESC LIMIT 5
+            """, (dispositivo_id,))
+            historico_nivel = [convert_row_to_dict(row) for row in cursor.fetchall()]
+            nivel_por_dispositivo[dispositivo_nome] = {'atual': nivel_atual, 'historico': historico_nivel}
+
         notificacoes = buscar_notificacoes(current_user.cnpj)
         comunicados_gerais = buscar_comunicado_geral()
         pedidos = buscar_pedidos_por_empresa(current_user.cnpj)
         
+        cursor.close()
+        conn.close()
 
         return render_template(
             'perfil_empresa.html',
             company=current_user,
-            ph_atual=ph_atual,
-            nivel_atual=nivel_atual,
-            historico_ph=historico_ph,
-            historico_nivel=historico_nivel,
+            dispositivos=dispositivos,
+            ph_por_dispositivo=ph_por_dispositivo,
+            nivel_por_dispositivo=nivel_por_dispositivo,
             notificacoes=notificacoes,
             comunicados_gerais=comunicados_gerais,
             pedidos=pedidos,
@@ -1081,46 +1120,45 @@ def dashboard_usuario(cpf):
         cursor.execute(query_comunicados_gerais)
         comunicados_gerais = [convert_row_to_dict(row) for row in cursor.fetchall()]
 
-        # Busca nível atual da água
-        query_nivel = """
-            SELECT * FROM niveis_agua
-            ORDER BY data DESC
-            LIMIT 1
-        """
-        cursor.execute(query_nivel)
-        nivel_atual = convert_row_to_dict(cursor.fetchone())
-
-        # Busca histórico de nível
-        query_historico_nivel = """
-            SELECT * FROM niveis_agua
-            ORDER BY data DESC
-            LIMIT 5
-        """
-        cursor.execute(query_historico_nivel)
-        historico_nivel = [convert_row_to_dict(row) for row in cursor.fetchall()]
-
-        # Busca pH atual
-        query_ph = """
-            SELECT * FROM ph_niveis
-            ORDER BY data DESC
-            LIMIT 1
-        """
-        cursor.execute(query_ph)
-        ph_atual = convert_row_to_dict(cursor.fetchone())
-
-        # Busca histórico de pH
-        query_historico_ph = """
-            SELECT * FROM ph_niveis
-            ORDER BY data DESC
-            LIMIT 5
-        """
-        cursor.execute(query_historico_ph)
-        historico_ph = [convert_row_to_dict(row) for row in cursor.fetchall()]
-
         # Busca lista de empresas
         query_empresas = "SELECT cnpj, nome FROM empresas"
         cursor.execute(query_empresas)
         empresas = [convert_row_to_dict(row) for row in cursor.fetchall()]
+
+        # Dispositivos fixos
+        dispositivos = [
+            {'dispositivo_id': 1, 'dispositivo': 'Sensor 1'},
+            {'dispositivo_id': 2, 'dispositivo': 'Sensor 2'},
+            {'dispositivo_id': 3, 'dispositivo': 'Sensor 3'},
+        ]
+
+        ph_por_dispositivo = {}
+        nivel_por_dispositivo = {}
+        for disp in dispositivos:
+            dispositivo_id = disp['dispositivo_id']
+            dispositivo_nome = disp['dispositivo']
+            # pH atual
+            cursor.execute("""
+                SELECT * FROM ph_niveis WHERE dispositivo_id = %s ORDER BY data DESC LIMIT 1
+            """, (dispositivo_id,))
+            ph_atual = convert_row_to_dict(cursor.fetchone())
+            # Histórico pH
+            cursor.execute("""
+                SELECT * FROM ph_niveis WHERE dispositivo_id = %s ORDER BY data DESC LIMIT 5
+            """, (dispositivo_id,))
+            historico_ph = [convert_row_to_dict(row) for row in cursor.fetchall()]
+            ph_por_dispositivo[dispositivo_nome] = {'atual': ph_atual, 'historico': historico_ph}
+            # Nível atual
+            cursor.execute("""
+                SELECT * FROM niveis_agua WHERE dispositivo_id = %s ORDER BY data DESC LIMIT 1
+            """, (dispositivo_id,))
+            nivel_atual = convert_row_to_dict(cursor.fetchone())
+            # Histórico nível
+            cursor.execute("""
+                SELECT * FROM niveis_agua WHERE dispositivo_id = %s ORDER BY data DESC LIMIT 5
+            """, (dispositivo_id,))
+            historico_nivel = [convert_row_to_dict(row) for row in cursor.fetchall()]
+            nivel_por_dispositivo[dispositivo_nome] = {'atual': nivel_atual, 'historico': historico_nivel}
 
         cursor.close()
         conn.close()
@@ -1130,10 +1168,9 @@ def dashboard_usuario(cpf):
                              pedidos=pedidos,
                              comunicados=comunicados,
                              comunicados_gerais=comunicados_gerais,
-                             nivel_atual=nivel_atual,
-                             historico_nivel=historico_nivel,
-                             ph_atual=ph_atual,
-                             historico_ph=historico_ph,
+                             dispositivos=dispositivos,
+                             ph_por_dispositivo=ph_por_dispositivo,
+                             nivel_por_dispositivo=nivel_por_dispositivo,
                              empresas=empresas)
     except Exception as e:
         flash(f'Erro ao carregar o dashboard: {str(e)}', 'danger')
@@ -1591,19 +1628,23 @@ def sobre():
 
 @app.template_filter('dateformat')
 def dateformat(value, format="%d/%m/%Y %H:%M"):
-    """Filtro para formatar datas no Jinja2"""
-    if value is None:
-        return ""
-    if isinstance(value, datetime):
-        return value.strftime(format)
-    try:
-        return datetime.strptime(value, "%Y-%m-%d %H:%M:%S").strftime(format)
-    except ValueError:
+    if not value:
+        return ''
+    if isinstance(value, str):
         try:
-            return datetime.strptime(value, "%Y-%m-%d").strftime(format)
-        except:
+            value = datetime.fromisoformat(value)
+        except Exception:
             return value
-        
+    try:
+        # Tenta converter para timezone de São Paulo
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=pytz.UTC)
+        value = value.astimezone(pytz.timezone('America/Sao_Paulo'))
+    except Exception:
+        # Se der erro, faz ajuste manual de -3h
+        value = value - timedelta(hours=3)
+    return value.strftime(format)
+
 @app.route('/informacoes_cisterna/<cpf>')
 @login_required 
 def informacoes_cisterna(cpf):

@@ -557,136 +557,300 @@
               <p class="text-muted mb-0">Monitoramento em tempo real</p>
             </div>
           </div>
-          <div class="row g-4">
-            <!-- Nível de Água Card -->
-            <div class="col-md-6" data-aos="fade-up" data-aos-delay="100">
-              <div class="dashboard-card">
-                <div class="d-flex align-items-center mb-4">
-                  <div class="dashboard-icon mb-0">
-                    <i class="bi bi-water"></i>
-                  </div>
-                  <h3 class="h5 mb-0 ms-3">Nível de Água</h3>
-                </div>
-                {% if nivel_atual %}
-                  <div class="text-center mb-4">
-                    <div class="mb-3">
-                      <span class="badge bg-{{ 'success' if nivel_atual.status == 'ALTO' else 'danger' }} px-4 py-2 fs-5">
-                        {{ nivel_atual.status }}
-                      </span>
-                    </div>
-                    <div class="d-flex align-items-center justify-content-center mb-3">
-                      <i class="bi bi-toggle-{{ 'on' if nivel_atual.boia == 1 else 'off' }} text-{{ 'primary' if nivel_atual.boia == 1 else 'secondary' }} me-2 fs-4"></i>
-                      <span class="fw-medium">Boia {{ 'Ativada' if nivel_atual.boia == 1 else 'Desativada' }}</span>
-                    </div>
-                    <small class="text-muted d-block">
-                      <i class="bi bi-clock-history me-1"></i>
-                      Atualizado em: {{ nivel_atual.data|dateformat }}
-                    </small>
-                  </div>
-                {% else %}
-                  <div class="text-center py-4">
-                    <i class="bi bi-exclamation-circle text-muted fs-1 mb-2 d-block"></i>
-                    <p class="mb-0">Nenhum dado disponível</p>
-                  </div>
-                {% endif %}
-              </div>
+          {% if dispositivos %}
+            <div class="mb-4">
+              <label for="selectDispositivo" class="form-label fw-semibold">Selecione o Dispositivo:</label>
+              <select class="form-select w-auto d-inline-block" id="selectDispositivo" onchange="mostrarDispositivoSelecionado()">
+                {% for disp in dispositivos %}
+                  <option value="{{ disp.dispositivo }}">{{ disp.dispositivo }}</option>
+                {% endfor %}
+              </select>
             </div>
-
-            <!-- pH da Água Card -->
-            <div class="col-md-6" data-aos="fade-up" data-aos-delay="200">
-              <div class="dashboard-card">
-                <div class="d-flex align-items-center mb-4">
-                  <div class="dashboard-icon mb-0">
-                    <i class="bi bi-droplet-half"></i>
-                  </div>
-                  <h3 class="h5 mb-0 ms-3">pH da Água</h3>
-                </div>
-                {% if ph_atual %}
-                  <div class="text-center mb-4">
-                    <div class="display-4 text-primary fw-bold mb-3">{{ ph_atual.ph }}</div>
-                    <div class="progress mb-3" style="height: 10px;">
-                      <div class="progress-bar bg-primary" role="progressbar" 
-                           style="width: {{ (ph_atual.ph/14)*100 }}%" 
-                           aria-valuenow="{{ ph_atual.ph }}" 
-                           aria-valuemin="0" 
-                           aria-valuemax="14"></div>
-                    </div>
-                    <small class="text-muted d-block">
-                      <i class="bi bi-clock-history me-1"></i>
-                      Atualizado em: {{ ph_atual.data|dateformat }}
-                    </small>
-                  </div>
-                {% else %}
-                  <div class="text-center py-4">
-                    <i class="bi bi-exclamation-circle text-muted fs-1 mb-2 d-block"></i>
-                    <p class="mb-0">Nenhum dado disponível</p>
-                  </div>
-                {% endif %}
-              </div>
-            </div>
-
-            <!-- Histórico de Nível -->
-            <div class="col-md-6" data-aos="fade-up" data-aos-delay="300">
-              <div class="dashboard-card">
-                <div class="d-flex align-items-center mb-4">
-                  <div class="dashboard-icon mb-0">
-                    <i class="bi bi-clock-history"></i>
-                  </div>
-                  <h3 class="h5 mb-0 ms-3">Histórico de Nível</h3>
-                </div>
-                <div class="list-group list-group-flush">
-                  {% for nivel in historico_nivel %}
-                    <div class="list-group-item border-0 px-0">
-                      <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center">
-                          <i class="bi bi-water text-primary me-2"></i>
-                          <span>{{ nivel.data|dateformat }}</span>
-                        </div>
-                        <span class="badge bg-{{ 'success' if nivel.status == 'ALTO' else 'danger' }}">
-                          {{ nivel.status }}
-                        </span>
+            {% for disp in dispositivos %}
+              <div class="dispositivo-panel" id="panel-{{ disp.dispositivo|replace(' ', '_') }}" style="display: {% if loop.first %}block{% else %}none{% endif %};">
+                <div class="row g-4">
+                  <!-- Card pH -->
+                  <div class="col-md-6 mb-4">
+                    <div class="card border-0 shadow-sm h-100">
+                      <div class="card-header bg-primary text-white">
+                        <i class="bi bi-droplet-half me-2"></i>pH da Água
+                      </div>
+                      <div class="card-body">
+                        {% set ph = ph_por_dispositivo[disp.dispositivo]['atual'] %}
+                        {% if ph %}
+                          <div class="text-center mb-4">
+                            <div class="display-4 text-primary mb-2">{{ ph.ph }}</div>
+                            <span class="badge {% if ph.ph < 6.5 %}bg-danger{% elif ph.ph > 8.5 %}bg-warning{% else %}bg-success{% endif %} fs-6">
+                              {% if ph.ph < 6.5 %}Ácido{% elif ph.ph > 8.5 %}Alcalino{% else %}Neutro{% endif %}
+                            </span>
+                            <p class="text-muted mt-3 mb-0">
+                              <i class="bi bi-clock me-1"></i>
+                              Última atualização: {{ ph.data|dateformat }}
+                            </p>
+                          </div>
+                          <div class="mt-4">
+                            <canvas id="phChart-{{ disp.dispositivo|replace(' ', '_') }}" height="200"></canvas>
+                          </div>
+                        {% else %}
+                          <div class="text-center py-5">
+                            <i class="bi bi-exclamation-circle fs-1 text-muted mb-3"></i>
+                            <p class="text-muted mb-0">Nenhum dado de pH disponível.</p>
+                          </div>
+                        {% endif %}
                       </div>
                     </div>
-                  {% else %}
-                    <div class="text-center py-3">
-                      <i class="bi bi-inbox text-muted fs-1 mb-2 d-block"></i>
-                      <p class="mb-0">Nenhum registro encontrado</p>
-                    </div>
-                  {% endfor %}
-                </div>
-              </div>
-            </div>
-
-            <!-- Histórico de pH -->
-            <div class="col-md-6" data-aos="fade-up" data-aos-delay="400">
-              <div class="dashboard-card">
-                <div class="d-flex align-items-center mb-4">
-                  <div class="dashboard-icon mb-0">
-                    <i class="bi bi-graph-up"></i>
                   </div>
-                  <h3 class="h5 mb-0 ms-3">Histórico de pH</h3>
-                </div>
-                <div class="list-group list-group-flush">
-                  {% for ph in historico_ph %}
-                    <div class="list-group-item border-0 px-0">
-                      <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center">
-                          <i class="bi bi-droplet-half text-primary me-2"></i>
-                          <span>{{ ph.data|dateformat }}</span>
-                        </div>
-                        <span class="badge bg-primary">pH {{ ph.ph }}</span>
+                  <!-- Card Nível -->
+                  <div class="col-md-6 mb-4">
+                    <div class="card border-0 shadow-sm h-100">
+                      <div class="card-header bg-primary text-white">
+                        <i class="bi bi-water me-2"></i>Nível de Água
+                      </div>
+                      <div class="card-body">
+                        {% set nivel = nivel_por_dispositivo[disp.dispositivo]['atual'] %}
+                        {% if nivel %}
+                          <div class="text-center mb-4">
+                            <div class="mb-4">
+                              <i class="bi bi-water fs-1 {% if nivel.status == 'ALTO' %}text-success{% else %}text-warning{% endif %}"></i>
+                            </div>
+                            <div class="display-6 mb-2">
+                              <span class="badge {% if nivel.status == 'ALTO' %}bg-success{% else %}bg-warning{% endif %} fs-5">
+                                {{ nivel.status }}
+                              </span>
+                            </div>
+                            <div class="mt-4">
+                              <p class="mb-2">Status da Boia:</p>
+                              <span class="badge {% if nivel.boia == 1 %}bg-primary{% else %}bg-secondary{% endif %} fs-6">
+                                {% if nivel.boia == 1 %}Ativada{% else %}Desativada{% endif %}
+                              </span>
+                            </div>
+                            <p class="text-muted mt-4 mb-0">
+                              <i class="bi bi-clock me-1"></i>
+                              Última atualização: {{ nivel.data|dateformat }}
+                            </p>
+                          </div>
+                          <div class="mt-4">
+                            <canvas id="nivelChart-{{ disp.dispositivo|replace(' ', '_') }}" height="200"></canvas>
+                          </div>
+                        {% else %}
+                          <div class="text-center py-5">
+                            <i class="bi bi-exclamation-circle fs-1 text-muted mb-3"></i>
+                            <p class="text-muted mb-0">Nenhum dado de nível disponível.</p>
+                          </div>
+                        {% endif %}
                       </div>
                     </div>
-                  {% else %}
-                    <div class="text-center py-3">
-                      <i class="bi bi-inbox text-muted fs-1 mb-2 d-block"></i>
-                      <p class="mb-0">Nenhum registro encontrado</p>
+                  </div>
+                </div>
+                <!-- Histórico detalhado -->
+                <div class="row g-4 mt-2">
+                  <div class="col-md-6">
+                    <div class="card border-0 shadow-sm">
+                      <div class="card-header bg-primary text-white">
+                        <i class="bi bi-graph-up me-2"></i>Histórico de pH
+                      </div>
+                      <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                          {% for item in ph_por_dispositivo[disp.dispositivo]['historico'] %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                              <span><i class="bi bi-calendar me-2"></i>{{ item.data|dateformat }}</span>
+                              <span class="badge bg-primary">pH {{ item.ph }}</span>
+                            </li>
+                          {% else %}
+                            <li class="list-group-item text-muted">Nenhum registro encontrado</li>
+                          {% endfor %}
+                        </ul>
+                      </div>
                     </div>
-                  {% endfor %}
+                  </div>
+                  <div class="col-md-6">
+                    <div class="card border-0 shadow-sm">
+                      <div class="card-header bg-primary text-white">
+                        <i class="bi bi-clock-history me-2"></i>Histórico de Nível
+                      </div>
+                      <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                          {% for item in nivel_por_dispositivo[disp.dispositivo]['historico'] %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                              <span><i class="bi bi-calendar me-2"></i>{{ item.data|dateformat }}</span>
+                              <span class="badge {% if item.status == 'ALTO' %}bg-success{% else %}bg-warning{% endif %}">{{ item.status }}</span>
+                            </li>
+                          {% else %}
+                            <li class="list-group-item text-muted">Nenhum registro encontrado</li>
+                          {% endfor %}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
+            {% endfor %}
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+              // Função para mostrar o painel do dispositivo selecionado
+              function mostrarDispositivoSelecionado() {
+                var select = document.getElementById('selectDispositivo');
+                var valor = select.value.replace(/\s/g, '_');
+                var paineis = document.querySelectorAll('.dispositivo-panel');
+                paineis.forEach(function(p) { p.style.display = 'none'; });
+                var painelAtivo = document.getElementById('panel-' + valor);
+                if (painelAtivo) painelAtivo.style.display = 'block';
+              }
+
+              // Dados dos gráficos (renderizados pelo Jinja)
+              var historicoPh = {};
+              var historicoNivel = {};
+              {% for disp in dispositivos %}
+                historicoPh['{{ disp.dispositivo|replace(' ', '_') }}'] = {
+                  labels: [
+                    {% for item in ph_por_dispositivo[disp.dispositivo]['historico']|reverse %}'{{ item.data|dateformat }}'{% if not loop.last %},{% endif %}{% endfor %}
+                  ],
+                  data: [
+                    {% for item in ph_por_dispositivo[disp.dispositivo]['historico']|reverse %}{{ item.ph }}{% if not loop.last %},{% endif %}{% endfor %}
+                  ]
+                };
+                historicoNivel['{{ disp.dispositivo|replace(' ', '_') }}'] = {
+                  labels: [
+                    {% for item in nivel_por_dispositivo[disp.dispositivo]['historico']|reverse %}'{{ item.data|dateformat }}'{% if not loop.last %},{% endif %}{% endfor %}
+                  ],
+                  data: [
+                    {% for item in nivel_por_dispositivo[disp.dispositivo]['historico']|reverse %}
+                      {% if item.status == 'ALTO' %}2{% elif item.status == 'BAIXO' %}1{% else %}0{% endif %}{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                  ]
+                };
+              {% endfor %}
+
+              // Renderiza os gráficos para cada dispositivo
+              document.addEventListener('DOMContentLoaded', function() {
+                {% for disp in dispositivos %}
+                  var phCtx = document.getElementById('phChart-{{ disp.dispositivo|replace(' ', '_') }}');
+                  if (phCtx) {
+                    new Chart(phCtx, {
+                      type: 'line',
+                      data: {
+                        labels: historicoPh['{{ disp.dispositivo|replace(' ', '_') }}'].labels,
+                        datasets: [{
+                          label: 'Histórico de pH',
+                          data: historicoPh['{{ disp.dispositivo|replace(' ', '_') }}'].data,
+                          borderColor: '#0066cc',
+                          backgroundColor: 'rgba(0,102,204,0.1)',
+                          borderWidth: 3,
+                          pointBackgroundColor: '#0066cc',
+                          pointBorderColor: '#fff',
+                          pointRadius: 6,
+                          pointHoverRadius: 8,
+                          fill: true,
+                          tension: 0.4
+                        }]
+                      },
+                      options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: { display: false },
+                          tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: { family: "'Poppins', sans-serif", size: 14 },
+                            bodyFont: { family: "'Poppins', sans-serif", size: 13 },
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: false
+                          }
+                        },
+                        scales: {
+                          y: {
+                            beginAtZero: false,
+                            grid: { color: 'rgba(0, 0, 0, 0.05)', drawBorder: false },
+                            ticks: { font: { family: "'Poppins', sans-serif" }, padding: 10 }
+                          },
+                          x: {
+                            grid: { display: false },
+                            ticks: { font: { family: "'Poppins', sans-serif" }, maxRotation: 45, minRotation: 45, padding: 10 }
+                          }
+                        },
+                        animation: { duration: 2000, easing: 'easeOutQuart' },
+                        interaction: { intersect: false, mode: 'index' }
+                      }
+                    });
+                  }
+                  var nivelCtx = document.getElementById('nivelChart-{{ disp.dispositivo|replace(' ', '_') }}');
+                  if (nivelCtx) {
+                    new Chart(nivelCtx, {
+                      type: 'line',
+                      data: {
+                        labels: historicoNivel['{{ disp.dispositivo|replace(' ', '_') }}'].labels,
+                        datasets: [{
+                          label: 'Histórico de Nível',
+                          data: historicoNivel['{{ disp.dispositivo|replace(' ', '_') }}'].data,
+                          borderColor: '#34c759',
+                          backgroundColor: 'rgba(52,199,89,0.1)',
+                          borderWidth: 3,
+                          pointBackgroundColor: '#34c759',
+                          pointBorderColor: '#fff',
+                          pointRadius: 6,
+                          pointHoverRadius: 8,
+                          fill: true,
+                          tension: 0.4
+                        }]
+                      },
+                      options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: { display: false },
+                          tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: { family: "'Poppins', sans-serif", size: 14 },
+                            bodyFont: { family: "'Poppins', sans-serif", size: 13 },
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: false,
+                            callbacks: {
+                              label: function(context) {
+                                var v = context.parsed.y;
+                                if (v === 2) return 'ALTO';
+                                if (v === 1) return 'BAIXO';
+                                return 'Desconhecido';
+                              }
+                            }
+                          }
+                        },
+                        scales: {
+                          y: {
+                            beginAtZero: true,
+                            min: 0,
+                            max: 2,
+                            grid: { color: 'rgba(0, 0, 0, 0.05)', drawBorder: false },
+                            ticks: {
+                              font: { family: "'Poppins', sans-serif" },
+                              padding: 10,
+                              callback: function(value) {
+                                if (value === 2) return 'ALTO';
+                                if (value === 1) return 'BAIXO';
+                                return '';
+                              }
+                            }
+                          },
+                          x: {
+                            grid: { display: false },
+                            ticks: { font: { family: "'Poppins', sans-serif" }, maxRotation: 45, minRotation: 45, padding: 10 }
+                          }
+                        },
+                        animation: { duration: 2000, easing: 'easeOutQuart' },
+                        interaction: { intersect: false, mode: 'index' }
+                      }
+                    });
+                  }
+                {% endfor %}
+              });
+            </script>
+          {% else %}
+            <div class="text-center py-4">
+              <i class="bi bi-exclamation-circle text-muted fs-1 mb-2 d-block"></i>
+              <p class="mb-0">Nenhum dispositivo encontrado.</p>
             </div>
-          </div>
+          {% endif %}
         </section>
       </main>
     </div>
