@@ -375,22 +375,22 @@
             <div class="col-auto sidebar d-flex flex-column align-items-start" data-aos="fade-right">
                 <a href="{{ url_for('pagina_inicial') }}" class="mb-4 text-decoration-none text-white d-flex align-items-center">
                     <i class="bi bi-droplet fs-1"></i>
-                    <span class="fs-4 ms-2">Sensorium</span>
+            <span class="fs-4 ms-2">Sensorium</span>
                 </a>
                 <nav class="nav flex-column w-100">
-                    <a class="nav-link active" onclick="showSection(event, 'empresa-info')" role="button">
+                    <a href="#" class="nav-link active" onclick="showSection(event, 'empresa-info')" role="button">
                         <i class="bi bi-building"></i>
                         <span>Informações</span>
                     </a>
-                    <a class="nav-link" onclick="showSection(event, 'avisos')" role="button">
+                    <a href="#" class="nav-link" onclick="showSection(event, 'avisos')" role="button">
                         <i class="bi bi-bell"></i>
                         <span>Avisos</span>
                     </a>
-                    <a class="nav-link" onclick="showSection(event, 'pedidos')" role="button">
+                    <a href="#" class="nav-link" onclick="showSection(event, 'pedidos')" role="button">
                         <i class="bi bi-box-seam"></i>
                         <span>Pedidos</span>
                     </a>
-                    <a class="nav-link" onclick="showSection(event, 'cisterna')" role="button">
+                    <a href="#" class="nav-link" onclick="showSection(event, 'cisterna')" role="button">
                         <i class="bi bi-water"></i>
                         <span>Cisterna</span>
                     </a>
@@ -559,13 +559,14 @@
                                                 <p class="mb-2">{{ comunicado.mensagem }}</p>
                                                 <small class="text-muted d-flex align-items-center">
                                                     <i class="bi bi-clock me-2"></i>
-                                                    {{ comunicado.data|dateformat }}
+                                                    {{ comunicado.data.strftime('%d/%m/%Y %H:%M') if comunicado.data else 'N/A' }}
                                                 </small>
                                             </div>
                                             <form action="{{ url_for('excluir_comunicado_geral_view', comunicado_id=comunicado.id) }}" 
                                                   method="POST" class="ms-3">
                                                 <button type="submit" class="btn btn-outline-danger btn-sm"
-                                                        onclick="return confirm('Tem certeza que deseja excluir este aviso?')">
+                                                        onclick="return confirm('Tem certeza que deseja excluir este aviso?')"
+                                                        aria-label="Excluir aviso">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </form>
@@ -641,22 +642,22 @@
                                                     </span>
                                                 </td>
                                                 <td>{{ pedido.usuario_nome }}</td>
-                                                <td>{{ pedido.data|dateformat }}</td>
+                                                <td>{{ pedido.data.strftime('%d/%m/%Y') if pedido.data else 'N/A' }}</td>
                                                 <td>
-                                                    <div class="btn-group">
+                                                    <div class="d-flex align-items-center gap-2">
                                                         <a href="{{ url_for('visualizar_pedido', pedido_id=pedido.id) }}" 
                                                            class="btn btn-outline-primary btn-sm" 
                                                            title="Visualizar Detalhes">
                                                             <i class="bi bi-eye"></i>
                                                         </a>
                                                         <form action="{{ url_for('alterar_status', pedido_id=pedido.id, cnpj=company.cnpj) }}" 
-                                                              method="POST" class="d-inline">
-                                                            <select name="novo_status" class="form-select form-select-sm" required>
+                                                              method="POST" class="d-flex gap-1">
+                                                            <select name="novo_status" class="form-select form-select-sm" aria-label="Alterar status do pedido" required>
                                                                 <option value="pendente" {% if pedido.status == 'pendente' %}selected{% endif %}>Pendente</option>
                                                                 <option value="aceito" {% if pedido.status == 'aceito' %}selected{% endif %}>Aceito</option>
                                                                 <option value="cancelado" {% if pedido.status == 'cancelado' %}selected{% endif %}>Cancelado</option>
                                                             </select>
-                                                            <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                            <button type="submit" class="btn btn-outline-primary btn-sm" aria-label="Salvar status">
                                                                 <i class="bi bi-check2"></i>
                                                             </button>
                                                         </form>
@@ -712,7 +713,7 @@
                                                         </span>
                                                         <p class="text-muted mt-3 mb-0">
                                                             <i class="bi bi-clock me-1"></i>
-                                                            Última atualização: {{ ph.data|dateformat }}
+                                                            Última atualização: {{ ph.data.strftime('%d/%m/%Y %H:%M') if ph.data else 'N/A' }}
                                                         </p>
                                                     </div>
                                                     <div class="mt-4">
@@ -753,7 +754,7 @@
                                                         </div>
                                                         <p class="text-muted mt-4 mb-0">
                                                             <i class="bi bi-clock me-1"></i>
-                                                            Última atualização: {{ nivel.data|dateformat }}
+                                                            Última atualização: {{ nivel.data.strftime('%d/%m/%Y %H:%M') if nivel.data else 'N/A' }}
                                                         </p>
                                                     </div>
                                                     <div class="mt-4">
@@ -780,7 +781,7 @@
                                                 <ul class="list-group list-group-flush">
                                                     {% for item in ph_por_dispositivo[disp.dispositivo]['historico'] %}
                                                         <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                            <span><i class="bi bi-calendar me-2"></i>{{ item.data|dateformat }}</span>
+                                                            <span><i class="bi bi-calendar me-2"></i>{{ item.data.strftime('%d/%m %H:%M') if item.data else 'N/A' }}</span>
                                                             <span class="badge bg-primary">pH {{ item.ph }}</span>
                                                         </li>
                                                     {% else %}
@@ -799,7 +800,7 @@
                                                 <ul class="list-group list-group-flush">
                                                     {% for item in nivel_por_dispositivo[disp.dispositivo]['historico'] %}
                                                         <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                            <span><i class="bi bi-calendar me-2"></i>{{ item.data|dateformat }}</span>
+                                                            <span><i class="bi bi-calendar me-2"></i>{{ item.data.strftime('%d/%m %H:%M') if item.data else 'N/A' }}</span>
                                                             <span class="badge {% if item.status == 'ALTO' %}bg-success{% else %}bg-warning{% endif %}">{{ item.status }}</span>
                                                         </li>
                                                     {% else %}
@@ -815,154 +816,54 @@
                         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                         <script>
                             function mostrarDispositivoSelecionado() {
-                                var select = document.getElementById('selectDispositivo');
-                                var valor = select.value.replace(/\s/g, '_');
-                                var paineis = document.querySelectorAll('.dispositivo-panel');
-                                paineis.forEach(function(p) { p.style.display = 'none'; });
-                                var painelAtivo = document.getElementById('panel-' + valor);
-                                if (painelAtivo) painelAtivo.style.display = 'block';
+                                const select = document.getElementById('selectDispositivo');
+                                if (!select) return;
+                                const valor = select.value.replace(/\s/g, '_');
+                                document.querySelectorAll('.dispositivo-panel').forEach(p => p.style.display = 'none');
+                                const painelAtivo = document.getElementById('panel-' + valor);
+                                if (painelAtivo) {
+                                    painelAtivo.style.display = 'block';
+                                }
                             }
-                            var historicoPh = {};
-                            var historicoNivel = {};
-                            {% for disp in dispositivos %}
-                                historicoPh['{{ disp.dispositivo|replace(' ', '_') }}'] = {
-                                    labels: [
-                                        {% for item in ph_por_dispositivo[disp.dispositivo]['historico']|reverse %}'{{ item.data|dateformat }}'{% if not loop.last %},{% endif %}{% endfor %}
-                                    ],
-                                    data: [
-                                        {% for item in ph_por_dispositivo[disp.dispositivo]['historico']|reverse %}{{ item.ph }}{% if not loop.last %},{% endif %}{% endfor %}
-                                    ]
-                                };
-                                historicoNivel['{{ disp.dispositivo|replace(' ', '_') }}'] = {
-                                    labels: [
-                                        {% for item in nivel_por_dispositivo[disp.dispositivo]['historico']|reverse %}'{{ item.data|dateformat }}'{% if not loop.last %},{% endif %}{% endfor %}
-                                    ],
-                                    data: [
-                                        {% for item in nivel_por_dispositivo[disp.dispositivo]['historico']|reverse %}{% if item.status == 'ALTO' %}2{% elif item.status == 'BAIXO' %}1{% else %}0{% endif %}{% if not loop.last %},{% endif %}{% endfor %}
-                                    ]
-                                };
-                            {% endfor %}
+
+                            const phData = {{ ph_por_dispositivo|default({})|tojson|safe }};
+                            const nivelData = {{ nivel_por_dispositivo|default({})|tojson|safe }};
+
                             document.addEventListener('DOMContentLoaded', function() {
-                                {% for disp in dispositivos %}
-                                    var phCtx = document.getElementById('phChart-{{ disp.dispositivo|replace(' ', '_') }}');
-                                    if (phCtx) {
+                                if (typeof phData !== 'object' || phData === null) {
+                                    return;
+                                }
+                                const dispositivos = Object.keys(phData);
+
+                                dispositivos.forEach(dispositivoNome => {
+                                    const dispositivoId = dispositivoNome.replace(/\s/g, '_');
+
+                                    const phHistorico = (phData[dispositivoNome]?.['historico'] || []).slice().reverse();
+                                    const phLabels = phHistorico.map(item => new Date(item.data).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }));
+                                    const phValues = phHistorico.map(item => item.ph);
+
+                                    const phCtx = document.getElementById(`phChart-${dispositivoId}`);
+                                    if (phCtx && phValues.length > 0) {
                                         new Chart(phCtx, {
                                             type: 'line',
-                                            data: {
-                                                labels: historicoPh['{{ disp.dispositivo|replace(' ', '_') }}'].labels,
-                                                datasets: [{
-                                                    label: 'Histórico de pH',
-                                                    data: historicoPh['{{ disp.dispositivo|replace(' ', '_') }}'].data,
-                                                    borderColor: '#0066cc',
-                                                    backgroundColor: 'rgba(0,102,204,0.1)',
-                                                    borderWidth: 3,
-                                                    pointBackgroundColor: '#0066cc',
-                                                    pointBorderColor: '#fff',
-                                                    pointRadius: 6,
-                                                    pointHoverRadius: 8,
-                                                    fill: true,
-                                                    tension: 0.4
-                                                }]
-                                            },
-                                            options: {
-                                                responsive: true,
-                                                maintainAspectRatio: false,
-                                                plugins: {
-                                                    legend: { display: false },
-                                                    tooltip: {
-                                                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                                        titleFont: { family: "'Poppins', sans-serif", size: 14 },
-                                                        bodyFont: { family: "'Poppins', sans-serif", size: 13 },
-                                                        padding: 12,
-                                                        cornerRadius: 8,
-                                                        displayColors: false
-                                                    }
-                                                },
-                                                scales: {
-                                                    y: {
-                                                        beginAtZero: false,
-                                                        grid: { color: 'rgba(0, 0, 0, 0.05)', drawBorder: false },
-                                                        ticks: { font: { family: "'Poppins', sans-serif" }, padding: 10 }
-                                                    },
-                                                    x: {
-                                                        grid: { display: false },
-                                                        ticks: { font: { family: "'Poppins', sans-serif" }, maxRotation: 45, minRotation: 45, padding: 10 }
-                                                    }
-                                                },
-                                                animation: { duration: 2000, easing: 'easeOutQuart' },
-                                                interaction: { intersect: false, mode: 'index' }
-                                            }
+                                            data: { labels: phLabels, datasets: [{ label: 'Histórico de pH', data: phValues, borderColor: '#0066cc', backgroundColor: 'rgba(0,102,204,0.1)', borderWidth: 3, pointBackgroundColor: '#0066cc', pointBorderColor: '#fff', pointRadius: 6, pointHoverRadius: 8, fill: true, tension: 0.4 }] },
+                                            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(0,0,0,0.8)', titleFont: { family: "'Poppins', sans-serif", size: 14 }, bodyFont: { family: "'Poppins', sans-serif", size: 13 }, padding: 12, cornerRadius: 8, displayColors: false } }, scales: { y: { beginAtZero: false, grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false }, ticks: { font: { family: "'Poppins', sans-serif" }, padding: 10 } }, x: { grid: { display: false }, ticks: { font: { family: "'Poppins', sans-serif" }, maxRotation: 45, minRotation: 45, padding: 10 } } }, animation: { duration: 2000, easing: 'easeOutQuart' }, interaction: { intersect: false, mode: 'index' } }
                                         });
                                     }
-                                    var nivelCtx = document.getElementById('nivelChart-{{ disp.dispositivo|replace(' ', '_') }}');
-                                    if (nivelCtx) {
+
+                                    const nivelHistorico = (nivelData[dispositivoNome]?.['historico'] || []).slice().reverse();
+                                    const nivelLabels = nivelHistorico.map(item => new Date(item.data).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }));
+                                    const nivelValues = nivelHistorico.map(item => item.status === 'ALTO' ? 2 : (item.status === 'BAIXO' ? 1 : 0));
+
+                                    const nivelCtx = document.getElementById(`nivelChart-${dispositivoId}`);
+                                    if (nivelCtx && nivelValues.length > 0) {
                                         new Chart(nivelCtx, {
                                             type: 'line',
-                                            data: {
-                                                labels: historicoNivel['{{ disp.dispositivo|replace(' ', '_') }}'].labels,
-                                                datasets: [{
-                                                    label: 'Histórico de Nível',
-                                                    data: historicoNivel['{{ disp.dispositivo|replace(' ', '_') }}'].data,
-                                                    borderColor: '#34c759',
-                                                    backgroundColor: 'rgba(52,199,89,0.1)',
-                                                    borderWidth: 3,
-                                                    pointBackgroundColor: '#34c759',
-                                                    pointBorderColor: '#fff',
-                                                    pointRadius: 6,
-                                                    pointHoverRadius: 8,
-                                                    fill: true,
-                                                    tension: 0.4
-                                                }]
-                                            },
-                                            options: {
-                                                responsive: true,
-                                                maintainAspectRatio: false,
-                                                plugins: {
-                                                    legend: { display: false },
-                                                    tooltip: {
-                                                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                                        titleFont: { family: "'Poppins', sans-serif", size: 14 },
-                                                        bodyFont: { family: "'Poppins', sans-serif", size: 13 },
-                                                        padding: 12,
-                                                        cornerRadius: 8,
-                                                        displayColors: false,
-                                                        callbacks: {
-                                                            label: function(context) {
-                                                                var v = context.parsed.y;
-                                                                if (v === 2) return 'ALTO';
-                                                                if (v === 1) return 'BAIXO';
-                                                                return 'Desconhecido';
-                                                            }
-                                                        }
-                                                    }
-                                                },
-                                                scales: {
-                                                    y: {
-                                                        beginAtZero: true,
-                                                        min: 0,
-                                                        max: 2,
-                                                        grid: { color: 'rgba(0, 0, 0, 0.05)', drawBorder: false },
-                                                        ticks: {
-                                                            font: { family: "'Poppins', sans-serif" },
-                                                            padding: 10,
-                                                            callback: function(value) {
-                                                                if (value === 2) return 'ALTO';
-                                                                if (value === 1) return 'BAIXO';
-                                                                return '';
-                                                            }
-                                                        }
-                                                    },
-                                                    x: {
-                                                        grid: { display: false },
-                                                        ticks: { font: { family: "'Poppins', sans-serif" }, maxRotation: 45, minRotation: 45, padding: 10 }
-                                                    }
-                                                },
-                                                animation: { duration: 2000, easing: 'easeOutQuart' },
-                                                interaction: { intersect: false, mode: 'index' }
-                                            }
+                                            data: { labels: nivelLabels, datasets: [{ label: 'Histórico de Nível', data: nivelValues, borderColor: '#34c759', backgroundColor: 'rgba(52,199,89,0.1)', borderWidth: 3, pointBackgroundColor: '#34c759', pointBorderColor: '#fff', pointRadius: 6, pointHoverRadius: 8, fill: true, tension: 0.4 }] },
+                                            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(0,0,0,0.8)', titleFont: { family: "'Poppins', sans-serif", size: 14 }, bodyFont: { family: "'Poppins', sans-serif", size: 13 }, padding: 12, cornerRadius: 8, displayColors: false, callbacks: { label: (ctx) => ({ 2: 'ALTO', 1: 'BAIXO' }[ctx.parsed.y] || 'Desconhecido') } } }, scales: { y: { beginAtZero: true, min: 0, max: 2, grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false }, ticks: { font: { family: "'Poppins', sans-serif" }, padding: 10, callback: (val) => ({ 2: 'ALTO', 1: 'BAIXO' }[val] || '') } }, x: { grid: { display: false }, ticks: { font: { family: "'Poppins', sans-serif" }, maxRotation: 45, minRotation: 45, padding: 10 } } }, animation: { duration: 2000, easing: 'easeOutQuart' }, interaction: { intersect: false, mode: 'index' } }
                                         });
                                     }
-                                {% endfor %}
+                                });
                             });
                         </script>
                     {% else %}
@@ -991,7 +892,7 @@
                                                 </h6>
                                                 <small class="text-muted d-flex align-items-center">
                                                     <i class="bi bi-clock me-2"></i>
-                                                    {{ notificacao.data_criacao|dateformat }}
+                                                    {{ notificacao.data_criacao.strftime('%d/%m/%Y %H:%M') if notificacao.data_criacao else 'N/A' }}
                                                 </small>
                                             </div>
                                             <div class="d-flex gap-2">
@@ -1059,7 +960,6 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
 
     <script>
