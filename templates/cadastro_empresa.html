@@ -176,10 +176,8 @@
 
         .password-feedback.valid { color: var(--success-green); }
         .password-feedback.invalid { color: var(--error-red); }
-
-        /* Estilo para o botão "Cadastrar Empresa" quando desabilitado */
         .btn-disabled {
-            background: #cccccc !important; /* Cor cinza para indicar desabilitado */
+            background: #cccccc !important; 
             cursor: not-allowed !important;
             opacity: 0.7;
             box-shadow: none !important;
@@ -187,7 +185,7 @@
         }
 
         .btn-disabled::before {
-            display: none; /* Remove o efeito de brilho em hover quando desabilitado */
+            display: none; 
         }
 
         @media (max-width: 576px) {
@@ -345,26 +343,23 @@
             const cnpjInput = document.getElementById('cnpj');
             const senhaInput = document.getElementById('senha_empresa');
             const confirmSenhaInput = document.getElementById('confirmacao_senha_empresa');
-            const passwordStrengthBar = document.getElementById('passwordStrength'); // Renomeado para evitar conflito
+            const passwordStrengthBar = document.getElementById('passwordStrength');
             const passwordFeedback = document.getElementById('passwordFeedback');
             const passwordMatch = document.getElementById('passwordMatch');
 
-            // Referências aos campos e ao botão
             const formEmpresa = document.getElementById('cadastroEmpresaForm');
             const camposObrigatoriosEmpresa = formEmpresa.querySelectorAll('input[required], textarea[required], select[required]');
             const btnCadastrarEmpresa = document.getElementById('btnCadastrarEmpresa');
 
-            // --- FUNÇÃO PRINCIPAL DE VALIDAÇÃO DO FORMULÁRIO DA EMPRESA ---
             function checkFormValidityEmpresa() {
                 let allRequiredFieldsFilled = true;
                 let passwordsMatchResult = false; 
                 let cnpjIsValid = true; 
 
-                // 1. Verificar se todos os campos obrigatórios estão preenchidos
                 camposObrigatoriosEmpresa.forEach(campo => {
                     let isFieldFilled = true; 
 
-                    if (campo.type === 'checkbox') { // Embora não haja checkboxes neste form, mantém a robustez
+                    if (campo.type === 'checkbox') { 
                         if (!campo.checked) {
                             isFieldFilled = false;
                         }
@@ -377,7 +372,6 @@
                     }
                 });
 
-                // 2. Verificar se as senhas conferem
                 const password = senhaInput.value;
                 const confirmPassword = confirmSenhaInput.value;
 
@@ -391,16 +385,13 @@
                     passwordsMatchResult = false; 
                 }
                 
-                // Atualiza o feedback visual das senhas
                 checkPasswordMatch(); 
 
-                // 3. Verificar se o CNPJ está completo (14 dígitos numéricos)
                 const cnpjValueClean = cnpjInput.value.replace(/\D/g, '');
                 if (cnpjInput.hasAttribute('required') && cnpjValueClean.length !== 14) {
                     cnpjIsValid = false;
                 }
 
-                // 4. Controlar o estado do botão "Cadastrar Empresa"
                 if (allRequiredFieldsFilled && passwordsMatchResult && cnpjIsValid) {
                     btnCadastrarEmpresa.disabled = false;
                     btnCadastrarEmpresa.classList.remove('btn-disabled');
@@ -454,7 +445,7 @@
 
                 passwordFeedback.innerHTML = feedback.join('<br>');
 
-                passwordStrengthBar.className = 'password-strength'; // Usa o novo nome da variável
+                passwordStrengthBar.className = 'password-strength';
                 if (strength === 0) {
                     passwordStrengthBar.style.width = '0%';
                 } else if (strength <= 2) {
@@ -485,26 +476,21 @@
                     passwordMatch.innerHTML = '';
                 }
             }
-
-            // --- ADICIONAR LISTENERS E CHAMAR NO INÍCIO ---
-            // Adiciona ouvintes de evento a cada campo obrigatório
             camposObrigatoriosEmpresa.forEach(campo => {
                 campo.addEventListener('input', checkFormValidityEmpresa);
                 campo.addEventListener('change', checkFormValidityEmpresa); 
             });
 
-            // Adiciona listeners específicos para senha e confirmação (já existentes, mas chamam checkFormValidityEmpresa)
             senhaInput.addEventListener('input', function() {
                 checkPasswordStrength(this.value); 
-                checkPasswordMatch(); // Garante que o feedback da senha seja atualizado
-                checkFormValidityEmpresa(); // Garante que o estado do botão seja atualizado
+                checkPasswordMatch(); 
+                checkFormValidityEmpresa(); 
             });
             confirmSenhaInput.addEventListener('input', function() {
                 checkPasswordMatch();
-                checkFormValidityEmpresa(); // Garante que o estado do botão seja atualizado
+                checkFormValidityEmpresa();
             });
 
-            // Adiciona listener para CNPJ (para a formatação e validação no botão)
             cnpjInput.addEventListener('input', function() {
                 const cursorPosition = this.selectionStart;
                 this.value = formatCNPJ(this.value);
@@ -513,16 +499,8 @@
                      this.value.charAt(cursorPosition) === '/' ||
                      this.value.charAt(cursorPosition) === '-' ? 1 : 0);
                 this.setSelectionRange(newCursorPosition, newCursorPosition);
-                checkFormValidityEmpresa(); // Garante que o estado do botão seja atualizado
+                checkFormValidityEmpresa(); 
             });
-
-            // Remove o listener de submit antigo, a validação agora é dinâmica
-            // document.getElementById('cadastroEmpresaForm').removeEventListener('submit', function(e) { /* ... */ });
-            // O listener de submit original não precisa ser removido explicitamente se não tiver um ID, 
-            // mas é bom ter em mente que a validação principal agora é JS no cliente.
-            // Para a validação final antes do submit, o atributo 'required' do HTML5 já lida com campos vazios.
-
-            // Chama a função de validação ao carregar a página para definir o estado inicial do botão
             checkFormValidityEmpresa();
         });
     </script>

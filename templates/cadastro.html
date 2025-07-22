@@ -162,9 +162,8 @@
             transition: all 0.3s ease;
         }
 
-        /* Estilo para o botão "Criar Conta" quando desabilitado */
         .btn-disabled {
-            background: #cccccc !important; /* Cor cinza para indicar desabilitado */
+            background: #cccccc !important;
             cursor: not-allowed !important;
             opacity: 0.7;
             box-shadow: none !important;
@@ -172,7 +171,7 @@
         }
 
         .btn-disabled::before {
-            display: none; /* Remove o efeito de brilho em hover quando desabilitado */
+            display: none;
         }
 
         @media (max-width: 576px) {
@@ -322,8 +321,6 @@
             duration: 800,
             once: true
         });
-
-        // Formatação do CPF
         document.addEventListener('DOMContentLoaded', function() {
             const cpfInput = document.getElementById('cpf');
             const senhaInput = document.getElementById('senha');
@@ -331,23 +328,15 @@
             const passwordMatch = document.getElementById('passwordMatch');
             const strengthBar = document.getElementById('passwordStrength');
 
-            // Referências aos campos e ao botão
             const form = document.getElementById('cadastroForm');
-            // Seleciona *todos* os campos de input, textarea e select que têm o atributo 'required'
             const camposObrigatorios = form.querySelectorAll('input[required], textarea[required], select[required]');
             const btnCriarConta = document.getElementById('btnCriarConta');
-
-            // console.log('Elementos obrigatórios encontrados:', camposObrigatorios); // Para debug
-            // console.log('Botão Criar Conta:', btnCriarConta); // Para debug
 
             // --- FUNÇÃO PRINCIPAL DE VALIDAÇÃO DO FORMULÁRIO ---
             function checkFormValidity() {
                 let allRequiredFieldsFilled = true;
                 let passwordsMatchResult = false; 
 
-                // console.log('Iniciando checkFormValidity...'); // Para debug
-
-                // 1. Verificar se todos os campos obrigatórios estão preenchidos
                 camposObrigatorios.forEach(campo => {
                     let isFieldFilled = true; 
 
@@ -362,10 +351,8 @@
                     if (!isFieldFilled) {
                         allRequiredFieldsFilled = false; 
                     }
-                    // console.log(`Campo: ${campo.id}, Valor: '${campo.value.trim()}', Preenchido: ${isFieldFilled}`); // Para debug
                 });
 
-                // 2. Verificar se as senhas conferem (reutilizando sua lógica)
                 const password = senhaInput.value;
                 const confirmPassword = confirmSenhaInput.value;
 
@@ -379,21 +366,14 @@
                     passwordsMatchResult = false; 
                 }
                 
-                // Atualiza o feedback visual das senhas
                 checkPassword(); 
 
-                // console.log('Todos os campos obrigatórios preenchidos:', allRequiredFieldsFilled); // Para debug
-                // console.log('Senhas conferem:', passwordsMatchResult); // Para debug
-
-                // 3. Controlar o estado do botão "Criar Conta"
                 if (allRequiredFieldsFilled && passwordsMatchResult) {
                     btnCriarConta.disabled = false;
                     btnCriarConta.classList.remove('btn-disabled');
-                    // console.log('Botão Habilitado!'); // Para debug
                 } else {
                     btnCriarConta.disabled = true;
                     btnCriarConta.classList.add('btn-disabled');
-                    // console.log('Botão Desabilitado!'); // Para debug
                 }
             }
 
@@ -429,7 +409,6 @@
                 } else {
                     passwordMatch.textContent = '';
                 }
-                // checkFormValidity(); // Já é chamado pelos listeners específicos de input
             }
 
             function checkPasswordStrength(password) {
@@ -444,7 +423,6 @@
                 strengthBar.style.width = ((strength / 5) * 100) + '%';
                 strengthBar.style.backgroundColor = colors[strength - 1] || '';
                 strengthBar.style.display = password ? 'block' : 'none';
-                // checkFormValidity(); // Já é chamado pelos listeners específicos de input
             }
 
             senhaInput.addEventListener('input', function() {
@@ -458,16 +436,10 @@
                 checkFormValidity(); 
             });
             
-            // --- ADICIONAR LISTENERS E CHAMAR NO INÍCIO ---
-            // Adiciona ouvintes de evento a cada campo obrigatório
             camposObrigatorios.forEach(campo => {
-                // Adiciona listeners para todos os campos obrigatórios
-                // Os campos de senha e CPF já possuem listeners mais específicos, mas ter este geral não causa problema
                 campo.addEventListener('input', checkFormValidity);
                 campo.addEventListener('change', checkFormValidity); 
             });
-
-            // Chama a função de validação ao carregar a página para definir o estado inicial do botão
             checkFormValidity();
         });
     </script>
