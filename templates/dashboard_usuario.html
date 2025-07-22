@@ -503,8 +503,8 @@
                 <p class="text-muted mb-0">Histórico de solicitações</p>
               </div>
             </div>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCriarPedido">
-              <i class="bi bi-plus-circle me-2"></i>Criar Novo Pedido
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalFazerPedido">
+              <i class="bi bi-plus-circle me-2"></i>Fazer Novo Pedido
             </button>
           </div>
           <div class="list-group">
@@ -542,7 +542,7 @@
               <div class="list-group-item text-center" data-aos="fade-up">
                 <i class="bi bi-inbox text-muted fs-1 mb-2 d-block"></i>
                 <p class="mb-0">Nenhum pedido encontrado.</p>
-                <small class="text-muted">Clique no botão acima para criar seu primeiro pedido</small>
+                <small class="text-muted">Clique no botão acima para fazer seu primeiro pedido</small>
               </div>
             {% endfor %}
           </div>
@@ -695,7 +695,19 @@
                 paineis.forEach(function(p) { p.style.display = 'none'; });
                 var painelAtivo = document.getElementById('panel-' + valor);
                 if (painelAtivo) painelAtivo.style.display = 'block';
+                // Salva a seleção no localStorage
+                localStorage.setItem('dispositivoSelecionado', select.value);
               }
+
+              // Ao carregar a página, restaurar seleção do dispositivo
+              document.addEventListener('DOMContentLoaded', function() {
+                var select = document.getElementById('selectDispositivo');
+                var salvo = localStorage.getItem('dispositivoSelecionado');
+                if (select && salvo) {
+                  select.value = salvo;
+                  mostrarDispositivoSelecionado();
+                }
+              });
 
               // Dados dos gráficos (renderizados pelo Jinja)
               var historicoPh = {};
@@ -916,14 +928,14 @@
     </div>
   </div>
 
-  <!-- Modal Criar Pedido -->
-  <div class="modal fade" id="modalCriarPedido" tabindex="-1" aria-labelledby="modalCriarPedidoLabel" aria-hidden="true">
+  <!-- Modal Fazer Pedido -->
+  <div class="modal fade" id="modalFazerPedido" tabindex="-1" aria-labelledby="modalFazerPedidoLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
-        <form id="formCriarPedido">
+        <form id="formFazerPedido">
           <div class="modal-header">
-            <h3 class="modal-title h5" id="modalCriarPedidoLabel">
-              <i class="bi bi-plus-circle me-2"></i>Criar Novo Pedido
+            <h3 class="modal-title h5" id="modalFazerPedidoLabel">
+              <i class="bi bi-plus-circle me-2"></i>Fazer Novo Pedido
             </h3>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
           </div>
@@ -972,7 +984,7 @@
               <i class="bi bi-x-circle me-2"></i>Cancelar
             </button>
             <button type="submit" class="btn btn-primary">
-              <i class="bi bi-check-circle me-2"></i>Criar Pedido
+              <i class="bi bi-check-circle me-2"></i>Fazer Pedido
             </button>
           </div>
         </form>
@@ -997,8 +1009,8 @@
       // Show selected section
       document.getElementById(sectionId).classList.add('active');
       
-      // Update URL hash
-      window.location.hash = sectionId;
+      // Atualiza a URL sem recarregar a página
+      history.pushState({}, '', `#${sectionId}`);
     }
 
     // Handle initial load and browser back/forward
@@ -1113,8 +1125,8 @@
         });
     }
 
-    // Função para criar pedido via AJAX
-    document.getElementById('formCriarPedido').addEventListener('submit', function(e) {
+    // Função para Fazer pedido via AJAX
+    document.getElementById('formFazerPedido').addEventListener('submit', function(e) {
       e.preventDefault();
       const formData = new FormData(this);
       
@@ -1131,7 +1143,7 @@
           throw new Error(data.error);
         }
         
-        const modal = bootstrap.Modal.getInstance(document.getElementById('modalCriarPedido'));
+        const modal = bootstrap.Modal.getInstance(document.getElementById('modalFazerPedido'));
         modal.hide();
         
         // Adiciona mensagem de sucesso
@@ -1162,7 +1174,7 @@
         alertDiv.className = 'alert alert-danger alert-dismissible fade show';
         alertDiv.role = 'alert';
         alertDiv.innerHTML = `
-          ${error.message || 'Erro ao criar o pedido. Tente novamente.'}
+          ${error.message || 'Erro ao Fazer o pedido. Tente novamente.'}
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
         `;
         document.querySelector('main').insertBefore(alertDiv, document.querySelector('main').firstChild);

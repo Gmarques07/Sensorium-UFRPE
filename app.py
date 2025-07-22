@@ -730,12 +730,11 @@ def login_usuario():
 
             if usuario and check_password_hash(usuario.senha, senha_digitada):
                 login_user(usuario) 
-                flash(f'Bem-vindo(a), {usuario.nome}!', 'success')
                 return redirect(url_for('dashboard_usuario', cpf=usuario.cpf))
             else:
                 
                 flash('CPF ou senha incorretos', 'danger')
-                return redirect(url_for('login_usuario'))
+                return render_template('login_usuario.html')
 
         cadastro_sucesso = request.args.get('cadastro_sucesso')
         return render_template('login_usuario.html', cadastro_sucesso=cadastro_sucesso)
@@ -743,7 +742,7 @@ def login_usuario():
         
         flash(f'Ocorreu um erro no login. Tente novamente.', 'danger')
         print(f"Erro detalhado no login_usuario: {e}") 
-        return redirect(url_for('login_usuario'))
+        return render_template('login_usuario.html')
 
 @app.route('/login_empresa', methods=['GET', 'POST'])
 def login_empresa():
@@ -767,27 +766,25 @@ def login_empresa():
                 if empresa.senha is None or empresa.senha == "":
                     print("AVISO: Senha da empresa no banco de dados está vazia ou é None.")
                     flash('CNPJ ou senha incorretos', 'danger')
-                    return redirect(url_for('login_empresa'))
+                    return render_template('login_empresa.html')
 
                 if check_password_hash(empresa.senha, senha_digitada):
                     login_user(empresa)
-                    flash(f'Bem-vindo(a), {empresa.nome}!', 'success')
-                    
                     return redirect(url_for('perfil_empresa', cnpj=empresa.cnpj))
                 else:
                     print("check_password_hash retornou False. Senha não coincide.")
                     flash('CNPJ ou senha incorretos', 'danger')
-                    return redirect(url_for('login_empresa'))
+                    return render_template('login_empresa.html')
             else:
                 print("Empresa não encontrada no banco de dados.")
                 flash('CNPJ ou senha incorretos', 'danger')
-                return redirect(url_for('login_empresa'))
+                return render_template('login_empresa.html')
 
         return render_template('login_empresa.html')
     except Exception as e:
         flash(f'Ocorreu um erro no login da empresa. Tente novamente.', 'danger')
         print(f"Erro detalhado no login_empresa: {e}")
-        return redirect(url_for('login_empresa'))
+        return render_template('login_empresa.html')
 
 
 @app.route('/logout')
@@ -795,7 +792,7 @@ def login_empresa():
 def logout():
     logout_user() 
     flash('Você foi desconectado.', 'info')
-    return redirect(url_for('pagina_inicial'))
+    return render_template('index.html')
 
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
@@ -810,11 +807,11 @@ def cadastro():
 
             if senha != confirmacao_senha:
                 flash('As senhas não coincidem', 'danger')
-                return redirect(url_for('cadastro'))
+                return render_template('cadastro.html')
 
             if not re.match(r'^\d{11}$', cpf):
                 flash('O CPF deve conter apenas 11 dígitos numéricos', 'danger')
-                return redirect(url_for('cadastro'))
+                return render_template('cadastro.html')
 
             conn = get_db_connection()
             if not conn: 
@@ -830,7 +827,7 @@ def cadastro():
                 flash('CPF já cadastrado. Tente novamente com outro CPF.', 'danger')
                 cursor.close()
                 conn.close()
-                return redirect(url_for('cadastro'))
+                return render_template('cadastro.html')
             
             hashed_senha = generate_password_hash(senha)
 
@@ -842,13 +839,13 @@ def cadastro():
             conn.close()
 
             flash('Cadastro realizado com sucesso!', 'success')
-            return redirect(url_for('login_usuario', cadastro_sucesso=True))
+            return render_template('login_usuario.html', cadastro_sucesso=True)
 
         return render_template('cadastro.html')
     except Exception as e:
         flash('Ocorreu um erro ao processar o cadastro. Tente novamente.', 'danger')
         print(f"Erro no cadastro: {e}") 
-        return redirect(url_for('cadastro')) 
+        return render_template('cadastro.html') 
 
 @app.route('/cadastro_empresa', methods=['GET', 'POST'])
 def cadastro_empresa():
@@ -863,19 +860,19 @@ def cadastro_empresa():
 
             if not endereco_empresa.strip():
                 flash('O endereço não pode estar vazio', 'danger')
-                return redirect(url_for('cadastro_empresa'))
+                return render_template('cadastro_empresa.html')
 
             if len(endereco_empresa) > 255:
                 flash('O endereço é muito longo', 'danger')
-                return redirect(url_for('cadastro_empresa'))
+                return render_template('cadastro_empresa.html')
 
             if senha_empresa != confirmacao_senha_empresa:
                 flash('As senhas não coincidem', 'danger')
-                return redirect(url_for('cadastro_empresa'))
+                return render_template('cadastro_empresa.html')
 
             if not re.match(r'^\d{14}$', cnpj):
                 flash('O CNPJ deve conter apenas 14 dígitos numéricos', 'danger')
-                return redirect(url_for('cadastro_empresa'))
+                return render_template('cadastro_empresa.html')
 
             conn = get_db_connection()
             if not conn:
@@ -892,7 +889,7 @@ def cadastro_empresa():
                 flash('CNPJ já cadastrado. Tente novamente com outro CNPJ.', 'danger')
                 cursor.close()
                 conn.close()
-                return redirect(url_for('cadastro_empresa'))
+                return render_template('cadastro_empresa.html')
             
             
             hashed_senha_empresa = generate_password_hash(senha_empresa)
@@ -906,20 +903,20 @@ def cadastro_empresa():
             conn.close()
 
             flash('Cadastro realizado com sucesso. Faça o login abaixo.', 'success')
-            return redirect(url_for('login_empresa'))
+            return render_template('login_empresa.html')
 
         return render_template('cadastro_empresa.html')
     except Exception as e:
         flash('Ocorreu um erro ao processar o cadastro. Tente novamente.', 'danger')
         print(f"Erro no cadastro_empresa: {e}") 
-        return redirect(url_for('cadastro_empresa'))
+        return render_template('cadastro_empresa.html')
 
 @app.route('/editar_usuario/<cpf>', methods=['POST'])
 @login_required
 def editar_usuario_perfil(cpf):
     if not isinstance(current_user, Usuario) or current_user.cpf != cpf:
         flash('Acesso não autorizado para editar este perfil.', 'danger')
-        return redirect(url_for('dashboard_usuario'))
+        return render_template('dashboard_usuario.html', usuario=current_user)
 
     nome = request.form.get('nome')
     email = request.form.get('email')
@@ -928,7 +925,7 @@ def editar_usuario_perfil(cpf):
 
     if not nome or not email or not endereco:
         flash('Nome, email e endereço são obrigatórios!', 'danger')
-        return redirect(url_for('dashboard_usuario'))
+        return render_template('dashboard_usuario.html', usuario=current_user)
 
     try:
         conn = get_db_connection()
@@ -970,21 +967,21 @@ def editar_usuario_perfil(cpf):
         # Se a requisição for AJAX, retorna status 200
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return '', 200
-        return redirect(url_for('dashboard_usuario'))
+        return render_template('dashboard_usuario.html', usuario=current_user)
     except Exception as e:
         print(f"Erro ao atualizar usuário: {e}")
         flash('Erro ao atualizar o perfil. Tente novamente.', 'danger')
         # Se a requisição for AJAX, retorna status 400
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return '', 400
-        return redirect(url_for('dashboard_usuario'))
+        return render_template('dashboard_usuario.html', usuario=current_user)
 
 @app.route('/editar_empresa/<cnpj>', methods=['GET', 'POST'])
 @login_required
 def editar_empresa_perfil(cnpj: str):
     if not isinstance(current_user, Empresa) or current_user.cnpj != cnpj:
         flash('Acesso não autorizado para editar este perfil.', 'danger')
-        return redirect(url_for('perfil_empresa', cnpj=current_user.cnpj))
+        return render_template('perfil_empresa.html', empresa=current_user)
 
     nome = request.form.get('nome')
     endereco = request.form.get('endereco')
@@ -992,7 +989,7 @@ def editar_empresa_perfil(cnpj: str):
 
     if not nome or not endereco:
         flash('Nome e endereço são obrigatórios!', 'danger')
-        return redirect(url_for('perfil_empresa', cnpj=cnpj))
+        return render_template('perfil_empresa.html', empresa=current_user)
 
     if editar_empresa(cnpj, nome, endereco, senha):
         # Atualiza os dados do usuário na sessão
@@ -1004,8 +1001,7 @@ def editar_empresa_perfil(cnpj: str):
         flash('Dados atualizados com sucesso!', 'success')
     else:
         flash('Erro ao atualizar os dados. Tente novamente.', 'danger')
-
-    return redirect(url_for('perfil_empresa', cnpj=cnpj))
+    return render_template('perfil_empresa.html', empresa=current_user)
 
 @app.route('/perfil_empresa/<cnpj>') 
 @login_required
@@ -1022,9 +1018,9 @@ def perfil_empresa(cnpj):
 
         # Dispositivos fixos
         dispositivos = [
-            {'dispositivo_id': 1, 'dispositivo': 'Sensor 1'},
-            {'dispositivo_id': 2, 'dispositivo': 'Sensor 2'},
-            {'dispositivo_id': 3, 'dispositivo': 'Sensor 3'},
+            {'dispositivo_id': 1, 'dispositivo': 'Arduino'},
+            {'dispositivo_id': 2, 'dispositivo': 'ESP32'},
+            {'dispositivo_id': 3, 'dispositivo': 'Raspberry'},
         ]
 
         ph_por_dispositivo = {}
@@ -1084,7 +1080,7 @@ def perfil_empresa(cnpj):
 def dashboard_usuario(cpf):
     if not isinstance(current_user, Usuario) or current_user.cpf != cpf:
         flash('Acesso não autorizado.', 'danger')
-        return redirect(url_for('pagina_inicial'))
+        return render_template('pagina_inicial.html')
 
     try:
         conn = get_db_connection()
@@ -1127,9 +1123,9 @@ def dashboard_usuario(cpf):
 
         # Dispositivos fixos
         dispositivos = [
-            {'dispositivo_id': 1, 'dispositivo': 'Sensor 1'},
-            {'dispositivo_id': 2, 'dispositivo': 'Sensor 2'},
-            {'dispositivo_id': 3, 'dispositivo': 'Sensor 3'},
+            {'dispositivo_id': 1, 'dispositivo': 'Arduino'},
+            {'dispositivo_id': 2, 'dispositivo': 'ESP32'},
+            {'dispositivo_id': 3, 'dispositivo': 'Raspberry'},
         ]
 
         ph_por_dispositivo = {}
@@ -1174,7 +1170,7 @@ def dashboard_usuario(cpf):
                              empresas=empresas)
     except Exception as e:
         flash(f'Erro ao carregar o dashboard: {str(e)}', 'danger')
-        return redirect(url_for('pagina_inicial'))
+        return render_template('pagina_inicial.html')
 
 
 @app.route('/api/pedidos')

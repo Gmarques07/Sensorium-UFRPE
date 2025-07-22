@@ -282,6 +282,9 @@
                            placeholder="••••••••" 
                            minlength="8"
                            required>
+                    <button class="btn btn-outline-secondary" type="button" tabindex="-1" onclick="togglePasswordVisibilityEmpresa()" style="border-radius: 0 15px 15px 0;">
+                        <i class="bi bi-eye" id="toggleSenhaEmpresaIcon"></i>
+                    </button>
                 </div>
                 <div class="password-strength" id="passwordStrength"></div>
                 <div class="password-feedback mt-2" id="passwordFeedback"></div>
@@ -297,11 +300,15 @@
                            class="form-control" 
                            placeholder="••••••••" 
                            required>
+                    <button class="btn btn-outline-secondary" type="button" tabindex="-1" onclick="toggleConfirmPasswordVisibilityEmpresa()" style="border-radius: 0 15px 15px 0;">
+                        <i class="bi bi-eye" id="toggleConfirmSenhaEmpresaIcon"></i>
+                    </button>
                 </div>
                 <div class="password-feedback mt-2" id="passwordMatch"></div>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100 mb-4">
+            
+<button type="submit" class="btn btn-primary w-100 mb-4">
                 <i class="bi bi-building-add me-2"></i>Cadastrar Empresa
             </button>
 
@@ -444,5 +451,35 @@
             });
         });
     </script>
+
+<script>
+function togglePasswordVisibilityEmpresa() {
+    const senha = document.getElementById("senha_empresa");
+    const icon = document.getElementById("toggleSenhaEmpresaIcon");
+    const tipo = senha.type === "password" ? "text" : "password";
+    senha.type = tipo;
+    if (tipo === "text") {
+        icon.classList.remove("bi-eye");
+        icon.classList.add("bi-eye-slash");
+    } else {
+        icon.classList.remove("bi-eye-slash");
+        icon.classList.add("bi-eye");
+    }
+}
+function toggleConfirmPasswordVisibilityEmpresa() {
+    const confirmacao = document.getElementById("confirmacao_senha_empresa");
+    const icon = document.getElementById("toggleConfirmSenhaEmpresaIcon");
+    const tipo = confirmacao.type === "password" ? "text" : "password";
+    confirmacao.type = tipo;
+    if (tipo === "text") {
+        icon.classList.remove("bi-eye");
+        icon.classList.add("bi-eye-slash");
+    } else {
+        icon.classList.remove("bi-eye-slash");
+        icon.classList.add("bi-eye");
+    }
+}
+</script>
+
 </body>
 </html>

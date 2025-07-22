@@ -265,6 +265,9 @@
                            placeholder="••••••••" 
                            minlength="8"
                            required>
+                    <button class="btn btn-outline-secondary" type="button" tabindex="-1" onclick="togglePasswordVisibility()" style="border-radius: 0 15px 15px 0;">
+                        <i class="bi bi-eye" id="toggleSenhaIcon"></i>
+                    </button>
                 </div>
                 <div class="password-strength" id="passwordStrength"></div>
             </div>
@@ -279,11 +282,15 @@
                            class="form-control" 
                            placeholder="••••••••" 
                            required>
+                    <button class="btn btn-outline-secondary" type="button" tabindex="-1" onclick="toggleConfirmPasswordVisibility()" style="border-radius: 0 15px 15px 0;">
+                        <i class="bi bi-eye" id="toggleConfirmSenhaIcon"></i>
+                    </button>
                 </div>
                 <div class="text-danger small mt-1" id="passwordMatch"></div>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100 mb-4">
+            
+<button type="submit" class="btn btn-primary w-100 mb-4">
                 <i class="bi bi-person-plus me-2"></i>Criar Conta
             </button>
 
@@ -369,5 +376,38 @@
             confirmSenhaInput.addEventListener('input', checkPassword);
         });
     </script>
+
+<script>
+function togglePasswordVisibility() {
+    const senha = document.getElementById("senha");
+    const icon = document.getElementById("toggleSenhaIcon");
+    const tipo = senha.type === "password" ? "text" : "password";
+    senha.type = tipo;
+    if (tipo === "text") {
+        icon.classList.remove("bi-eye");
+        icon.classList.add("bi-eye-slash");
+    } else {
+        icon.classList.remove("bi-eye-slash");
+        icon.classList.add("bi-eye");
+    }
+}
+</script>
+
+<script>
+function toggleConfirmPasswordVisibility() {
+    const confirmacao = document.getElementById("confirmacao_senha");
+    const icon = document.getElementById("toggleConfirmSenhaIcon");
+    const tipo = confirmacao.type === "password" ? "text" : "password";
+    confirmacao.type = tipo;
+    if (tipo === "text") {
+        icon.classList.remove("bi-eye");
+        icon.classList.add("bi-eye-slash");
+    } else {
+        icon.classList.remove("bi-eye-slash");
+        icon.classList.add("bi-eye");
+    }
+}
+</script>
+
 </body>
 </html>
