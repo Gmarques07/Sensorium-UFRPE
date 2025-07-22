@@ -375,11 +375,17 @@
 
       <!-- Main Content -->
       <main class="content col">
-        <header class="mb-4" data-aos="fade-down">
-          <h1 class="h3 text-primary fw-bold">Bem-vindo(a), {{ usuario.nome }}!</h1>
-          <p class="text-muted mb-0">Gerencie seus pedidos e monitore sua cisterna</p>
-        </header>
-
+       <header class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-down">
+    <div>
+        <h1 class="h3 text-primary fw-bold mb-0">Bem-vindo(a), {{ usuario.nome }}!</h1>
+        <p class="text-muted mb-0">Gerencie seus pedidos e monitore sua cisterna</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-primary" onclick="window.location.reload()">
+            <i class="bi bi-arrow-clockwise me-2"></i>Atualizar
+        </button>
+    </div>
+</header>
         <!-- Dashboard Section -->
         <section id="dashboard" class="section-panel active">
           <div class="row g-4">

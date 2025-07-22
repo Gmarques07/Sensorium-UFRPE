@@ -293,10 +293,17 @@
                         </div>
                     {% endif %}
                 {% endwith %}
-                <h2 class="mb-4 text-primary" data-aos="fade-up">
-                    <i class="bi bi-person-workspace me-2"></i>
-                    Bem-vindo, Administrador!
-                </h2>
+                <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-up">
+    <h2 class="mb-0 text-primary">
+        <i class="bi bi-person-workspace me-2"></i>
+        Bem-vindo, Administrador!
+    </h2>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-primary" onclick="window.location.reload()">
+            <i class="bi bi-arrow-clockwise me-2"></i>Atualizar
+        </button>
+    </div>
+</div>
 
                 <!-- Cards do Painel -->
                 <div id="painel" class="row">
