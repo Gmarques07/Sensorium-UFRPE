@@ -982,10 +982,9 @@
           <div class="modal-footer">
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
               <i class="bi bi-x-circle me-2"></i>Cancelar
-            </button>
-            <button type="submit" class="btn btn-primary">
-              <i class="bi bi-check-circle me-2"></i>Fazer Pedido
-            </button>
+            <button type="submit" class="btn btn-primary" id="botaoFazerPedido" disabled>
+             <i class="bi bi-check-circle me-2"></i>Fazer Pedido
+           </button>
           </div>
         </form>
       </div>
@@ -1206,5 +1205,29 @@
       }
     });
   </script>
+  <script>
+  const form = document.getElementById('formFazerPedido');
+  const botao = document.getElementById('botaoFazerPedido');
+
+  function validarCampos() {
+    const empresa = form.empresa.value.trim();
+    const descricao = form.descricao.value.trim();
+    const data = form.data.value;
+    const quantidade = form.quantidade.value;
+
+    const quantidadeValida = parseInt(quantidade) >= 1000 && parseInt(quantidade) <= 100000;
+
+    if (empresa && descricao && data && quantidade && quantidadeValida) {
+      botao.disabled = false;
+    } else {
+      botao.disabled = true;
+    }
+  }
+
+  form.addEventListener('input', validarCampos);
+  form.addEventListener('change', validarCampos);
+  document.addEventListener('DOMContentLoaded', validarCampos);
+</script>
+
 </body>
 </html>
