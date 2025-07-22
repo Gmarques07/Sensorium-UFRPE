@@ -281,6 +281,18 @@
             </div>
             
             <div class="col content">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="container-fluid">
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
                 <h2 class="mb-4 text-primary" data-aos="fade-up">
                     <i class="bi bi-person-workspace me-2"></i>
                     Bem-vindo, Administrador!
