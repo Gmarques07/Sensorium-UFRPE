@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro de Usuário - Sensorium</title>
     
-    <!-- Fontes -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
@@ -164,6 +162,19 @@
             transition: all 0.3s ease;
         }
 
+        /* Estilo para o botão "Criar Conta" quando desabilitado */
+        .btn-disabled {
+            background: #cccccc !important; /* Cor cinza para indicar desabilitado */
+            cursor: not-allowed !important;
+            opacity: 0.7;
+            box-shadow: none !important;
+            transform: none !important;
+        }
+
+        .btn-disabled::before {
+            display: none; /* Remove o efeito de brilho em hover quando desabilitado */
+        }
+
         @media (max-width: 576px) {
             .signup-card {
                 padding: 2rem;
@@ -265,6 +276,9 @@
                            placeholder="••••••••" 
                            minlength="8"
                            required>
+                    <button class="btn btn-outline-secondary" type="button" tabindex="-1" onclick="togglePasswordVisibility()" style="border-radius: 0 15px 15px 0;">
+                        <i class="bi bi-eye" id="toggleSenhaIcon"></i>
+                    </button>
                 </div>
                 <div class="password-strength" id="passwordStrength"></div>
             </div>
@@ -279,11 +293,15 @@
                            class="form-control" 
                            placeholder="••••••••" 
                            required>
+                    <button class="btn btn-outline-secondary" type="button" tabindex="-1" onclick="toggleConfirmPasswordVisibility()" style="border-radius: 0 15px 15px 0;">
+                        <i class="bi bi-eye" id="toggleConfirmSenhaIcon"></i>
+                    </button>
                 </div>
                 <div class="text-danger small mt-1" id="passwordMatch"></div>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100 mb-4">
+            
+<button type="submit" class="btn btn-primary w-100 mb-4 btn-disabled" disabled id="btnCriarConta">
                 <i class="bi bi-person-plus me-2"></i>Criar Conta
             </button>
 
@@ -296,7 +314,6 @@
         </form>
     </div>
 
-    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
     <script>
@@ -314,6 +331,72 @@
             const passwordMatch = document.getElementById('passwordMatch');
             const strengthBar = document.getElementById('passwordStrength');
 
+            // Referências aos campos e ao botão
+            const form = document.getElementById('cadastroForm');
+            // Seleciona *todos* os campos de input, textarea e select que têm o atributo 'required'
+            const camposObrigatorios = form.querySelectorAll('input[required], textarea[required], select[required]');
+            const btnCriarConta = document.getElementById('btnCriarConta');
+
+            // console.log('Elementos obrigatórios encontrados:', camposObrigatorios); // Para debug
+            // console.log('Botão Criar Conta:', btnCriarConta); // Para debug
+
+            // --- FUNÇÃO PRINCIPAL DE VALIDAÇÃO DO FORMULÁRIO ---
+            function checkFormValidity() {
+                let allRequiredFieldsFilled = true;
+                let passwordsMatchResult = false; 
+
+                // console.log('Iniciando checkFormValidity...'); // Para debug
+
+                // 1. Verificar se todos os campos obrigatórios estão preenchidos
+                camposObrigatorios.forEach(campo => {
+                    let isFieldFilled = true; 
+
+                    if (campo.type === 'checkbox') {
+                        if (!campo.checked) {
+                            isFieldFilled = false;
+                        }
+                    } else if (campo.value.trim() === '') {
+                        isFieldFilled = false;
+                    }
+                    
+                    if (!isFieldFilled) {
+                        allRequiredFieldsFilled = false; 
+                    }
+                    // console.log(`Campo: ${campo.id}, Valor: '${campo.value.trim()}', Preenchido: ${isFieldFilled}`); // Para debug
+                });
+
+                // 2. Verificar se as senhas conferem (reutilizando sua lógica)
+                const password = senhaInput.value;
+                const confirmPassword = confirmSenhaInput.value;
+
+                if (password && confirmPassword) { 
+                    if (password === confirmPassword) {
+                        passwordsMatchResult = true;
+                    } else {
+                        passwordsMatchResult = false;
+                    }
+                } else {
+                    passwordsMatchResult = false; 
+                }
+                
+                // Atualiza o feedback visual das senhas
+                checkPassword(); 
+
+                // console.log('Todos os campos obrigatórios preenchidos:', allRequiredFieldsFilled); // Para debug
+                // console.log('Senhas conferem:', passwordsMatchResult); // Para debug
+
+                // 3. Controlar o estado do botão "Criar Conta"
+                if (allRequiredFieldsFilled && passwordsMatchResult) {
+                    btnCriarConta.disabled = false;
+                    btnCriarConta.classList.remove('btn-disabled');
+                    // console.log('Botão Habilitado!'); // Para debug
+                } else {
+                    btnCriarConta.disabled = true;
+                    btnCriarConta.classList.add('btn-disabled');
+                    // console.log('Botão Desabilitado!'); // Para debug
+                }
+            }
+
             function formatCPF(cpf) {
                 cpf = cpf.replace(/\D/g, '').slice(0, 11);
                 return cpf.replace(/(\d{3})(\d)/, '$1.$2')
@@ -328,6 +411,7 @@
                     (this.value.charAt(cursorPosition) === '.' || 
                      this.value.charAt(cursorPosition) === '-' ? 1 : 0);
                 this.setSelectionRange(newCursorPosition, newCursorPosition);
+                checkFormValidity(); 
             });
 
             function checkPassword() {
@@ -345,6 +429,7 @@
                 } else {
                     passwordMatch.textContent = '';
                 }
+                // checkFormValidity(); // Já é chamado pelos listeners específicos de input
             }
 
             function checkPasswordStrength(password) {
@@ -359,15 +444,65 @@
                 strengthBar.style.width = ((strength / 5) * 100) + '%';
                 strengthBar.style.backgroundColor = colors[strength - 1] || '';
                 strengthBar.style.display = password ? 'block' : 'none';
+                // checkFormValidity(); // Já é chamado pelos listeners específicos de input
             }
 
             senhaInput.addEventListener('input', function() {
                 checkPasswordStrength(this.value);
                 checkPassword();
+                checkFormValidity(); 
             });
 
-            confirmSenhaInput.addEventListener('input', checkPassword);
+            confirmSenhaInput.addEventListener('input', function() {
+                checkPassword();
+                checkFormValidity(); 
+            });
+            
+            // --- ADICIONAR LISTENERS E CHAMAR NO INÍCIO ---
+            // Adiciona ouvintes de evento a cada campo obrigatório
+            camposObrigatorios.forEach(campo => {
+                // Adiciona listeners para todos os campos obrigatórios
+                // Os campos de senha e CPF já possuem listeners mais específicos, mas ter este geral não causa problema
+                campo.addEventListener('input', checkFormValidity);
+                campo.addEventListener('change', checkFormValidity); 
+            });
+
+            // Chama a função de validação ao carregar a página para definir o estado inicial do botão
+            checkFormValidity();
         });
     </script>
+
+<script>
+function togglePasswordVisibility() {
+    const senha = document.getElementById("senha");
+    const icon = document.getElementById("toggleSenhaIcon");
+    const tipo = senha.type === "password" ? "text" : "password";
+    senha.type = tipo;
+    if (tipo === "text") {
+        icon.classList.remove("bi-eye");
+        icon.classList.add("bi-eye-slash");
+    } else {
+        icon.classList.remove("bi-eye-slash");
+        icon.classList.add("bi-eye");
+    }
+}
+</script>
+
+<script>
+function toggleConfirmPasswordVisibility() {
+    const confirmacao = document.getElementById("confirmacao_senha");
+    const icon = document.getElementById("toggleConfirmSenhaIcon");
+    const tipo = confirmacao.type === "password" ? "text" : "password";
+    confirmacao.type = tipo;
+    if (tipo === "text") {
+        icon.classList.remove("bi-eye");
+        icon.classList.add("bi-eye-slash");
+    } else {
+        icon.classList.remove("bi-eye-slash");
+        icon.classList.add("bi-eye");
+    }
+}
+</script>
+
 </body>
 </html>

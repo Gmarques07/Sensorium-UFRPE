@@ -228,6 +228,9 @@
                            class="form-control" 
                            placeholder="••••••••" 
                            required>
+                    <button class="btn btn-outline-secondary" type="button" tabindex="-1" onclick="togglePasswordVisibilityLoginUsuario()" style="border-radius: 0 15px 15px 0;">
+                        <i class="bi bi-eye" id="toggleSenhaLoginUsuarioIcon"></i>
+                    </button>
                 </div>
             </div>
 
@@ -287,5 +290,20 @@
             });
         });
     </script>
+    <script>
+function togglePasswordVisibilityLoginUsuario() {
+    const senha = document.getElementById("senha-login");
+    const icon = document.getElementById("toggleSenhaLoginUsuarioIcon");
+    const tipo = senha.type === "password" ? "text" : "password";
+    senha.type = tipo;
+    if (tipo === "text") {
+        icon.classList.remove("bi-eye");
+        icon.classList.add("bi-eye-slash");
+    } else {
+        icon.classList.remove("bi-eye-slash");
+        icon.classList.add("bi-eye");
+    }
+}
+</script>
 </body>
 </html>
