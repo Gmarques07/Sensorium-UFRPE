@@ -12,10 +12,10 @@
   - [x] Atualizar modelo SQLAlchemy
   - [x] Implementar métodos CRUD
 
-- [ ] Migrar modelos de Cisterna
-  - [ ] Criar schemas para PhNivel
-  - [ ] Criar schemas para NivelAgua
-  - [ ] Implementar métodos CRUD
+- [x] Migrar modelos de Cisterna
+  - [x] Criar schemas para PhNivel
+  - [x] Criar schemas para NivelAgua
+  - [x] Implementar métodos CRUD
 
 - [ ] Migrar modelos de Notificações
   - [ ] Criar schemas
@@ -38,10 +38,10 @@
 - [ ] DELETE /excluir-conta
 
 ### 3.3 Cisterna (/api/v1/cisterna)
-- [ ] GET /dados-atuais
-- [ ] GET /historico
-- [ ] GET /nivel-agua
-- [ ] POST /registrar-leitura
+- [x] GET /dados-atuais
+- [x] GET /historico
+- [x] GET /nivel-agua
+- [x] POST /registrar-leitura
 
 ### 3.4 Admin (/api/v1/admin)
 - [ ] Implementar autenticação admin

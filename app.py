@@ -7,6 +7,11 @@ import mysql.connector
 # - backend/app/schemas/ - Para schemas Pydantic
 # - backend/app/crud/ - Para operações de banco de dados
 # - backend/app/api/endpoints/ - Para rotas da API
+#
+# Módulos migrados:
+# - Usuario (✓)
+# - Cisterna (✓)
+# - Notificações (em andamento)
 
 from datetime import datetime, timedelta
 from flask import Flask, jsonify, request, session, redirect, url_for, render_template, flash
@@ -138,31 +143,8 @@ def editar_empresa(cnpj: str, nome: Optional[str] = None, endereco: Optional[str
         return False
 
 
-
-def buscar_dados_cisterna(cnpj):
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    
-    query_ph_atual = "SELECT ph, data FROM ph_niveis ORDER BY data DESC LIMIT 1"
-    cursor.execute(query_ph_atual)
-    ph_atual = cursor.fetchone()
-    
-    query_historico_ph = "SELECT ph, data FROM ph_niveis ORDER BY data DESC LIMIT 10"
-    cursor.execute(query_historico_ph)
-    historico_ph = cursor.fetchall()
-    
-    query_nivel_atual = "SELECT boia, status, data FROM niveis_agua ORDER BY data DESC LIMIT 1"
-    cursor.execute(query_nivel_atual)
-    nivel_atual = cursor.fetchone()
-    
-    query_historico_nivel = "SELECT boia, status, data FROM niveis_agua ORDER BY data DESC LIMIT 10"
-    cursor.execute(query_historico_nivel)
-    historico_nivel = cursor.fetchall()
-    
-    cursor.close()
-    conn.close()
-    
-    return ph_atual, historico_ph, nivel_atual, historico_nivel
+# Função buscar_dados_cisterna removida - Migrada para FastAPI
+# Ver: backend/app/crud/cisterna.py -> obter_dados_cisterna()
 
 
 class NotificacaoDict(TypedDict, total=False):
@@ -228,30 +210,8 @@ def buscar_notificacoes(id_entidade):        #VERIFICAR SE FUNCIONA
     return notificacoes
 
 
-def buscar_dados_cisterna_usuario(usuario_id):
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    
-    query_ph_atual = "SELECT ph, data FROM ph_niveis ORDER BY data DESC LIMIT 1"
-    cursor.execute(query_ph_atual) 
-    ph_atual = cursor.fetchone()
-    
-    query_historico_ph = "SELECT ph, data FROM ph_niveis ORDER BY data DESC LIMIT 10"
-    cursor.execute(query_historico_ph)
-    historico_ph = cursor.fetchall()
-    
-    query_nivel_atual = "SELECT boia, status, data FROM niveis_agua ORDER BY data DESC LIMIT 1"
-    cursor.execute(query_nivel_atual)
-    nivel_atual = cursor.fetchone()
-    
-    query_historico_nivel = "SELECT boia, status, data FROM niveis_agua ORDER BY data DESC LIMIT 10"
-    cursor.execute(query_historico_nivel)
-    historico_nivel = cursor.fetchall()
-    
-    cursor.close()
-    conn.close()
-    
-    return ph_atual, historico_ph, nivel_atual, historico_nivel
+# Função buscar_dados_cisterna_usuario removida - Migrada para FastAPI
+# Ver: backend/app/crud/cisterna.py -> obter_dados_cisterna()
 
 @app.route('/')
 def pagina_inicial():
@@ -516,12 +476,6 @@ def editar_usuario_perfil(cpf):
     except Exception as e:
         flash(f'Erro ao carregar o dashboard: {str(e)}', 'danger')
         return render_template('pagina_inicial.html')
-
-
-
-
-    
-
 
 @app.route('/sobre')
 def sobre():
