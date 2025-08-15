@@ -1,33 +1,65 @@
 from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from ....crud import cisterna as crud_cisterna
-from ....schemas import cisterna as schemas
+from ....crud import local as crud_local
+from ....schemas import local as schemas
 from ....api.deps import get_db, get_current_user
 from ....models.usuario import Usuario
+from ....models.local import Local
 
 router = APIRouter()
 
-@router.get(
-    "/dados-atuais",
-    response_model=schemas.CisternaLeitura,
-    status_code=status.HTTP_200_OK,
-    summary="Dados Atuais da Cisterna",
-    response_description="Últimas leituras dos sensores da cisterna",
-    tags=["cisterna"]
+@router.post(
+    "/",
+    response_model=schemas.Local,
+    status_code=status.HTTP_201_CREATED,
+    summary="Criar Novo Local",
+    response_description="Local criado com sucesso",
+    tags=["locais"]
 )
-async def obter_dados_atuais(
+async def criar_local(
+    local: schemas.LocalCreate,
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
 ) -> Any:
     """
-    Retorna os dados mais recentes dos sensores da cisterna.
+    Cria um novo local para monitoramento.
     
+    Args:
+        local: Dados do local
+            - nome: Nome do local
+            - tipo: Tipo do local (CISTERNA, AQUARIO, CASA)
+            - descricao: Descrição opcional
+            
     Returns:
-        CisternaLeitura: Objeto contendo as últimas leituras
-            - nivel_agua: Nível atual da água (%)
-            - ph: Nível atual do pH
-            - temperatura: Temperatura atual (°C)
+        Local: Local criado
+    """
+    return crud_local.criar_local(db, local)
+
+@router.get(
+    "/{local_id}/dados-atuais",
+    response_model=schemas.Leitura,
+    status_code=status.HTTP_200_OK,
+    summary="Dados Atuais do Local",
+    response_description="Últimas leituras dos sensores do local",
+    tags=["locais"]
+)
+async def obter_dados_atuais(
+    local_id: int,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+) -> Any:
+    """
+    Retorna os dados mais recentes dos sensores do local.
+    
+    Args:
+        local_id: ID do local
+        
+    Returns:
+        Leitura: Objeto contendo as últimas leituras
+            - local: Dados do local
+            - ph: Nível atual do pH (0-14)
+            - boia: Nível atual da água (0-100%)
             - ultima_atualizacao: Data/hora da última leitura
             
     Raises:

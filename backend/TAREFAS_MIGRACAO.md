@@ -38,11 +38,14 @@
 - [x] DELETE /excluir-conta
 - [x] POST /validar-senha (adicional)
 
-### 3.3 Cisterna (/api/v1/cisterna)✅
-- [x] GET /dados-atuais
-- [x] GET /historico
-- [x] GET /nivel-agua
-- [x] POST /registrar-leitura
+### 3.3 Locais (/api/v1/locais)✅
+- [x] POST / (criar novo local)
+- [x] GET /{local_id}/dados-atuais
+- [x] GET /{local_id}/historico
+- [x] POST /{local_id}/registrar-leitura
+
+Obs: Estrutura preparada para diferentes tipos de ambiente (CISTERNA, AQUARIO, CASA).
+Migração do banco de dados será feita posteriormente.
 
 ### 3.4 Admin (/api/v1/admin) ✅
 - [x] Implementar autenticação admin (via get_current_admin dependency)

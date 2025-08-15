@@ -57,10 +57,49 @@ Retorna o perfil do usuário autenticado.
 }
 ```
 
-### Cisterna
+### Locais (/api/v1/locais)
 
-#### GET /api/v1/cisterna/dados-atuais
-Retorna os dados atuais da cisterna.
+#### POST /api/v1/locais
+Cria um novo local para monitoramento.
+
+**Request:**
+```json
+{
+    "nome": "string",
+    "tipo": "CISTERNA | AQUARIO | CASA",
+    "descricao": "string (opcional)"
+}
+```
+
+**Response:**
+```json
+{
+    "id": "integer",
+    "nome": "string",
+    "tipo": "string",
+    "descricao": "string",
+    "data_criacao": "datetime"
+}
+```
+
+#### GET /api/v1/locais/{local_id}/dados-atuais
+Retorna os dados atuais de um local específico.
+
+**Response:**
+```json
+{
+    "id": "integer",
+    "local": {
+        "id": "integer",
+        "nome": "string",
+        "tipo": "string",
+        "descricao": "string"
+    },
+    "ph": "float",
+    "boia": "integer",
+    "status": "string",
+    "data": "datetime"
+}
 
 **Response:**
 ```json
