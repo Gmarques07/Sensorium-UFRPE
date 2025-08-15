@@ -17,10 +17,10 @@
   - [x] Criar schemas para NivelAgua
   - [x] Implementar métodos CRUD
 
-- [ ] Migrar modelos de Notificações
-  - [ ] Criar schemas
-  - [ ] Atualizar modelo SQLAlchemy
-  - [ ] Implementar métodos CRUD
+- [x] Migrar modelos de Notificações
+  - [x] Criar schemas
+  - [x] Atualizar modelo SQLAlchemy
+  - [x] Implementar métodos CRUD
 
 ## 3. Migração das Rotas
 
@@ -47,13 +47,16 @@
 - [ ] Implementar autenticação admin
 - [ ] GET /dashboard
 - [ ] GET /usuarios
-- [ ] GET /notificacoes
+- [x] GET /notificacoes
 - [ ] GET /configuracoes
 
-### 3.5 Notificações (/api/v1/notificacoes)
-- [ ] GET /listar
-- [ ] POST /marcar-como-lida
-- [ ] GET /nao-lidas
+### 3.5 Notificações (/api/v1/notificacoes) ✅
+- [x] GET /listar
+- [x] POST /marcar-como-lida
+- [x] GET /nao-lidas
+- [x] GET /admin (listar notificações admin)
+- [x] POST /admin/criar (criar notificação admin)
+- [x] POST /admin/{id}/marcar-como-lida
 
 ## 4. Testes
 - [ ] Configurar ambiente de testes

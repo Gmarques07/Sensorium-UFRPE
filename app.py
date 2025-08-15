@@ -147,67 +147,8 @@ def editar_empresa(cnpj: str, nome: Optional[str] = None, endereco: Optional[str
 # Ver: backend/app/crud/cisterna.py -> obter_dados_cisterna()
 
 
-class NotificacaoDict(TypedDict, total=False):
-    id: int
-    pedido_id: int
-    mensagem: str
-    data_criacao: datetime
-    cpf_usuario: str
-    cnpj_empresa: str
-
-def buscar_notificacoes(id_entidade):        #VERIFICAR SE FUNCIONA
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    
-    notificacoes: List[Dict[str, Any]] = []
-
-    if isinstance(id_entidade, str) and len(id_entidade) == 14:
-        query_notificacoes = """
-            SELECT n.* FROM notificacoes n
-            JOIN pedidos p ON n.pedido_id = p.id
-            WHERE p.cnpj_empresa = %s
-            ORDER BY n.data_criacao DESC
-            LIMIT 10
-        """
-        cursor.execute(query_notificacoes, (id_entidade,))
-        notificacoes = convert_rows_to_dicts(cursor.fetchall())
-        
-        for notif in notificacoes:
-            query_imagens = """
-                SELECT caminho, tipo_imagem, tem_rachadura
-                FROM imagens_pedido
-                WHERE pedido_id = %s
-            """
-            pedido_id = cast(int, notif.get('pedido_id', 0))
-            cursor.execute(query_imagens, (pedido_id,))
-            notif['imagens'] = convert_rows_to_dicts(cursor.fetchall())
-
-    elif isinstance(id_entidade, int): 
-        query_notificacoes = """
-            SELECT n.* FROM notificacoes n
-            JOIN pedidos p ON n.pedido_id = p.id
-            JOIN usuarios u ON p.cpf_usuario = u.cpf
-            WHERE u.id = %s
-            ORDER BY n.data_criacao DESC
-            LIMIT 10
-        """
-        cursor.execute(query_notificacoes, (id_entidade,))
-        notificacoes = convert_rows_to_dicts(cursor.fetchall())
-        
-        for notif in notificacoes:
-            query_imagens = """
-                SELECT caminho, tipo_imagem, tem_rachadura
-                FROM imagens_pedido
-                WHERE pedido_id = %s
-            """
-            pedido_id = cast(int, notif.get('pedido_id', 0))
-            cursor.execute(query_imagens, (pedido_id,))
-            notif['imagens'] = convert_rows_to_dicts(cursor.fetchall())
-    
-    cursor.close()
-    conn.close()
-    
-    return notificacoes
+# Função buscar_notificacoes removida - Migrada para FastAPI
+# Veja: backend/app/crud/notificacao.py
 
 
 # Função buscar_dados_cisterna_usuario removida - Migrada para FastAPI
@@ -693,41 +634,8 @@ def admin_excluir_usuario(id):
     return jsonify({'success': True})
 
 
-def criar_notificacao_admin(tipo, titulo, mensagem):
-    """Cria uma nova notificação para o admin"""
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    query = "INSERT INTO notificacoes_admin (tipo, titulo, mensagem) VALUES (%s, %s, %s)"
-    cursor.execute(query, (tipo, titulo, mensagem))
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-def buscar_notificacoes_admin(apenas_nao_lidas=False):
-    """Busca notificações do admin"""
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    
-    if apenas_nao_lidas:
-        query = "SELECT * FROM notificacoes_admin WHERE lida = FALSE ORDER BY data_criacao DESC"
-    else:
-        query = "SELECT * FROM notificacoes_admin ORDER BY data_criacao DESC"
-    
-    cursor.execute(query)
-    notificacoes = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return notificacoes
-
-def marcar_notificacao_como_lida(notificacao_id):
-    """Marca uma notificação como lida"""
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    query = "UPDATE notificacoes_admin SET lida = TRUE, data_leitura = CURRENT_TIMESTAMP WHERE id = %s"
-    cursor.execute(query, (notificacao_id,))
-    conn.commit()
-    cursor.close()
-    conn.close()
+# Funções de notificação admin removidas - Migradas para FastAPI
+# Veja: backend/app/crud/notificacao.py
 
 def buscar_configuracoes():
     """Busca todas as configurações do sistema"""
@@ -751,40 +659,8 @@ def atualizar_configuracao(chave, valor):
     conn.close()
 
 # Rotas para notificações
-@app.route('/admin/notificacoes')
-def admin_notificacoes():
-    if not session.get('admin_logged_in'):
-        return jsonify({'success': False, 'error': 'Não autorizado'}), 403
-    notificacoes = buscar_notificacoes_admin()
-    return jsonify({'success': True, 'notificacoes': notificacoes})
-
-@app.route('/admin/notificacoes/nao-lidas')
-def admin_notificacoes_nao_lidas():
-    if not session.get('admin_logged_in'):
-        return jsonify({'success': False, 'error': 'Não autorizado'}), 403
-    try:
-        
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("""
-            SELECT * FROM notificacoes_admin 
-            WHERE lida = FALSE 
-            ORDER BY data_criacao DESC
-        """)
-        notificacoes = cursor.fetchall()
-        cursor.close()
-        conn.close()
-        return jsonify({'success': True, 'notificacoes': notificacoes})
-    except Exception as e:
-        print(f"Erro ao buscar notificações: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@app.route('/admin/notificacoes/<int:notificacao_id>/marcar-lida', methods=['POST'])
-def admin_marcar_notificacao_lida(notificacao_id):
-    if not session.get('admin_logged_in'):
-        return jsonify({'success': False, 'error': 'Não autorizado'}), 403
-    marcar_notificacao_como_lida(notificacao_id)
-    return jsonify({'success': True})
+# Rotas de notificações admin removidas - Migradas para FastAPI
+# Veja: backend/app/api/v1/endpoints/notificacoes.py
 
 # Rotas para configurações
 @app.route('/admin/configuracoes')
