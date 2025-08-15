@@ -59,7 +59,7 @@
 - [x] POST /admin/criar (criar notificação admin)
 - [x] POST /admin/{id}/marcar-como-lida
 
-## 4. Testes
+## 4. Testes ✅
 - [x] Configurar ambiente de testes
 - [x] Testes unitários
   - [x] Modelos
