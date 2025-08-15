@@ -1,0 +1,33 @@
+from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy.sql import func
+from app.db.base_class import Base
+from werkzeug.security import generate_password_hash, check_password_hash
+
+class Usuario(Base):
+    __tablename__ = "usuarios"
+
+    id = Column(Integer, primary_key=True, index=True)
+    cpf = Column(String(11), unique=True, index=True, nullable=False)
+    nome = Column(String(100), nullable=False)
+    email = Column(String(100), unique=True, index=True, nullable=False)
+    endereco = Column(String(200), nullable=False)
+    senha_hash = Column(String(255), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    def set_senha(self, senha: str):
+        self.senha_hash = generate_password_hash(senha)
+
+    def verificar_senha(self, senha: str) -> bool:
+        return check_password_hash(self.senha_hash, senha)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "cpf": self.cpf,
+            "nome": self.nome,
+            "email": self.email,
+            "endereco": self.endereco,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at
+        }

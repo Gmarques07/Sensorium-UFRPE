@@ -1,6 +1,13 @@
 import os
 import re
 import mysql.connector
+# AVISO: Este arquivo está em processo de migração para FastAPI
+# Novas implementações podem ser encontradas em:
+# - backend/app/models/ - Para modelos
+# - backend/app/schemas/ - Para schemas Pydantic
+# - backend/app/crud/ - Para operações de banco de dados
+# - backend/app/api/endpoints/ - Para rotas da API
+
 from datetime import datetime, timedelta
 from flask import Flask, jsonify, request, session, redirect, url_for, render_template, flash
 from werkzeug.security import generate_password_hash, check_password_hash 
@@ -87,78 +94,13 @@ def load_user(user_id):
         if conn:
             conn.close()
 
-def encontrar_usuario(cpf):
-    conn = get_db_connection()
-    if not conn:
-        return None
-    cursor = conn.cursor(dictionary=True)
-    try:
-        query = "SELECT id, cpf, nome, email, endereco, senha FROM usuarios WHERE cpf = %s"
-        cursor.execute(query, (cpf,))
-        usuario = cursor.fetchone()
-        return usuario
-    except mysql.connector.Error as err:
-        print(f"Erro ao buscar usuário: {err}")
-        return None
-    finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
+# Função encontrar_usuario removida - Migrada para FastAPI
+# Veja: backend/app/crud/usuario.py
 
 
 
-def editar_usuario(cpf_atual, nome=None, email=None, endereco=None, senha=None, novo_cpf=None):
-    conn = get_db_connection()
-    if not conn:
-        return False 
-
-    cursor = conn.cursor()
-
-    try:
-        
-        if novo_cpf and novo_cpf != cpf_atual:
-            query_update_cpf = "UPDATE usuarios SET cpf = %s WHERE cpf = %s"
-            cursor.execute(query_update_cpf, (novo_cpf, cpf_atual))
-            conn.commit()  
-            cpf_atual = novo_cpf  
-
-        update_fields = []
-        update_values = []
-
-        if nome is not None:
-            update_fields.append("nome = %s")
-            update_values.append(nome)
-        if email is not None:
-            update_fields.append("email = %s")
-            update_values.append(email)
-        if endereco is not None:
-            update_fields.append("endereco = %s")
-            update_values.append(endereco)
-        
-        if senha: 
-            hashed_senha = generate_password_hash(senha)
-            update_fields.append("senha = %s")
-            update_values.append(hashed_senha)
-
-        if update_fields:
-            query = f"UPDATE usuarios SET {', '.join(update_fields)} WHERE cpf = %s"
-            update_values.append(cpf_atual) 
-            cursor.execute(query, tuple(update_values))
-            conn.commit()
-            return True 
-        else:
-            
-            return True 
-    except mysql.connector.Error as err:
-        print(f"Erro ao editar usuário: {err}")
-        conn.rollback() 
-        return False 
-    finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
+# Função editar_usuario removida - Migrada para FastAPI
+# Veja: backend/app/crud/usuario.py
 
 def editar_empresa(cnpj: str, nome: Optional[str] = None, endereco: Optional[str] = None, senha: Optional[str] = None) -> bool:
     try:
@@ -481,11 +423,8 @@ def editar_usuario_perfil(cpf):
 
 
 
-@app.route('/dashboard_usuario/<cpf>')
-@login_required
-def dashboard_usuario(cpf):
-    if not isinstance(current_user, Usuario) or current_user.cpf != cpf:
-        flash('Acesso não autorizado.', 'danger')
+# Rota dashboard_usuario removida - Migrada para FastAPI
+# Veja: backend/app/api/endpoints/usuarios.pyflash('Acesso não autorizado.', 'danger')
         return render_template('pagina_inicial.html')
 
     try:

@@ -7,10 +7,10 @@
 - [x] Configurar conexão com banco de dados
 
 ## 2. Migração dos Modelos
-- [ ] Migrar modelo Usuario
-  - [ ] Criar schema Pydantic
-  - [ ] Atualizar modelo SQLAlchemy
-  - [ ] Implementar métodos CRUD
+- [x] Migrar modelo Usuario
+  - [x] Criar schema Pydantic
+  - [x] Atualizar modelo SQLAlchemy
+  - [x] Implementar métodos CRUD
 
 - [ ] Migrar modelos de Cisterna
   - [ ] Criar schemas para PhNivel
