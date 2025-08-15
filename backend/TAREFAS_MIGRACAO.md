@@ -32,10 +32,11 @@
 - [x] Implementar logout (stateless - JWT)
 - [x] Implementar recuperação de senha
 
-### 3.2 Usuários (/api/v1/usuarios)
-- [ ] GET /perfil
-- [ ] PUT /editar-perfil
-- [ ] DELETE /excluir-conta
+### 3.2 Usuários (/api/v1/usuarios) ✅
+- [x] GET /perfil
+- [x] PUT /editar-perfil
+- [x] DELETE /excluir-conta
+- [x] POST /validar-senha (adicional)
 
 ### 3.3 Cisterna (/api/v1/cisterna)
 - [x] GET /dados-atuais
