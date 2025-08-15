@@ -9,16 +9,47 @@ from ....models.usuario import Usuario
 
 router = APIRouter()
 
-@router.get("/perfil", response_model=schemas.Usuario)
+@router.get("/perfil", 
+              response_model=schemas.Usuario,
+              status_code=status.HTTP_200_OK,
+              summary="Obter Perfil do Usuário",
+              response_description="Dados do perfil do usuário",
+              tags=["usuários"])
 def obter_perfil(
     current_user: Usuario = Depends(get_current_user)
 ) -> Any:
     """
-    Retorna o perfil do usuário autenticado.
+    Retorna o perfil completo do usuário autenticado.
+
+    Returns:
+        Usuario: Objeto contendo todos os dados do usuário
+            - id: ID único do usuário
+            - nome: Nome completo
+            - email: Email do usuário
+            - cpf: CPF do usuário
+            - tipo: Tipo de usuário (comum/admin)
+            - ativo: Status da conta
+            
+    Raises:
+        HTTPException:
+            - 401: Usuário não autenticado
+            - 404: Usuário não encontrado
+            
+    Examples:
+        >>> # Python
+        >>> import requests
+        >>> headers = {"Authorization": f"Bearer {token}"}
+        >>> response = requests.get("http://localhost:8000/api/v1/usuarios/perfil", headers=headers)
+        >>> perfil = response.json()
     """
     return current_user
 
-@router.put("/editar-perfil", response_model=schemas.Usuario)
+@router.put("/editar-perfil", 
+         response_model=schemas.Usuario,
+         status_code=status.HTTP_200_OK,
+         summary="Atualizar Perfil do Usuário",
+         response_description="Perfil atualizado do usuário",
+         tags=["usuários"])
 def editar_perfil(
     dados_atualizacao: schemas.UsuarioUpdate,
     db: Session = Depends(get_db),
@@ -27,7 +58,37 @@ def editar_perfil(
     """
     Atualiza os dados do perfil do usuário autenticado.
     
-    - Permite atualizar nome, email e endereço
+    Args:
+        dados_atualizacao: Dados a serem atualizados
+            - nome: Novo nome (opcional)
+            - email: Novo email (opcional)
+            - endereco: Novo endereço (opcional)
+        current_user: Usuário atual (injetado via token)
+        
+    Returns:
+        Usuario: Objeto com os dados atualizados do usuário
+        
+    Raises:
+        HTTPException:
+            - 401: Usuário não autenticado
+            - 400: Dados inválidos
+            - 409: Email já existe
+            
+    Examples:
+        >>> # Python
+        >>> import requests
+        >>> headers = {"Authorization": f"Bearer {token}"}
+        >>> dados = {
+        ...     "nome": "Novo Nome",
+        ...     "email": "novo@email.com",
+        ...     "endereco": "Nova Rua, 123"
+        ... }
+        >>> response = requests.put(
+        ...     "http://localhost:8000/api/v1/usuarios/editar-perfil",
+        ...     headers=headers,
+        ...     json=dados
+        ... )
+        >>> perfil_atualizado = response.json()
     - Se uma nova senha for fornecida, ela será hasheada antes de salvar
     """
     # Se estiver atualizando o email, verifica se já existe

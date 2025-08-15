@@ -9,13 +9,46 @@ from ....models.usuario import Usuario
 
 router = APIRouter()
 
-@router.get("/dashboard", response_model=schemas.AdminDashboard)
+@router.get(
+    "/dashboard",
+    response_model=schemas.AdminDashboard,
+    status_code=status.HTTP_200_OK,
+    summary="Dashboard Administrativo",
+    response_description="Dados e estatísticas do dashboard admin",
+    tags=["admin"]
+)
 async def get_dashboard(
     db: Session = Depends(get_db),
     _: dict = Depends(get_current_admin)
 ) -> Any:
     """
-    Retorna dados para o dashboard administrativo.
+    Retorna dados consolidados para o dashboard administrativo.
+    
+    Returns:
+        AdminDashboard: Objeto com dados do dashboard
+            - total_usuarios: Número total de usuários
+            - usuarios_ativos: Número de usuários ativos
+            - total_notificacoes: Total de notificações
+            - alertas_nao_lidos: Número de alertas não lidos
+            - ultima_atualizacao: Data da última atualização
+            - usuarios_recentes: Lista dos últimos usuários cadastrados
+            - ultimas_notificacoes: Lista das últimas notificações
+            - estatisticas_cisterna: Dados estatísticos da cisterna
+            
+    Raises:
+        HTTPException:
+            - 401: Usuário não autenticado
+            - 403: Usuário não é administrador
+            
+    Examples:
+        >>> # Python
+        >>> import requests
+        >>> headers = {"Authorization": f"Bearer {token}"}
+        >>> response = requests.get(
+        ...     "http://localhost:8000/api/v1/admin/dashboard",
+        ...     headers=headers
+        ... )
+        >>> dashboard = response.json()
     """
     # Obtém estatísticas gerais
     stats = crud_admin.get_dashboard_stats(db)

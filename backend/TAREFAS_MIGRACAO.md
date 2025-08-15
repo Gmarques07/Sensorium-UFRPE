@@ -67,11 +67,11 @@
   - [x] Autenticação
 - [x] Testes de integração
 
-## 5. Documentação
-- [ ] Documentar todas as rotas no Swagger
-- [ ] Criar exemplos de uso
-- [ ] Documentar processo de instalação
-- [ ] Documentar configurações necessárias
+## 5. Documentação ✅
+- [x] Documentar todas as rotas no Swagger
+- [x] Criar exemplos de uso
+- [x] Documentar processo de instalação
+- [x] Documentar configurações necessárias
 
 ## 6. Deploy
 - [ ] Configurar variáveis de ambiente

@@ -18,7 +18,10 @@ from ....models.usuario import Usuario
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-@router.post("/login", response_model=schemas_auth.Token)
+@router.post("/login", response_model=schemas_auth.Token, status_code=status.HTTP_200_OK,
+             summary="Autenticação de usuário",
+             description="Endpoint para autenticação de usuário usando OAuth2 com JWT",
+             response_description="Token de acesso JWT")
 async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
@@ -28,6 +31,29 @@ async def login(
     
     Args:
         form_data: Formulário com username (CPF) e senha
+        db: Sessão do banco de dados
+        
+    Returns:
+        Token JWT para autenticação
+        
+    Raises:
+        HTTPException:
+            - 401: Credenciais inválidas
+            - 400: Usuário inativo
+    
+    Exemplos:
+        >>> # Usando curl
+        >>> curl -X POST "http://localhost:8000/api/v1/auth/login" \
+        >>>      -H "Content-Type: application/x-www-form-urlencoded" \
+        >>>      -d "username=12345678900&password=minhasenha123"
+        
+        >>> # Usando Python requests
+        >>> import requests
+        >>> response = requests.post(
+        >>>     "http://localhost:8000/api/v1/auth/login",
+        >>>     data={"username": "12345678900", "password": "minhasenha123"}
+        >>> )
+        >>> token = response.json()["access_token"]
         db: Sessão do banco de dados
         
     Returns:

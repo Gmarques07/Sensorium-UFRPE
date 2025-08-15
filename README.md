@@ -1,6 +1,11 @@
 # Sistema de Gerenciamento de Cisternas
 
-Este é um sistema web desenvolvido em Flask para gerenciamento de cisternas, pedidos de água e monitoramento de condições estruturais. O sistema permite que usuários e empresas interajam para solicitar e gerenciar entregas de água, além de monitorar condições como níveis de água, pH e possíveis rachaduras nas cisternas.
+Este é um sistema web para gerenciamento de cisternas, monitoramento de níveis de água e qualidade (pH). O projeto está estruturado em duas partes:
+
+1. Frontend: Interface web desenvolvida em Flask (temporariamente)
+2. Backend: API RESTful moderna desenvolvida em FastAPI
+
+O sistema permite que usuários monitorem suas cisternas em tempo real, com uma interface web amigável e uma API robusta para integrações.
 
 ## Funcionalidades Principais
 
@@ -30,7 +35,16 @@ Este é um sistema web desenvolvido em Flask para gerenciamento de cisternas, pe
 ## Tecnologias Utilizadas
 
 - Python 3.x
+Frontend:
 - Flask (Framework Web)
+- Jinja2 (Templates)
+- Bootstrap (UI)
+
+Backend:
+- FastAPI (Framework Web moderno e assíncrono)
+- Pydantic (Validação de dados)
+- SQLAlchemy (ORM)
+- JWT (Autenticação)
 - MySQL (Banco de Dados)
 - OpenCV (Processamento de Imagens)
 - HTML/CSS/JavaScript (Frontend)

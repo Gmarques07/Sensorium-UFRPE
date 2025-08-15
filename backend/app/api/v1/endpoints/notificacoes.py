@@ -8,7 +8,14 @@ from ....models.usuario import Usuario
 
 router = APIRouter()
 
-@router.get("/", response_model=List[schemas.Notificacao])
+@router.get(
+    "/",
+    response_model=List[schemas.Notificacao],
+    status_code=status.HTTP_200_OK,
+    summary="Listar Notificações do Usuário",
+    response_description="Lista paginada de notificações do usuário",
+    tags=["notificações"]
+)
 def listar_notificacoes(
     skip: int = 0,
     limit: int = 10,
@@ -18,16 +25,48 @@ def listar_notificacoes(
     """
     Retorna uma lista paginada das notificações do usuário atual.
     
-    Parâmetros:
-    - skip: Número de registros para pular (paginação)
-    - limit: Número máximo de registros para retornar
+    Args:
+        skip: Número de registros para pular (paginação)
+        limit: Número máximo de registros para retornar (padrão: 10)
+        
+    Returns:
+        List[Notificacao]: Lista de notificações do usuário
+            - id: ID da notificação
+            - titulo: Título da notificação
+            - mensagem: Conteúdo
+            - tipo: Tipo (alerta, info, erro)
+            - data_criacao: Data de criação
+            - lida: Status de leitura
+            
+    Raises:
+        HTTPException:
+            - 401: Usuário não autenticado
+            
+    Examples:
+        >>> # Python
+        >>> import requests
+        >>> headers = {"Authorization": f"Bearer {token}"}
+        >>> params = {"skip": 0, "limit": 20}
+        >>> response = requests.get(
+        ...     "http://localhost:8000/api/v1/notificacoes",
+        ...     headers=headers,
+        ...     params=params
+        ... )
+        >>> notificacoes = response.json()
     """
     notificacoes = crud_notificacao.get_notificacoes_usuario(
         db, current_user.id, skip=skip, limit=limit
     )
     return notificacoes
 
-@router.get("/nao-lidas", response_model=List[schemas.Notificacao])
+@router.get(
+    "/nao-lidas",
+    response_model=List[schemas.Notificacao],
+    status_code=status.HTTP_200_OK,
+    summary="Listar Notificações Não Lidas",
+    response_description="Lista de notificações não lidas do usuário",
+    tags=["notificações"]
+)
 def listar_notificacoes_nao_lidas(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
