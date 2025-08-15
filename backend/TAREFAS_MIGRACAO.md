@@ -6,7 +6,7 @@
 - [x] Criar arquivo requirements.txt
 - [x] Configurar conexão com banco de dados
 
-## 2. Migração dos Modelos
+## 2. Migração dos Modelos✅
 - [x] Migrar modelo Usuario
   - [x] Criar schema Pydantic
   - [x] Atualizar modelo SQLAlchemy
@@ -22,7 +22,7 @@
   - [x] Atualizar modelo SQLAlchemy
   - [x] Implementar métodos CRUD
 
-## 3. Migração das Rotas
+## 3. Migração das Rotas✅
 
 ### 3.1 Autenticação (/api/v1/auth) ✅
 - [x] Implementar login
@@ -38,18 +38,18 @@
 - [x] DELETE /excluir-conta
 - [x] POST /validar-senha (adicional)
 
-### 3.3 Cisterna (/api/v1/cisterna)
+### 3.3 Cisterna (/api/v1/cisterna)✅
 - [x] GET /dados-atuais
 - [x] GET /historico
 - [x] GET /nivel-agua
 - [x] POST /registrar-leitura
 
-### 3.4 Admin (/api/v1/admin)
-- [ ] Implementar autenticação admin
-- [ ] GET /dashboard
-- [ ] GET /usuarios
-- [x] GET /notificacoes
-- [ ] GET /configuracoes
+### 3.4 Admin (/api/v1/admin) ✅
+- [x] Implementar autenticação admin (via get_current_admin dependency)
+- [x] GET /dashboard (com estatísticas completas)
+- [x] GET /usuarios (lista e gerenciamento)
+- [x] GET /notificacoes (implementado anteriormente)
+- [x] GET /configuracoes (CRUD completo)
 
 ### 3.5 Notificações (/api/v1/notificacoes) ✅
 - [x] GET /listar
