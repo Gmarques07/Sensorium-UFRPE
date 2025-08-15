@@ -24,13 +24,13 @@
 
 ## 3. Migração das Rotas
 
-### 3.1 Autenticação (/api/v1/auth)
-- [ ] Implementar login
-  - [ ] Adicionar JWT
-  - [ ] Implementar OAuth2
-- [ ] Implementar registro
-- [ ] Implementar logout
-- [ ] Implementar recuperação de senha
+### 3.1 Autenticação (/api/v1/auth) ✅
+- [x] Implementar login
+  - [x] Adicionar JWT
+  - [x] Implementar OAuth2
+- [x] Implementar registro
+- [x] Implementar logout (stateless - JWT)
+- [x] Implementar recuperação de senha
 
 ### 3.2 Usuários (/api/v1/usuarios)
 - [ ] GET /perfil
