@@ -60,12 +60,12 @@
 - [x] POST /admin/{id}/marcar-como-lida
 
 ## 4. Testes
-- [ ] Configurar ambiente de testes
-- [ ] Testes unitários
-  - [ ] Modelos
-  - [ ] Rotas
-  - [ ] Autenticação
-- [ ] Testes de integração
+- [x] Configurar ambiente de testes
+- [x] Testes unitários
+  - [x] Modelos
+  - [x] Rotas
+  - [x] Autenticação
+- [x] Testes de integração
 
 ## 5. Documentação
 - [ ] Documentar todas as rotas no Swagger

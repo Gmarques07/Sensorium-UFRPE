@@ -1,0 +1,108 @@
+import pytest
+from typing import Generator, Dict
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
+from jose import jwt
+
+from app.core.config import settings
+from app.db.base_class import Base
+# Usando SQLite em memória para testes em vez do MySQL
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from app.main import app
+from app.models import Usuario, PhNivel, NivelAgua
+from app.core.security import get_password_hash
+
+# Cria um banco de dados SQLite em memória para testes
+SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
+
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+)
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+@pytest.fixture(scope="session")
+def db() -> Generator:
+    Base.metadata.create_all(bind=engine)
+    db = TestingSessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+        Base.metadata.drop_all(bind=engine)
+
+@pytest.fixture(scope="module")
+def client() -> Generator:
+    def get_test_db():
+        db = TestingSessionLocal()
+        try:
+            yield db
+        finally:
+            db.close()
+
+def override_get_db():
+        db = TestingSessionLocal()
+        try:
+            yield db
+        finally:
+            db.close()
+    
+    app.dependency_overrides[get_db] = override_get_db
+    with TestClient(app) as c:
+        yield c
+    app.dependency_overrides.clear()
+
+@pytest.fixture(scope="module")
+def usuario_normal(db) -> Dict[str, str]:
+    usuario = Usuario(
+        cpf="12345678901",
+        nome="Usuario Teste",
+        email="teste@example.com",
+        endereco="Rua de Teste, 123"
+    )
+    usuario.set_senha("senha123")
+    db.add(usuario)
+    db.commit()
+    db.refresh(usuario)
+    
+    # Criar token de acesso
+    access_token = jwt.encode(
+        {"sub": str(usuario.id)},
+        settings.SECRET_KEY,
+        algorithm=settings.ALGORITHM
+    )
+    
+    return {
+        "id": str(usuario.id),
+        "cpf": usuario.cpf,
+        "token": f"Bearer {access_token}"
+    }
+
+@pytest.fixture(scope="module")
+def dados_cisterna(db) -> Dict[str, any]:
+    # Criar dados de pH
+    ph = PhNivel(ph=7.0)
+    db.add(ph)
+    
+    # Criar dados de nível de água
+    nivel = NivelAgua(boia=80, status="NORMAL")
+    db.add(nivel)
+    
+    db.commit()
+    db.refresh(ph)
+    db.refresh(nivel)
+    
+    return {
+        "ph_id": ph.id,
+        "nivel_id": nivel.id,
+        "ph_valor": ph.ph,
+        "nivel_valor": nivel.boia
+    }
+
+@pytest.fixture(scope="module")
+def headers_autenticado(usuario_normal) -> Dict[str, str]:
+    return {"Authorization": usuario_normal["token"]}
