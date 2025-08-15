@@ -1,10 +1,44 @@
+# API e Framework
 fastapi==0.103.1
 uvicorn==0.23.2
+
+# Banco de Dados
 sqlalchemy==2.0.20
+mysql-connector-python==8.1.0
+alembic==1.12.0  # Para migrações de banco de dados
+
+# Validação e Serialização
 pydantic==2.3.0
 pydantic-settings==2.0.3
+email-validator==2.0.0
+
+# Autenticação e Segurança
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 python-multipart==0.0.6
-mysql-connector-python==8.1.0
-email-validator==2.0.0
+
+# Testes
+pytest==7.4.0
+pytest-cov==4.1.0
+httpx==0.24.1  # Para testes de API
+pytest-asyncio==0.21.1
+
+# Documentação
+mkdocs==1.5.2
+mkdocs-material==9.2.3
+
+# Desenvolvimento
+black==23.7.0  # Formatação de código
+flake8==6.1.0  # Linting
+isort==5.12.0  # Ordenação de imports
+pre-commit==3.3.3
+
+# Compatibilidade com Flask (temporário durante migração)
+Flask==2.3.3
+Werkzeug==2.3.7
+Flask-Login==0.6.2
+
+# Utilitários
+python-dateutil==2.8.2
+pytz==2023.3
+requests==2.31.0
