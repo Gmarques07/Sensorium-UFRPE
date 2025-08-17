@@ -1,0 +1,78 @@
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from starlette.responses import HTMLResponse
+
+app = FastAPI(
+    title="Sensorium UFRPE",
+    description="Sistema de monitoramento de cisternas",
+    version="1.0.0"
+)
+
+# Configurar templates
+templates = Jinja2Templates(directory="../templates")
+
+# Configuração CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Rotas básicas da API - adicionaremos as outras depois
+try:
+    from app.api.v1.endpoints import auth
+    app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
+except ImportError:
+    print("Aviso: Não foi possível importar o módulo auth. APIs de autenticação não estarão disponíveis.")
+
+# Configurar arquivos estáticos
+app.mount("/static", StaticFiles(directory="../static"), name="static")
+
+# Rotas para servir as páginas HTML
+@app.get("/", response_class=HTMLResponse)
+async def homepage(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/index.html", response_class=HTMLResponse)
+async def index(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/login_usuario.html", response_class=HTMLResponse)
+async def login_usuario(request: Request):
+    return templates.TemplateResponse("login_usuario.html", {"request": request})
+
+@app.get("/login_admin.html", response_class=HTMLResponse)
+async def login_admin(request: Request):
+    return templates.TemplateResponse("login_admin.html", {"request": request})
+
+@app.get("/cadastro.html", response_class=HTMLResponse)
+async def cadastro(request: Request):
+    return templates.TemplateResponse("cadastro.html", {"request": request})
+
+@app.get("/dashboard_usuario.html", response_class=HTMLResponse)
+async def dashboard_usuario(request: Request):
+    return templates.TemplateResponse("dashboard_usuario.html", {"request": request})
+
+@app.get("/admin_dashboard.html", response_class=HTMLResponse)
+async def admin_dashboard(request: Request):
+    return templates.TemplateResponse("admin_dashboard.html", {"request": request})
+
+@app.get("/sobre.html", response_class=HTMLResponse)
+async def sobre(request: Request):
+    return templates.TemplateResponse("sobre.html", {"request": request})
+
+@app.get("/404.html", response_class=HTMLResponse)
+async def not_found(request: Request):
+    return templates.TemplateResponse("404.html", {"request": request})
+
+@app.get("/500.html", response_class=HTMLResponse)
+async def server_error(request: Request):
+    return templates.TemplateResponse("500.html", {"request": request})
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

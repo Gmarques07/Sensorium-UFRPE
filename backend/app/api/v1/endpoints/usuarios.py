@@ -1,5 +1,5 @@
 from typing import Any
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
 from ....crud import usuario as crud_usuario
 from ....schemas import usuario as schemas
@@ -132,7 +132,7 @@ def excluir_conta(
     senha: str,
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
-) -> Any:
+):
     """
     Exclui a conta do usuário atual.
     Requer a senha atual para confirmar a operação.

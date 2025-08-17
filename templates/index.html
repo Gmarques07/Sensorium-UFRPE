@@ -231,7 +231,7 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('pagina_inicial') }}">
+            <a class="navbar-brand" href="index.html">
                 <i class="bi bi-droplet"></i> Sensorium
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -240,10 +240,10 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="{{ url_for('pagina_inicial') }}">Início</a>
+                        <a class="nav-link active" href="index.html">Início</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('sobre') }}">Sobre</a>
+                        <a class="nav-link" href="sobre.html">Sobre</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#recursos">Recursos</a>
@@ -264,11 +264,11 @@
                     <h1 class="hero-title">Transformando a Gestão de Água nas Comunidades Rurais</h1>
                     <p class="hero-subtitle">Tecnologia inovadora para um futuro sustentável</p>
                     <div class="d-flex justify-content-center gap-3">
-                        <a href="{{ url_for('login_usuario') }}" class="btn btn-action" data-aos="fade-right">
+                        <a href="login_usuario.html" class="btn btn-action" data-aos="fade-right">
                             <i class="bi bi-person me-2"></i>Área do Usuário
                         </a>
-                        <a href="{{ url_for('login_empresa') }}" class="btn btn-action" data-aos="fade-left">
-                            <i class="bi bi-building me-2"></i>Área da Empresa
+                        <a href="login_admin.html" class="btn btn-action" data-aos="fade-left">
+                            <i class="bi bi-building me-2"></i>Área do Admin
                         </a>
                     </div>
                 </div>
@@ -321,13 +321,8 @@
             <p class="lead mb-5">Simplifique a gestão dos recursos hídricos</p>
             <div class="row justify-content-center g-4">
                 <div class="col-md-5">
-                    <a href="{{ url_for('cadastro') }}" class="btn btn-action w-100">
+                    <a href="cadastro.html" class="btn btn-action w-100">
                         <i class="bi bi-person-plus me-2"></i>Cadastrar como Usuário
-                    </a>
-                </div>
-                <div class="col-md-5">
-                    <a href="{{ url_for('cadastro_empresa') }}" class="btn btn-action w-100">
-                        <i class="bi bi-building-add me-2"></i>Cadastrar como Empresa
                     </a>
                 </div>
             </div>
@@ -346,9 +341,9 @@
                 <div class="footer-section">
                     <h5>Links Rápidos</h5>
                     <ul class="footer-links">
-                        <li><a href="{{ url_for('sobre') }}">Sobre Nós</a></li>
+                        <li><a href="sobre.html">Sobre Nós</a></li>
                         <li><a href="#recursos">Como Funciona</a></li>
-                        <li><a href="{{ url_for('cadastro') }}">Cadastro</a></li>
+                        <li><a href="cadastro.html">Cadastro</a></li>
                         <li><a href="#contato">Contato</a></li>
                     </ul>
                 </div>

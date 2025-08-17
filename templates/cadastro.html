@@ -184,7 +184,7 @@
 <body>
     <div class="signup-card" data-aos="fade-up">
         <div class="text-center mb-4">
-            <a href="{{ url_for('pagina_inicial') }}" class="text-decoration-none">
+            <a href="index.html" class="text-decoration-none">
                 <i class="bi bi-droplet logo-icon"></i>
                 <h2 class="mt-3 mb-2">Criar Conta no Sensorium</h2>
                 <p class="text-muted mb-0">Preencha seus dados para começar</p>
@@ -192,23 +192,14 @@
         </div>
 
         <div class="mb-4">
-            <a href="{{ url_for('pagina_inicial') }}" class="link-secondary back-link">
+            <a href="index.html" class="link-secondary back-link">
                 <i class="bi bi-arrow-left me-2"></i>Voltar à Página Inicial
             </a>
         </div>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show mb-4" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+        <div id="alert-container"></div>
 
-        <form id="cadastroForm" action="{{ url_for('cadastro') }}" method="post">
+        <form id="cadastroForm">
             <div class="mb-4">
                 <label for="nome" class="form-label">Nome Completo</label>
                 <div class="input-group">
@@ -232,8 +223,6 @@
                            class="form-control" 
                            placeholder="000.000.000-00"
                            maxlength="14"
-                           pattern="\d{3}\.\d{3}\.\d{3}-\d{2}"
-                           title="Insira um CPF válido"
                            required>
                 </div>
             </div>
@@ -300,14 +289,14 @@
             </div>
 
             
-<button type="submit" class="btn btn-primary w-100 mb-4 btn-disabled" disabled id="btnCriarConta">
+            <button type="submit" class="btn btn-primary w-100 mb-4 btn-disabled" disabled id="btnCriarConta">
                 <i class="bi bi-person-plus me-2"></i>Criar Conta
             </button>
 
             <div class="text-center">
                 <p class="mb-0">
                     Já tem uma conta?
-                    <a href="{{ url_for('login_usuario') }}" class="link-secondary ms-1">Faça login aqui</a>
+                    <a href="login_usuario.html" class="link-secondary ms-1">Faça login aqui</a>
                 </p>
             </div>
         </form>
@@ -444,37 +433,108 @@
         });
     </script>
 
-<script>
-function togglePasswordVisibility() {
-    const senha = document.getElementById("senha");
-    const icon = document.getElementById("toggleSenhaIcon");
-    const tipo = senha.type === "password" ? "text" : "password";
-    senha.type = tipo;
-    if (tipo === "text") {
-        icon.classList.remove("bi-eye");
-        icon.classList.add("bi-eye-slash");
-    } else {
-        icon.classList.remove("bi-eye-slash");
-        icon.classList.add("bi-eye");
-    }
-}
-</script>
+    <script>
+        function togglePasswordVisibility() {
+            const senha = document.getElementById("senha");
+            const icon = document.getElementById("toggleSenhaIcon");
+            const tipo = senha.type === "password" ? "text" : "password";
+            senha.type = tipo;
+            if (tipo === "text") {
+                icon.classList.remove("bi-eye");
+                icon.classList.add("bi-eye-slash");
+            } else {
+                icon.classList.remove("bi-eye-slash");
+                icon.classList.add("bi-eye");
+            }
+        }
 
-<script>
-function toggleConfirmPasswordVisibility() {
-    const confirmacao = document.getElementById("confirmacao_senha");
-    const icon = document.getElementById("toggleConfirmSenhaIcon");
-    const tipo = confirmacao.type === "password" ? "text" : "password";
-    confirmacao.type = tipo;
-    if (tipo === "text") {
-        icon.classList.remove("bi-eye");
-        icon.classList.add("bi-eye-slash");
-    } else {
-        icon.classList.remove("bi-eye-slash");
-        icon.classList.add("bi-eye");
-    }
-}
-</script>
+        function toggleConfirmPasswordVisibility() {
+            const confirmacao = document.getElementById("confirmacao_senha");
+            const icon = document.getElementById("toggleConfirmSenhaIcon");
+            const tipo = confirmacao.type === "password" ? "text" : "password";
+            confirmacao.type = tipo;
+            if (tipo === "text") {
+                icon.classList.remove("bi-eye");
+                icon.classList.add("bi-eye-slash");
+            } else {
+                icon.classList.remove("bi-eye-slash");
+                icon.classList.add("bi-eye");
+            }
+        }
+    </script>
+
+    <script>
+        document.getElementById('cadastroForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const btn = document.getElementById('btnCriarConta');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Cadastrando...';
+
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.innerHTML = '';
+
+            const nome = document.getElementById('nome').value;
+            const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
+            const email = document.getElementById('email').value;
+            const endereco = document.getElementById('endereco').value;
+            const senha = document.getElementById('senha').value;
+
+            const data = {
+                nome,
+                cpf,
+                email,
+                endereco,
+                senha
+            };
+
+            try {
+                const response = await fetch('/api/v1/auth/registro', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    const alertHTML = `
+                        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                            <strong>Sucesso!</strong> Cadastro realizado. Você será redirecionado para o login.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>`;
+                    alertContainer.innerHTML = alertHTML;
+                    
+                    // Opcional: Salvar o token e redirecionar
+                    localStorage.setItem('accessToken', result.access_token);
+                    setTimeout(() => {
+                        window.location.href = 'login_usuario.html';
+                    }, 3000);
+
+                } else {
+                    const errorMessage = result.detail || 'Ocorreu um erro ao tentar cadastrar.';
+                    const alertHTML = `
+                        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                            <strong>Erro!</strong> ${errorMessage}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>`;
+                    alertContainer.innerHTML = alertHTML;
+                }
+            } catch (error) {
+                const alertHTML = `
+                    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                        <strong>Erro de conexão!</strong> Não foi possível se conectar ao servidor.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>`;
+                alertContainer.innerHTML = alertHTML;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-person-plus me-2"></i>Criar Conta';
+            }
+        });
+    </script>
 
 </body>
 </html>

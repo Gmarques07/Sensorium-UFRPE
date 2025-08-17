@@ -117,19 +117,12 @@
             color: var(--accent-color);
             transform: scale(1.1);
         }
-
-        @media (max-width: 576px) {
-            .login-card {
-                padding: 2rem;
-                margin: 1rem;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="login-card" data-aos="fade-up">
         <div class="text-center mb-4">
-            <a href="{{ url_for('pagina_inicial') }}" class="text-decoration-none">
+            <a href="index.html" class="text-decoration-none">
                 <i class="bi bi-shield-lock icon-shield"></i>
                 <h2 class="mt-3 text-primary">Acesso Administrativo</h2>
                 <p class="text-muted">Área restrita para administração</p>
@@ -137,13 +130,15 @@
         </div>
 
         <div class="mb-4">
-            <a href="{{ url_for('pagina_inicial') }}" class="link-secondary">
+            <a href="index.html" class="link-secondary">
                 <i class="bi bi-arrow-left"></i>
                 <span>Voltar à Página Inicial</span>
             </a>
         </div>
+        
+        <div id="alert-container"></div>
 
-        <form action="{{ url_for('login_admin') }}" method="post" data-aos="fade-up" data-aos-delay="200">
+        <form id="adminLoginForm" data-aos="fade-up" data-aos-delay="200">
             <div class="mb-4">
                 <label for="usuario-admin" class="form-label">
                     <i class="bi bi-person-badge me-2"></i>Usuário
@@ -152,7 +147,7 @@
                     <span class="input-group-text">
                         <i class="bi bi-person"></i>
                     </span>
-                    <input type="text" id="usuario-admin" name="usuario" class="form-control" 
+                    <input type="text" id="usuario-admin" name="username" class="form-control" 
                            placeholder="Usuário admin" required autocomplete="username">
                 </div>
             </div>
@@ -165,12 +160,12 @@
                     <span class="input-group-text">
                         <i class="bi bi-lock"></i>
                     </span>
-                    <input type="password" id="senha-admin" name="senha" class="form-control" 
+                    <input type="password" id="senha-admin" name="password" class="form-control" 
                            placeholder="••••••••" required autocomplete="current-password">
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100 mb-3">
+            <button type="submit" class="btn btn-primary w-100 mb-3" id="login-button">
                 <i class="bi bi-box-arrow-in-right"></i>
                 <span>Entrar</span>
             </button>
@@ -183,6 +178,50 @@
         AOS.init({
             duration: 800,
             once: true
+        });
+
+        document.getElementById('adminLoginForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            
+            const button = document.getElementById('login-button');
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.innerHTML = '';
+            button.disabled = true;
+            button.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Entrando...`;
+
+            const formData = new URLSearchParams();
+            formData.append('username', document.getElementById('usuario-admin').value);
+            formData.append('password', document.getElementById('senha-admin').value);
+
+            try {
+                const response = await fetch('/api/v1/admin/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('adminAccessToken', result.access_token);
+                    window.location.href = 'admin_dashboard.html';
+                } else {
+                    throw new Error(result.detail || 'Usuário ou senha inválidos.');
+                }
+
+            } catch (error) {
+                alertContainer.innerHTML = `
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <strong>Erro!</strong> ${error.message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+            } finally {
+                button.disabled = false;
+                button.innerHTML = `<i class="bi bi-box-arrow-in-right"></i><span>Entrar</span>`;
+            }
         });
     </script>
 </body>
