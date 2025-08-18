@@ -26,7 +26,7 @@ class Configuracao(ConfiguracaoBase):
     data_atualizacao: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class AdminDashboard(BaseModel):
     stats: DashboardStats

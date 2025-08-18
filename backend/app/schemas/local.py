@@ -2,6 +2,21 @@ from pydantic import BaseModel, Field, validator
 from datetime import datetime
 from typing import Optional, Literal
 
+class LocalBase(BaseModel):
+    nome: str = Field(..., max_length=100)
+    tipo: str = Field(..., max_length=50)  # CISTERNA, AQUARIO, CASA, etc
+    descricao: Optional[str] = Field(None, max_length=200)
+
+class LocalCreate(LocalBase):
+    pass
+
+class Local(LocalBase):
+    id: int
+    data_criacao: datetime
+
+    class Config:
+        from_attributes = True
+
 class PhNivelBase(BaseModel):
     ph: float = Field(..., ge=0, le=14, description="Nível de pH da água (0-14)")
     data: datetime = Field(default_factory=datetime.now)
@@ -19,7 +34,7 @@ class PhNivel(PhNivelBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class NivelAguaBase(BaseModel):
     boia: int = Field(..., ge=0, le=100, description="Nível da boia em porcentagem")
@@ -49,7 +64,7 @@ class NivelAgua(NivelAguaBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class DadosCisternaResponse(BaseModel):
     ph_atual: Optional[PhNivel]
@@ -58,4 +73,4 @@ class DadosCisternaResponse(BaseModel):
     historico_nivel: list[NivelAgua]
 
     class Config:
-        orm_mode = True
+        from_attributes = True

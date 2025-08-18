@@ -62,7 +62,7 @@ async def login(
     Raises:
         HTTPException: Se as credenciais forem inválidas
     """
-    usuario = crud_usuario.get_by_cpf(db, cpf=form_data.username)
+    usuario = crud_usuario.get_usuario_by_cpf(db, cpf=form_data.username)
     if not usuario:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -70,7 +70,7 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    if not verify_password(form_data.password, usuario.senha):
+    if not verify_password(form_data.password, usuario.senha_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="CPF ou senha incorretos",
@@ -96,21 +96,21 @@ async def registro(
     Registra um novo usuário e retorna um token de acesso.
     """
     # Verifica se o CPF já existe
-    if crud_usuario.get_by_cpf(db, cpf=usuario_in.cpf):
+    if crud_usuario.get_usuario_by_cpf(db, cpf=usuario_in.cpf):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="CPF já cadastrado"
         )
     
     # Verifica se o email já existe
-    if crud_usuario.get_by_email(db, email=usuario_in.email):
+    if crud_usuario.get_usuario_by_email(db, email=usuario_in.email):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email já cadastrado"
         )
     
     # Cria o usuário
-    usuario = crud_usuario.create(db, obj_in=usuario_in)
+    usuario = crud_usuario.create_usuario(db, usuario=usuario_in)
     
     # Gera o token de acesso
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -132,7 +132,7 @@ async def recuperar_senha(
     Inicia o processo de recuperação de senha.
     Envia um email com um token de recuperação.
     """
-    usuario = crud_usuario.get_by_email(db, email=email_in.email)
+    usuario = crud_usuario.get_usuario_by_email(db, email=email_in.email)
     if not usuario:
         # Sempre retorne sucesso para evitar enumeração de emails
         return {"message": "Se o email existir, você receberá as instruções de recuperação"}
@@ -165,7 +165,7 @@ async def resetar_senha(
             detail="Token inválido ou expirado"
         )
     
-    usuario = crud_usuario.get_by_cpf(db, cpf=token_data.cpf)
+    usuario = crud_usuario.get_usuario_by_cpf(db, cpf=token_data.cpf)
     if not usuario:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

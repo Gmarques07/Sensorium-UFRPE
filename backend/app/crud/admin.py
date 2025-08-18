@@ -1,10 +1,13 @@
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
-from ..models.admin import Configuracao
+from ..models.admin import Configuracao, Admin
 from ..schemas.admin import ConfiguracaoCreate, ConfiguracaoUpdate
 
 def get_configuracao(db: Session, chave: str) -> Optional[Configuracao]:
     return db.query(Configuracao).filter(Configuracao.chave == chave).first()
+
+def get_by_cpf(db: Session, cpf: str) -> Optional[Admin]:
+    return db.query(Admin).filter(Admin.cpf == cpf).first()
 
 def get_all_configuracoes(db: Session, skip: int = 0, limit: int = 100) -> List[Configuracao]:
     return db.query(Configuracao).offset(skip).limit(limit).all()

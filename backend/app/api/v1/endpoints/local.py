@@ -38,7 +38,7 @@ async def criar_local(
 
 @router.get(
     "/{local_id}/dados-atuais",
-    response_model=schemas.Leitura,
+    response_model=schemas.DadosCisternaResponse,
     status_code=status.HTTP_200_OK,
     summary="Dados Atuais do Local",
     response_description="Últimas leituras dos sensores do local",
@@ -56,11 +56,11 @@ async def obter_dados_atuais(
         local_id: ID do local
         
     Returns:
-        Leitura: Objeto contendo as últimas leituras
-            - local: Dados do local
-            - ph: Nível atual do pH (0-14)
-            - boia: Nível atual da água (0-100%)
-            - ultima_atualizacao: Data/hora da última leitura
+        DadosCisternaResponse: Objeto contendo as últimas leituras
+            - ph_atual: Nível atual do pH (0-14)
+            - nivel_atual: Nível atual da água (0-100%)
+            - historico_ph: Histórico de leituras de pH
+            - historico_nivel: Histórico de leituras de nível
             
     Raises:
         HTTPException:
@@ -72,107 +72,149 @@ async def obter_dados_atuais(
         >>> import requests
         >>> headers = {"Authorization": f"Bearer {token}"}
         >>> response = requests.get(
-        ...     "http://localhost:8000/api/v1/cisterna/dados-atuais",
+        ...     "http://localhost:8000/api/v1/locais/1/dados-atuais",
         ...     headers=headers
         ... )
         >>> dados = response.json()
     """
-    return crud_cisterna.get_ultima_leitura(db)
+    # TODO: Verificar se o usuário tem acesso ao local
+    ph_atual, historico_ph, nivel_atual, historico_nivel = crud_local.obter_dados_cisterna(db)
+    return schemas.DadosCisternaResponse(
+        ph_atual=ph_atual,
+        nivel_atual=nivel_atual,
+        historico_ph=historico_ph,
+        historico_nivel=historico_nivel
+    )
 
 @router.get(
-    "/historico",
-    response_model=List[schemas.CisternaLeitura],
+    "/{local_id}/historico-ph",
+    response_model=List[schemas.PhNivel],
     status_code=status.HTTP_200_OK,
-    summary="Histórico de Leituras",
-    response_description="Lista de leituras dos sensores da cisterna",
-    tags=["cisterna"]
+    summary="Histórico de Leituras de pH",
+    response_description="Lista de leituras de pH do local",
+    tags=["locais"]
 )
-async def obter_historico(
-    periodo: int = 7,
+async def obter_historico_ph(
+    local_id: int,
+    limite: int = 10,
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
 ) -> Any:
     """
-    Retorna o histórico de leituras dos sensores da cisterna.
+    Retorna o histórico de leituras de pH do local.
     
     Args:
-        periodo: Número de dias para retornar o histórico (padrão: 7)
+        local_id: ID do local
+        limite: Número de registros para retornar (padrão: 10)
         
     Returns:
-        List[CisternaLeitura]: Lista de leituras dos sensores
-            - nivel_agua: Nível da água (%)
-            - ph: Nível do pH
-            - temperatura: Temperatura (°C)
-            - data_hora: Data/hora da leitura
-            
+        List[PhNivel]: Lista de leituras de pH
+        
     Raises:
         HTTPException:
             - 401: Usuário não autenticado
             - 404: Dados não encontrados
-            
-    Examples:
-        >>> # Python
-        >>> import requests
-        >>> headers = {"Authorization": f"Bearer {token}"}
-        >>> params = {"periodo": 30}  # Últimos 30 dias
-        >>> response = requests.get(
-        ...     "http://localhost:8000/api/v1/cisterna/historico",
-        ...     headers=headers,
-        ...     params=params
-        ... )
-        >>> historico = response.json()
     """
-    return crud_cisterna.get_historico(db, periodo)
+    # TODO: Verificar se o usuário tem acesso ao local
+    return crud_local.obter_historico_ph(db, limite)
 
-@router.post(
-    "/registrar-leitura",
-    response_model=schemas.CisternaLeitura,
-    status_code=status.HTTP_201_CREATED,
-    summary="Registrar Nova Leitura",
-    response_description="Leitura registrada com sucesso",
-    tags=["cisterna"]
+@router.get(
+    "/{local_id}/historico-nivel",
+    response_model=List[schemas.NivelAgua],
+    status_code=status.HTTP_200_OK,
+    summary="Histórico de Leituras de Nível",
+    response_description="Lista de leituras de nível do local",
+    tags=["locais"]
 )
-async def registrar_leitura(
-    leitura: schemas.CisternaLeituraCreate,
+async def obter_historico_nivel(
+    local_id: int,
+    limite: int = 10,
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
 ) -> Any:
     """
-    Registra uma nova leitura dos sensores da cisterna.
+    Retorna o histórico de leituras de nível do local.
     
     Args:
-        leitura: Dados da nova leitura
-            - nivel_agua: Nível da água (%)
-            - ph: Nível do pH
-            - temperatura: Temperatura (°C)
+        local_id: ID do local
+        limite: Número de registros para retornar (padrão: 10)
+        
+    Returns:
+        List[NivelAgua]: Lista de leituras de nível
+        
+    Raises:
+        HTTPException:
+            - 401: Usuário não autenticado
+            - 404: Dados não encontrados
+    """
+    # TODO: Verificar se o usuário tem acesso ao local
+    return crud_local.obter_historico_nivel(db, limite)
+
+@router.post(
+    "/{local_id}/registrar-ph",
+    response_model=schemas.PhNivel,
+    status_code=status.HTTP_201_CREATED,
+    summary="Registrar Nova Leitura de pH",
+    response_description="Leitura de pH registrada com sucesso",
+    tags=["locais"]
+)
+async def registrar_leitura_ph(
+    local_id: int,
+    leitura: schemas.PhNivelCreate,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+) -> Any:
+    """
+    Registra uma nova leitura de pH do local.
+    
+    Args:
+        local_id: ID do local
+        leitura: Dados da nova leitura de pH
+            - ph: Nível do pH (0-14)
             
     Returns:
-        CisternaLeitura: Objeto com a leitura registrada
+        PhNivel: Objeto com a leitura registrada
         
     Raises:
         HTTPException:
             - 401: Usuário não autenticado
             - 400: Dados inválidos
-            
-    Examples:
-        >>> # Python
-        >>> import requests
-        >>> headers = {"Authorization": f"Bearer {token}"}
-        >>> dados = {
-        ...     "nivel_agua": 85.5,
-        ...     "ph": 7.2,
-        ...     "temperatura": 25.3
-        ... }
-        >>> response = requests.post(
-        ...     "http://localhost:8000/api/v1/cisterna/registrar-leitura",
-        ...     headers=headers,
-        ...     json=dados
-        ... )
-        >>> leitura = response.json()
     """
-    if not current_user.tipo == "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Apenas administradores podem registrar leituras"
-        )
-    return crud_cisterna.create_leitura(db, leitura)
+    # TODO: Verificar se o usuário tem acesso ao local
+    # TODO: Verificar se o usuário tem permissão para registrar leituras
+    return crud_local.criar_ph_nivel(db, leitura)
+
+@router.post(
+    "/{local_id}/registrar-nivel",
+    response_model=schemas.NivelAgua,
+    status_code=status.HTTP_201_CREATED,
+    summary="Registrar Nova Leitura de Nível",
+    response_description="Leitura de nível registrada com sucesso",
+    tags=["locais"]
+)
+async def registrar_leitura_nivel(
+    local_id: int,
+    leitura: schemas.NivelAguaCreate,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+) -> Any:
+    """
+    Registra uma nova leitura de nível do local.
+    
+    Args:
+        local_id: ID do local
+        leitura: Dados da nova leitura de nível
+            - boia: Nível da boia (0-100%)
+            - status: Status do nível (NORMAL, BAIXO, CRITICO)
+            
+    Returns:
+        NivelAgua: Objeto com a leitura registrada
+        
+    Raises:
+        HTTPException:
+            - 401: Usuário não autenticado
+            - 400: Dados inválidos
+    """
+    # TODO: Verificar se o usuário tem acesso ao local
+    # TODO: Verificar se o usuário tem permissão para registrar leituras
+    return crud_local.criar_nivel_agua(db, leitura)

@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from ....crud import admin as crud_admin
 from ....crud import usuario as crud_usuario
 from ....schemas import admin as schemas
+from ....schemas import usuario as usuario_schemas  # Importar o schema correto
 from ....api.deps import get_db, get_current_admin
 from ....models.usuario import Usuario
 
@@ -72,7 +73,7 @@ async def get_dashboard(
         "configuracoes": configuracoes
     }
 
-@router.get("/usuarios", response_model=List[Usuario])
+@router.get("/usuarios", response_model=List[usuario_schemas.Usuario])
 async def listar_usuarios(
     skip: int = 0,
     limit: int = 100,
@@ -135,7 +136,7 @@ async def deletar_configuracao(
     chave: str,
     db: Session = Depends(get_db),
     _: dict = Depends(get_current_admin)
-) -> Any:
+) -> None:
     """
     Remove uma configuração do sistema.
     """

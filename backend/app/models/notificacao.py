@@ -9,14 +9,14 @@ class Notificacao(Base):
     id = Column(Integer, primary_key=True, index=True)
     mensagem = Column(Text, nullable=False)
     data_criacao = Column(DateTime, default=datetime.utcnow, nullable=False)
-    pedido_id = Column(Integer, ForeignKey("pedidos.id"), nullable=False)
-    cpf_usuario = Column(String(11))
-    cnpj_empresa = Column(String(14))
+    local_id = Column(Integer, ForeignKey("locais.id"), nullable=True)
+    cpf_usuario = Column(String(11), nullable=True)
+    tipo = Column(String(50), nullable=False)  # NIVEL_BAIXO, PH_ALTERADO, MANUTENCAO, etc
     lida = Column(Boolean, default=False)
     data_leitura = Column(DateTime, nullable=True)
 
     # Relacionamentos
-    pedido = relationship("Pedido", back_populates="notificacoes")
+    local = relationship("Local", foreign_keys=[local_id])
 
 
 class NotificacaoAdmin(Base):

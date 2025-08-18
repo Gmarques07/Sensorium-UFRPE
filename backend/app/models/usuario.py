@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.sql import func
 from app.db.base_class import Base
-from werkzeug.security import generate_password_hash, check_password_hash
+from app.core.security import get_password_hash, verify_password
 
 class Usuario(Base):
     __tablename__ = "usuarios"
@@ -16,10 +16,10 @@ class Usuario(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     def set_senha(self, senha: str):
-        self.senha_hash = generate_password_hash(senha)
+        self.senha_hash = get_password_hash(senha)
 
     def verificar_senha(self, senha: str) -> bool:
-        return check_password_hash(self.senha_hash, senha)
+        return verify_password(senha, self.senha_hash)
 
     def to_dict(self):
         return {

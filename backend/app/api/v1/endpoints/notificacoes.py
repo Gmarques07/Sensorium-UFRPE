@@ -55,7 +55,7 @@ def listar_notificacoes(
         >>> notificacoes = response.json()
     """
     notificacoes = crud_notificacao.get_notificacoes_usuario(
-        db, current_user.id, skip=skip, limit=limit
+        db, current_user.cpf, skip=skip, limit=limit
     )
     return notificacoes
 
@@ -76,7 +76,7 @@ def listar_notificacoes_nao_lidas(
     Limita a 10 notificações mais recentes.
     """
     notificacoes = crud_notificacao.get_notificacoes_usuario(
-        db, current_user.id, limit=10
+        db, current_user.cpf, limit=10
     )
     return [n for n in notificacoes if not n.lida]
 

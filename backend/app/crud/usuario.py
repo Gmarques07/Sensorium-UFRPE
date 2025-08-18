@@ -15,6 +15,9 @@ def get_usuario_by_email(db: Session, email: str) -> Optional[Usuario]:
 def get_usuarios(db: Session, skip: int = 0, limit: int = 100) -> List[Usuario]:
     return db.query(Usuario).offset(skip).limit(limit).all()
 
+def get_multi(db: Session, skip: int = 0, limit: int = 100) -> List[Usuario]:
+    return db.query(Usuario).offset(skip).limit(limit).all()
+
 def create_usuario(db: Session, usuario: UsuarioCreate) -> Usuario:
     db_usuario = Usuario(
         cpf=usuario.cpf,
@@ -43,6 +46,14 @@ def update_usuario(
     for field, value in update_data.items():
         setattr(usuario, field, value)
 
+    db.add(usuario)
+    db.commit()
+    db.refresh(usuario)
+    return usuario
+
+def update_password(db: Session, usuario: Usuario, new_password: str) -> Usuario:
+    """Atualiza a senha do usuário"""
+    usuario.senha_hash = new_password  # A senha já deve vir hasheada
     db.add(usuario)
     db.commit()
     db.refresh(usuario)

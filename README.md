@@ -1,11 +1,6 @@
 # Sistema de Gerenciamento de Cisternas
 
-Este é um sistema web para gerenciamento de cisternas, monitoramento de níveis de água e qualidade (pH). O projeto está estruturado em duas partes:
-
-1. Frontend: Interface web desenvolvida em Flask (temporariamente)
-2. Backend: API RESTful moderna desenvolvida em FastAPI
-
-O sistema permite que usuários monitorem suas cisternas em tempo real, com uma interface web amigável e uma API robusta para integrações.
+Este é um sistema web para gerenciamento de cisternas, monitoramento de níveis de água e qualidade (pH). O projeto foi totalmente migrado para uma arquitetura moderna utilizando FastAPI.
 
 ## Funcionalidades Principais
 
@@ -34,27 +29,27 @@ O sistema permite que usuários monitorem suas cisternas em tempo real, com uma 
 
 ## Tecnologias Utilizadas
 
-- Python 3.x
-Frontend:
-- Flask (Framework Web)
-- Jinja2 (Templates)
-- Bootstrap (UI)
-
-Backend:
+### Backend (API)
 - FastAPI (Framework Web moderno e assíncrono)
 - Pydantic (Validação de dados)
 - SQLAlchemy (ORM)
 - JWT (Autenticação)
 - MySQL (Banco de Dados)
-- OpenCV (Processamento de Imagens)
-- HTML/CSS/JavaScript (Frontend)
+
+### Frontend (Interface Web)
+- HTML/CSS/JavaScript
 - Bootstrap (Framework CSS)
+- Jinja2 (Templates)
 
-## Requisitos
+### Outras
+- OpenCV (Processamento de Imagens) (descontinuado)
+- Docker (Containerização - opcional)
 
-- Python 3.x
+## Pré-requisitos
+
+- Python 3.7+
 - MySQL Server
-- Bibliotecas Python (listadas em requirements.txt)
+- Bibliotecas Python (listadas em backend/requirements.txt)
 
 ## Instalação
 
@@ -63,63 +58,88 @@ Backend:
 git clone [URL_DO_REPOSITORIO]
 ```
 
-2. Instale as dependências:
+2. Navegue até o diretório do backend:
+```bash
+cd backend
+```
+
+3. Crie um ambiente virtual (opcional mas recomendado):
+```bash
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
+```
+
+4. Instale as dependências:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Configure as variáveis de ambiente do banco de dados em `app.py`:
-```python
-db_config = {
-    'user': 'seu_usuario',
-    'password': 'sua_senha',
-    'host': 'seu_host',
-    'port': porta,
-    'database': 'nome_do_banco'
-}
+5. Configure as variáveis de ambiente:
+```bash
+cp .env.example .env
+```
+Edite o arquivo `.env` com as configurações do seu banco de dados.
+
+6. Configure o MySQL Server (verifique as instruções detalhadas em `backend/README.md`)
+
+7. Inicialize o banco de dados:
+```bash
+python init_db.py
 ```
 
-4. Execute as migrações do banco de dados (os scripts estão na pasta database/schemas)
-
-5. Inicie o servidor:
+8. Inicie o servidor:
 ```bash
-python app.py
+python start_server.py --reload
 ```
 
 ## Estrutura do Projeto
 
 ```
-Projeto/
-├── app/
-│   ├── models/
-│   ├── routes/
-│   ├── services/
+Sensorium-UFRPE/
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── deps.py
+│   │   │   └── v1/
+│   │   │       ├── endpoints/
+│   │   │       └── __init__.py
+│   │   ├── core/
+│   │   ├── crud/
+│   │   ├── db/
+│   │   ├── models/
+│   │   ├── schemas/
+│   │   └── main.py
 │   ├── static/
-│   │   ├── css/
-│   │   ├── img/
-│   │   ├── js/
-│   │   └── uploads/
 │   ├── templates/
-│   └── utils/
-├── database/
-│   ├── migrations/
-│   └── schemas/
-├── docs/
+│   ├── init_db.py
+│   ├── main.py
+│   ├── start_server.py
+│   ├── check_mysql.py
+│   ├── requirements.txt
+│   └── .env.example
 ├── static/
 ├── templates/
-├── tests/
-├── app.py
+├── ATUALIZACAO_MIGRACAO.md
+├── MIGRACAO_FLASK_FASTAPI.md
+├── README.md
 └── requirements.txt
 ```
 
+## Documentação da API
+
+A documentação automática da API está disponível em:
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+
 ## Funcionalidades de Segurança
 
-- Autenticação de usuários e empresas
-- Senhas criptografadas
+- Autenticação JWT
+- Senhas criptografadas com bcrypt
 - Controle de acesso baseado em perfis
-- Validação de dados de entrada
+- Validação de dados de entrada com Pydantic
 - Proteção contra uploads maliciosos
-- Sessões seguras
+- CORS configurado
 
 ## Processamento de Imagens
 
@@ -138,8 +158,8 @@ O sistema utiliza OpenCV para:
 
 ## Licença
 
-Este projeto está sob a licença [INSERIR_LICENÇA]. Veja o arquivo `LICENSE` para mais detalhes.
+Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
 
 ## Suporte
 
-Para suporte, envie um email para [INSERIR_EMAIL] ou abra uma issue no repositório.
+Para suporte, abra uma issue no repositório ou consulte a documentação em `backend/README.md`.

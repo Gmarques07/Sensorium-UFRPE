@@ -1,8 +1,19 @@
 from typing import List, Optional, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
-from app.models.cisterna import PhNivel, NivelAgua
-from app.schemas.cisterna import PhNivelCreate, NivelAguaCreate
+from app.models.local import PhNivel, NivelAgua, Local  # Importar o modelo Local
+from app.schemas.local import PhNivelCreate, NivelAguaCreate, LocalCreate  # Importar o schema Local
+
+def criar_local(db: Session, local: LocalCreate) -> Local:
+    db_local = Local(
+        nome=local.nome,
+        tipo=local.tipo,
+        descricao=local.descricao
+    )
+    db.add(db_local)
+    db.commit()
+    db.refresh(db_local)
+    return db_local
 
 def criar_ph_nivel(db: Session, ph: PhNivelCreate) -> PhNivel:
     db_ph = PhNivel(ph=ph.ph)

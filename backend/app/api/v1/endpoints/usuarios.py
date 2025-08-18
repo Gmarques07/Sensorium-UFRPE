@@ -93,7 +93,7 @@ def editar_perfil(
     """
     # Se estiver atualizando o email, verifica se já existe
     if dados_atualizacao.email and dados_atualizacao.email != current_user.email:
-        usuario_existente = crud_usuario.get_by_email(db, email=dados_atualizacao.email)
+        usuario_existente = crud_usuario.get_usuario_by_email(db, email=dados_atualizacao.email)
         if usuario_existente:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,

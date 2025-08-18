@@ -22,10 +22,10 @@ class UsuarioInDB(UsuarioBase):
     created_at: datetime
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class Usuario(UsuarioBase):
     id: int
     
     class Config:
-        orm_mode = True
+        from_attributes = True

@@ -7,22 +7,20 @@ from ..schemas.notificacao import NotificacaoCreate, NotificacaoUpdate
 def get_notificacao(db: Session, notificacao_id: int) -> Optional[Notificacao]:
     return db.query(Notificacao).filter(Notificacao.id == notificacao_id).first()
 
-def get_notificacoes_usuario(db: Session, id_usuario: int, skip: int = 0, limit: int = 10) -> List[Notificacao]:
+def get_notificacoes_usuario(db: Session, cpf_usuario: str, skip: int = 0, limit: int = 10) -> List[Notificacao]:
     return (
         db.query(Notificacao)
-        .join(Notificacao.pedido)
-        .filter(Notificacao.cpf_usuario == id_usuario)
+        .filter(Notificacao.cpf_usuario == cpf_usuario)
         .order_by(Notificacao.data_criacao.desc())
         .offset(skip)
         .limit(limit)
         .all()
     )
 
-def get_notificacoes_empresa(db: Session, cnpj: str, skip: int = 0, limit: int = 10) -> List[Notificacao]:
+def get_notificacoes_por_local(db: Session, local_id: int, skip: int = 0, limit: int = 10) -> List[Notificacao]:
     return (
         db.query(Notificacao)
-        .join(Notificacao.pedido)
-        .filter(Notificacao.cnpj_empresa == cnpj)
+        .filter(Notificacao.local_id == local_id)
         .order_by(Notificacao.data_criacao.desc())
         .offset(skip)
         .limit(limit)
@@ -32,9 +30,9 @@ def get_notificacoes_empresa(db: Session, cnpj: str, skip: int = 0, limit: int =
 def create_notificacao(db: Session, notificacao: NotificacaoCreate) -> Notificacao:
     db_notificacao = Notificacao(
         mensagem=notificacao.mensagem,
-        pedido_id=notificacao.pedido_id,
+        local_id=notificacao.local_id,
         cpf_usuario=notificacao.cpf_usuario,
-        cnpj_empresa=notificacao.cnpj_empresa
+        tipo=notificacao.tipo
     )
     db.add(db_notificacao)
     db.commit()

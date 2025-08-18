@@ -4,9 +4,9 @@ from pydantic import BaseModel
 
 class NotificacaoBase(BaseModel):
     mensagem: str
-    pedido_id: int
+    local_id: Optional[int] = None
     cpf_usuario: Optional[str] = None
-    cnpj_empresa: Optional[str] = None
+    tipo: str
 
 class NotificacaoCreate(NotificacaoBase):
     pass
@@ -22,7 +22,7 @@ class Notificacao(NotificacaoBase):
     data_leitura: Optional[datetime] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class NotificacaoAdmin(BaseModel):
     id: int
@@ -34,4 +34,4 @@ class NotificacaoAdmin(BaseModel):
     data_leitura: Optional[datetime] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
