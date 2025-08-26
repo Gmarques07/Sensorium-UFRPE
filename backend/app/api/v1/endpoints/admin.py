@@ -3,6 +3,7 @@ from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from ....crud import admin as crud_admin
 from ....crud import usuario as crud_usuario
 from ....schemas import admin as schemas
@@ -114,8 +115,8 @@ async def get_dashboard(
     
     # Obtém últimas notificações
     ultimas_notificacoes = db.execute(
-        """SELECT * FROM notificacoes 
-           ORDER BY data_criacao DESC LIMIT 5"""
+        text("""SELECT * FROM notificacoes 
+           ORDER BY data_criacao DESC LIMIT 5""")
     ).fetchall()
     
     # Obtém usuários recentes
