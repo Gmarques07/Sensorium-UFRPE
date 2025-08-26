@@ -87,6 +87,30 @@ async def obter_dados_atuais(
     )
 
 @router.get(
+    "/dados-atuais",
+    response_model=schemas.DadosCisternaResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Dados Atuais (Compatibilidade)",
+    response_description="Últimas leituras dos sensores (endpoint de compatibilidade)",
+    tags=["locais"]
+)
+async def obter_dados_atuais_compatibilidade(
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+) -> Any:
+    """
+    Endpoint de compatibilidade para obter dados atuais.
+    Retorna os dados do primeiro local disponível.
+    """
+    ph_atual, historico_ph, nivel_atual, historico_nivel = crud_local.obter_dados_cisterna(db)
+    return schemas.DadosCisternaResponse(
+        ph_atual=ph_atual,
+        nivel_atual=nivel_atual,
+        historico_ph=historico_ph,
+        historico_nivel=historico_nivel
+    )
+
+@router.get(
     "/{local_id}/historico-ph",
     response_model=List[schemas.PhNivel],
     status_code=status.HTTP_200_OK,

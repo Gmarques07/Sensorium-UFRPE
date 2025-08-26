@@ -60,6 +60,29 @@ def listar_notificacoes(
     return notificacoes
 
 @router.get(
+    "/listar",
+    response_model=List[schemas.Notificacao],
+    status_code=status.HTTP_200_OK,
+    summary="Listar Notificações do Usuário (Compatibilidade)",
+    response_description="Lista paginada de notificações do usuário",
+    tags=["notificações"]
+)
+def listar_notificacoes_compatibilidade(
+    skip: int = 0,
+    limit: int = 10,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    """
+    Endpoint de compatibilidade para listar notificações do usuário.
+    Alias para o endpoint raiz /.
+    """
+    notificacoes = crud_notificacao.get_notificacoes_usuario(
+        db, current_user.cpf, skip=skip, limit=limit
+    )
+    return notificacoes
+
+@router.get(
     "/nao-lidas",
     response_model=List[schemas.Notificacao],
     status_code=status.HTTP_200_OK,
