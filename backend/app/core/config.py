@@ -1,6 +1,10 @@
 from pydantic_settings import BaseSettings
 from typing import List
 import os
+from dotenv import load_dotenv
+
+# Carregar variáveis de ambiente do arquivo .env
+load_dotenv()
 
 class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"

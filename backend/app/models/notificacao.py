@@ -16,7 +16,7 @@ class Notificacao(Base):
     data_leitura = Column(DateTime, nullable=True)
 
     # Relacionamentos
-    local = relationship("Local", foreign_keys=[local_id])
+    local = relationship("Local", foreign_keys=[local_id], overlaps="notificacoes")
 
 
 class NotificacaoAdmin(Base):
