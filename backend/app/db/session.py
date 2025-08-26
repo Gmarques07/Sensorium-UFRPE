@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 from app.core.config import settings
 
 SQLALCHEMY_DATABASE_URL = (
-    f"mysql://{settings.MYSQL_USER}:{settings.MYSQL_PASSWORD}@"
+    f"mysql+mysqlconnector://{settings.MYSQL_USER}:{settings.MYSQL_PASSWORD}@"
     f"{settings.MYSQL_HOST}:{settings.MYSQL_PORT}/{settings.MYSQL_DATABASE}"
 )
 
