@@ -21,11 +21,22 @@ def run_command(command, description):
     try:
         result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
         print(f"✅ {description} - Sucesso!")
+        if result.stdout.strip():
+            print(f"   Saída: {result.stdout.strip()}")
         return True
     except subprocess.CalledProcessError as e:
         print(f"❌ {description} - Erro:")
         print(f"   Comando: {command}")
-        print(f"   Erro: {e.stderr}")
+        if e.stdout.strip():
+            print(f"   Saída: {e.stdout.strip()}")
+        if e.stderr.strip():
+            print(f"   Erro: {e.stderr.strip()}")
+        
+        # Verifica se é apenas um aviso sobre atualização do pip
+        if "To update, run" in e.stderr and "pip" in description:
+            print(f"   ⚠️  Aviso sobre atualização do pip - Continuando...")
+            return True
+        
         return False
 
 def check_python_version():
@@ -57,18 +68,16 @@ def install_dependencies():
     
     # Ativa o ambiente virtual e instala dependências
     if os.name == 'nt':  # Windows
-        activate_cmd = "venv\\Scripts\\activate"
-        pip_cmd = "venv\\Scripts\\pip"
+        python_cmd = "venv\\Scripts\\python.exe"
     else:  # Linux/Mac
-        activate_cmd = "source venv/bin/activate"
-        pip_cmd = "venv/bin/pip"
+        python_cmd = "venv/bin/python"
     
     # Atualiza pip
-    if not run_command(f"{pip_cmd} install --upgrade pip", "Atualizando pip"):
+    if not run_command(f"{python_cmd} -m pip install --upgrade pip", "Atualizando pip"):
         return False
     
     # Instala dependências
-    if not run_command(f"{pip_cmd} install -r requirements.txt", "Instalando dependências"):
+    if not run_command(f"{python_cmd} -m pip install -r requirements.txt", "Instalando dependências"):
         return False
     
     return True
@@ -126,7 +135,8 @@ def test_installation():
     
     # Testa conexão com banco de dados
     if os.path.exists("test_db_connection.py"):
-        if run_command("python test_db_connection.py", "Testando conexão com banco de dados"):
+        python_cmd = "venv\\Scripts\\python.exe" if os.name == 'nt' else "venv/bin/python"
+        if run_command(f"{python_cmd} test_db_connection.py", "Testando conexão com banco de dados"):
             print("✅ Conexão com banco de dados funcionando!")
         else:
             print("⚠️  Problema na conexão com banco de dados. Verifique as configurações no .env")
