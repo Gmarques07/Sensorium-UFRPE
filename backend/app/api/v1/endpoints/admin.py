@@ -1,14 +1,72 @@
 from typing import Any, List
+from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from ....crud import admin as crud_admin
 from ....crud import usuario as crud_usuario
 from ....schemas import admin as schemas
 from ....schemas import usuario as usuario_schemas  # Importar o schema correto
+from ....schemas import auth as auth_schemas
 from ....api.deps import get_db, get_current_admin
 from ....models.usuario import Usuario
+from ....models.admin import Admin
+from ....core.security import create_access_token, verify_password
+from ....core.config import settings
 
 router = APIRouter()
+
+@router.post("/login", response_model=auth_schemas.Token, status_code=status.HTTP_200_OK,
+             summary="Login de administrador",
+             description="Endpoint para autenticação de administrador usando OAuth2 com JWT",
+             response_description="Token de acesso JWT",
+             tags=["admin"])
+async def admin_login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db)
+) -> Any:
+    """
+    Realiza o login do administrador usando OAuth2 com JWT.
+    
+    Args:
+        form_data: Formulário com username (email) e senha
+        db: Sessão do banco de dados
+        
+    Returns:
+        Token JWT para autenticação
+        
+    Raises:
+        HTTPException:
+            - 401: Credenciais inválidas
+            - 400: Administrador inativo
+    """
+    # Busca o admin pelo email
+    admin = db.query(Admin).filter(Admin.email == form_data.username).first()
+    if not admin:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Email ou senha incorretos",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Verifica a senha
+    if not admin.verificar_senha(form_data.password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Email ou senha incorretos",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Gera o token de acesso
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": admin.email, "type": "admin"}, expires_delta=access_token_expires
+    )
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
 
 @router.get(
     "/dashboard",

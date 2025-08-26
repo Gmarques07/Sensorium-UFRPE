@@ -53,13 +53,15 @@ def get_current_admin(
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=["HS256"]
         )
-        cpf: str = payload.get("sub")
-        if cpf is None:
+        email: str = payload.get("sub")
+        token_type: str = payload.get("type")
+        
+        if email is None or token_type != "admin":
             raise credentials_exception
-        token_data = schemas.auth.TokenData(cpf=cpf)
     except JWTError:
         raise credentials_exception
-    admin = crud.admin.get_by_cpf(db, cpf=token_data.cpf)
+    
+    admin = db.query(Admin).filter(Admin.email == email).first()
     if admin is None:
         raise credentials_exception
     return admin
