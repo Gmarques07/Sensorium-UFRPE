@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     
     @property
     def DATABASE_URL(self) -> str:
-        return f"mysql+mysqlconnector://{self.MYSQL_USER}:{self.MYSQL_PASSWORD}@{self.MYSQL_HOST}:{self.MYSQL_PORT}/{self.MYSQL_DATABASE}"
+        return f"mysql+mysqlconnector://{self.MYSQL_USER}:{self.MYSQL_PASSWORD}@{self.MYSQL_HOST}:{self.MYSQL_PORT}/{self.MYSQL_DATABASE}?auth_plugin=mysql_native_password&charset=utf8mb4"
     
     # Configuração JWT
     SECRET_KEY: str = os.getenv("SECRET_KEY", "sua_chave_secreta_aqui_deve_ser_bem_longa_e_segura")
