@@ -125,13 +125,32 @@ async def get_dashboard(
     
     # Obtém usuários recentes
     try:
-        usuarios_recentes = crud_usuario.get_multi(db, limit=5)
+        usuarios_objs = crud_usuario.get_multi(db, limit=5)
+        usuarios_recentes = [
+            {
+                "id": u.id,
+                "nome": u.nome,
+                "email": u.email,
+                "cpf": u.cpf,
+                "endereco": u.endereco,
+                "data_criacao": u.data_criacao
+            } for u in usuarios_objs
+        ]
     except Exception:
         usuarios_recentes = []
     
     # Obtém configurações
     try:
-        configuracoes = crud_admin.get_all_configuracoes(db, limit=10)
+        config_objs = crud_admin.get_all_configuracoes(db, limit=10)
+        configuracoes = [
+            {
+                "id": c.id,
+                "chave": c.chave,
+                "valor": c.valor,
+                "descricao": c.descricao,
+                "data_criacao": c.data_criacao
+            } for c in config_objs
+        ]
     except Exception:
         configuracoes = []
     

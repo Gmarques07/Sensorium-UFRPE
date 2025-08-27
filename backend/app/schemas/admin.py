@@ -32,4 +32,4 @@ class AdminDashboard(BaseModel):
     stats: DashboardStats
     ultimas_notificacoes: List[dict]
     usuarios_recentes: List[dict]
-    configuracoes: List[Configuracao]
+    configuracoes: List[dict]
