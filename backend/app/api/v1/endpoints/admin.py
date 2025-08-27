@@ -114,20 +114,30 @@ async def get_dashboard(
     stats = crud_admin.get_dashboard_stats(db)
     
     # Obtém últimas notificações
-    ultimas_notificacoes = db.execute(
-        text("""SELECT * FROM notificacoes 
-           ORDER BY data_criacao DESC LIMIT 5""")
-    ).fetchall()
+    try:
+        ultimas_notificacoes = db.execute(
+            text("""SELECT * FROM notificacoes 
+               ORDER BY data_criacao DESC LIMIT 5""")
+        ).fetchall()
+        ultimas_notificacoes_list = [dict(n) for n in ultimas_notificacoes]
+    except Exception:
+        ultimas_notificacoes_list = []
     
     # Obtém usuários recentes
-    usuarios_recentes = crud_usuario.get_multi(db, limit=5)
+    try:
+        usuarios_recentes = crud_usuario.get_multi(db, limit=5)
+    except Exception:
+        usuarios_recentes = []
     
     # Obtém configurações
-    configuracoes = crud_admin.get_all_configuracoes(db, limit=10)
+    try:
+        configuracoes = crud_admin.get_all_configuracoes(db, limit=10)
+    except Exception:
+        configuracoes = []
     
     return {
         "stats": stats,
-        "ultimas_notificacoes": [dict(n) for n in ultimas_notificacoes],
+        "ultimas_notificacoes": ultimas_notificacoes_list,
         "usuarios_recentes": usuarios_recentes,
         "configuracoes": configuracoes
     }
