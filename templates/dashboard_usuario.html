@@ -341,7 +341,7 @@
     <div class="row g-0">
       <!-- Sidebar -->
       <nav class="sidebar col-auto">
-        <a href="index.html" class="d-flex align-items-center text-decoration-none text-white mb-4" data-aos="fade-right">
+        <a href="{{ url_for('homepage') }}" class="d-flex align-items-center text-decoration-none text-white mb-4" data-aos="fade-right">
           <i class="bi bi-droplet fs-1"></i>
           <span class="brand-text fs-4 ms-2">Sensorium</span>
         </a>
@@ -514,7 +514,7 @@
                             </span>
                             <p class="text-muted mt-3 mb-0">
                               <i class="bi bi-clock me-1"></i>
-                              Última atualização: {{ ph.data|dateformat }}
+                              Última atualização: {{ ph.data }}
                             </p>
                           </div>
                           <div class="mt-4">
@@ -556,7 +556,7 @@
                             </div>
                             <p class="text-muted mt-4 mb-0">
                               <i class="bi bi-clock me-1"></i>
-                              Última atualização: {{ nivel.data|dateformat }}
+                              Última atualização: {{ nivel.data }}
                             </p>
                           </div>
                           <div class="mt-4">
@@ -584,7 +584,7 @@
                         <ul class="list-group list-group-flush">
                           {% for item in ph_por_dispositivo[disp.dispositivo]['historico'] %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                              <span><i class="bi bi-calendar me-2"></i>{{ item.data|dateformat }}</span>
+                              <span><i class="bi bi-calendar me-2"></i>{{ item.data }}</span>
                               <span class="badge bg-primary">pH {{ item.ph }}</span>
                             </li>
                           {% else %}
@@ -603,7 +603,7 @@
                         <ul class="list-group list-group-flush">
                           {% for item in nivel_por_dispositivo[disp.dispositivo]['historico'] %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                              <span><i class="bi bi-calendar me-2"></i>{{ item.data|dateformat }}</span>
+                                                              <span><i class="bi bi-calendar me-2"></i>{{ item.data }}</span>
                               <span class="badge {% if item.status == 'ALTO' %}bg-success{% else %}bg-warning{% endif %}">{{ item.status }}</span>
                             </li>
                           {% else %}
@@ -644,7 +644,7 @@
               {% for disp in dispositivos %}
                 historicoPh['{{ disp.dispositivo|replace(' ', '_') }}'] = {
                   labels: [
-                    {% for item in ph_por_dispositivo[disp.dispositivo]['historico']|reverse %}'{{ item.data|dateformat }}'{% if not loop.last %},{% endif %}{% endfor %}
+                    {% for item in ph_por_dispositivo[disp.dispositivo]['historico']|reverse %}'{{ item.data }}'{% if not loop.last %},{% endif %}{% endfor %}
                   ],
                   data: [
                     {% for item in ph_por_dispositivo[disp.dispositivo]['historico']|reverse %}{{ item.ph }}{% if not loop.last %},{% endif %}{% endfor %}
@@ -652,7 +652,7 @@
                 };
                 historicoNivel['{{ disp.dispositivo|replace(' ', '_') }}'] = {
                   labels: [
-                    {% for item in nivel_por_dispositivo[disp.dispositivo]['historico']|reverse %}'{{ item.data|dateformat }}'{% if not loop.last %},{% endif %}{% endfor %}
+                    {% for item in nivel_por_dispositivo[disp.dispositivo]['historico']|reverse %}'{{ item.data }}'{% if not loop.last %},{% endif %}{% endfor %}
                   ],
                   data: [
                     {% for item in nivel_por_dispositivo[disp.dispositivo]['historico']|reverse %}

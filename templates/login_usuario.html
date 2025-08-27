@@ -167,7 +167,7 @@
 <body>
     <div class="login-card" data-aos="fade-up">
         <div class="text-center mb-4">
-            <a href="index.html" class="text-decoration-none">
+            <a href="{{ url_for('homepage') }}" class="text-decoration-none">
                 <i class="bi bi-droplet logo-icon"></i>
                 <h2 class="mt-3 mb-2">Bem-vindo ao Sensorium</h2>
                 <p class="text-muted mb-0">Acesse sua conta de usuário</p>
@@ -175,7 +175,7 @@
         </div>
 
         <div class="mb-4">
-            <a href="index.html" class="link-secondary back-link">
+            <a href="{{ url_for('homepage') }}" class="link-secondary back-link">
                 <i class="bi bi-arrow-left me-2"></i>Voltar à Página Inicial
             </a>
         </div>
@@ -222,7 +222,7 @@
             <div class="text-center">
                 <p class="mb-0">
                     Ainda não tem uma conta?
-                    <a href="cadastro.html" class="link-secondary ms-1">Cadastre-se aqui</a>
+                    <a href="{{ url_for('cadastro') }}" class="link-secondary ms-1">Cadastre-se aqui</a>
                 </p>
             </div>
         </form>
@@ -235,29 +235,100 @@
         // Inicialização do AOS
         AOS.init({ duration: 800, once: true });
 
+        // Função para formatar CPF ou CNPJ
+        function formatCPForCNPJ(value) {
+            // Remover tudo que não é dígito
+            value = value.replace(/\D/g, '');
+            
+            // Limitar o tamanho máximo (14 dígitos para CNPJ)
+            if (value.length > 14) {
+                value = value.substring(0, 14);
+            }
+            
+            let formattedValue = '';
+
+            if (value.length <= 11) {
+                // CPF: 000.000.000-00
+                if (value.length > 3) formattedValue += value.substring(0, 3) + '.';
+                if (value.length > 6) formattedValue += value.substring(3, 6) + '.';
+                if (value.length > 9) formattedValue += value.substring(6, 9) + '-';
+                formattedValue += value.substring(9, 11);
+            } else {
+                // CNPJ: 00.000.000/0000-00
+                if (value.length > 2) formattedValue += value.substring(0, 2) + '.';
+                if (value.length > 5) formattedValue += value.substring(2, 5) + '.';
+                if (value.length > 8) formattedValue += value.substring(5, 8) + '/';
+                if (value.length > 12) formattedValue += value.substring(8, 12) + '-';
+                formattedValue += value.substring(12, 14);
+            }
+            return formattedValue;
+        }
+
         // Formatação CPF ou CNPJ
         document.addEventListener('DOMContentLoaded', function() {
             const input = document.getElementById('cpf-cnpj-login');
 
-            input.addEventListener('input', function() {
-                let value = this.value.replace(/\D/g, '');
-                let formattedValue = '';
+            // Formatar quando o campo perde o foco
+            input.addEventListener('blur', function() {
+                this.value = formatCPForCNPJ(this.value);
+            });
 
-                if (value.length <= 11) {
-                    // CPF
-                    if (value.length > 3) formattedValue += value.substring(0, 3) + '.';
-                    if (value.length > 6) formattedValue += value.substring(3, 6) + '.';
-                    if (value.length > 9) formattedValue += value.substring(6, 9) + '-';
-                    formattedValue += value.substring(9, 11);
-                } else {
-                    // CNPJ
-                    if (value.length > 2) formattedValue += value.substring(0, 2) + '.';
-                    if (value.length > 5) formattedValue += value.substring(2, 5) + '.';
-                    if (value.length > 8) formattedValue += value.substring(5, 8) + '/';
-                    if (value.length > 12) formattedValue += value.substring(8, 12) + '-';
-                    formattedValue += value.substring(12, 14);
+            // Adicionar o evento de submit ao formulário
+            document.getElementById('loginForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const btn = document.getElementById('btnLogin');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Entrando...';
+                
+                const alertContainer = document.getElementById('alert-container');
+                alertContainer.innerHTML = '';
+                
+                const cpfCnpj = document.getElementById('cpf-cnpj-login').value;
+                const senha = document.getElementById('senha-login').value;
+                
+                const data = {
+                    cpf_cnpj: cpfCnpj,
+                    senha: senha
+                };
+                
+                try {
+                    const response = await fetch('/api/v1/auth/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        // Armazenar o token no localStorage
+                        localStorage.setItem('accessToken', result.access_token);
+                        
+                        // Redirecionar para o dashboard do usuário
+                        window.location.href = '/dashboard_usuario.html';
+                    } else {
+                        const errorMessage = result.detail || 'Ocorreu um erro ao tentar fazer login.';
+                        const alertHTML = `
+                            <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                                <strong>Erro!</strong> ${errorMessage}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>`;
+                        alertContainer.innerHTML = alertHTML;
+                    }
+                } catch (error) {
+                    const alertHTML = `
+                        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                            <strong>Erro de conexão!</strong> Não foi possível se conectar ao servidor.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>`;
+                    alertContainer.innerHTML = alertHTML;
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Entrar';
                 }
-                this.value = formattedValue;
             });
         });
 

@@ -20,17 +20,17 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 @router.post("/login", response_model=schemas_auth.Token, status_code=status.HTTP_200_OK,
              summary="Autenticação de usuário",
-             description="Endpoint para autenticação de usuário usando OAuth2 com JWT",
+             description="Endpoint para autenticação de usuário usando CPF/CNPJ e senha",
              response_description="Token de acesso JWT")
 async def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
+    login_data: schemas_auth.Login,
     db: Session = Depends(get_db)
 ) -> Any:
     """
-    Realiza o login do usuário usando OAuth2 com JWT.
+    Realiza o login do usuário usando CPF ou CNPJ e senha.
     
     Args:
-        form_data: Formulário com username (CPF) e senha
+        login_data: Dados de login contendo CPF/CNPJ e senha
         db: Sessão do banco de dados
         
     Returns:
@@ -43,37 +43,26 @@ async def login(
     
     Exemplos:
         >>> # Usando curl
-        >>> curl -X POST "http://localhost:8000/api/v1/auth/login" \
-        >>>      -H "Content-Type: application/x-www-form-urlencoded" \
-        >>>      -d "username=12345678900&password=minhasenha123"
-        
-        >>> # Usando Python requests
-        >>> import requests
-        >>> response = requests.post(
-        >>>     "http://localhost:8000/api/v1/auth/login",
-        >>>     data={"username": "12345678900", "password": "minhasenha123"}
-        >>> )
-        >>> token = response.json()["access_token"]
-        db: Sessão do banco de dados
-        
-    Returns:
-        Token de acesso JWT
-        
-    Raises:
-        HTTPException: Se as credenciais forem inválidas
+        >>> curl -X POST "http://localhost:8000/api/v1/auth/login" \\
+        >>>      -H "Content-Type: application/json" \\
+        >>>      -d '{"cpf_cnpj": "12345678900", "senha": "minhasenha123"}'
     """
-    usuario = crud_usuario.get_usuario_by_cpf(db, cpf=form_data.username)
+    # Remover caracteres não numéricos do CPF/CNPJ
+    cpf_cnpj_limpo = ''.join(filter(str.isdigit, login_data.cpf_cnpj))
+    
+    # Buscar usuário pelo CPF/CNPJ
+    usuario = crud_usuario.get_usuario_by_cpf(db, cpf=cpf_cnpj_limpo)
     if not usuario:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="CPF ou senha incorretos",
+            detail="CPF/CNPJ ou senha incorretos",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    if not verify_password(form_data.password, usuario.senha_hash):
+    if not verify_password(login_data.senha, usuario.senha_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="CPF ou senha incorretos",
+            detail="CPF/CNPJ ou senha incorretos",
             headers={"WWW-Authenticate": "Bearer"},
         )
     

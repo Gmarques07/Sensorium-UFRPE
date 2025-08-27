@@ -9,7 +9,7 @@ class TokenData(BaseModel):
     cpf: Optional[str] = None
 
 class Login(BaseModel):
-    cpf: constr(pattern=r'^\d{11}$')  # CPF com 11 dígitos
+    cpf_cnpj: str  # Aceita CPF ou CNPJ
     senha: str
 
 class RegistroUsuario(BaseModel):
