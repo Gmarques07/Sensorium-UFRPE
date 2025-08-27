@@ -350,14 +350,19 @@
             <i class="bi bi-house-door"></i>
             <span>Dashboard</span>
           </a>
-          <a class="nav-link" href="#notificacoes" onclick="showSection(event, 'notificacoes')" role="button" data-aos="fade-right" data-aos-delay="300">
-            <i class="bi bi-bell"></i>
-            <span>Notificações</span>
+
+          <!-- NOVO: Relatórios -->
+          <a class="nav-link" href="#relatorios" onclick="showSection(event, 'relatorios')" role="button" data-aos="fade-right" data-aos-delay="200">
+            <i class="bi bi-graph-up"></i>
+            <span>Relatórios</span>
           </a>
-          <a class="nav-link" href="#cisterna" onclick="showSection(event, 'cisterna')" role="button" data-aos="fade-right" data-aos-delay="500">
-            <i class="bi bi-info-circle"></i>
-            <span>Cisterna</span>
+
+          <!-- NOVO: Sensores -->
+          <a class="nav-link" href="#sensores" onclick="showSection(event, 'sensores')" role="button" data-aos="fade-right" data-aos-delay="300">
+            <i class="bi bi-cpu"></i>
+            <span>Sensores</span>
           </a>
+
           <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#modalEditarPerfil" role="button" data-aos="fade-right" data-aos-delay="600">
             <i class="bi bi-pencil"></i>
             <span>Editar Perfil</span>
@@ -371,90 +376,421 @@
 
       <!-- Main Content -->
       <main class="content col">
-       <header class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-down">
-        <div>
-            <h1 class="h3 text-primary fw-bold mb-0 placeholder-glow">
-                <span id="user-name">Carregando...</span>
-            </h1>
-            <p class="text-muted mb-0">Gerencie suas informações e monitore sua cisterna</p>
-        </div>
-        <div class="d-flex gap-2">
-            <button class="btn btn-outline-primary" onclick="window.location.reload()">
-                <i class="bi bi-arrow-clockwise me-2"></i>Atualizar
-            </button>
-        </div>
-       </header>
-       <div id="alert-container"></div>
-        <!-- Dashboard Section -->
+        <header class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-down">
+          <div>
+              <h1 class="h3 text-primary fw-bold mb-0">Bem-vindo(a), {{ usuario.nome }}!</h1>
+              <p class="text-muted mb-0">Visualize relatórios e monitore seus sensores</p>
+          </div>
+          <div class="d-flex gap-2">
+              <button class="btn btn-outline-primary" onclick="window.location.reload()">
+                  <i class="bi bi-arrow-clockwise me-2"></i>Atualizar
+              </button>
+          </div>
+        </header>
+
+        <!-- Dashboard Section (mantido) -->
         <section id="dashboard" class="section-panel active">
           <div class="row g-4">
             <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
               <div class="dashboard-card">
                 <div class="dashboard-icon">
-                  <i class="bi bi-droplet"></i>
+                  <i class="bi bi-cpu"></i>
                 </div>
-                <h2 class="h5 mb-3">Nível da Água</h2>
-                <div class="fs-2 fw-bold text-primary" id="nivel-agua">--</div>
-                <p class="text-muted mb-0">Status atual da cisterna</p>
+                <h2 class="h5 mb-3">Dispositivos Conectados</h2>
+                <div class="fs-2 fw-bold text-primary">{{ dispositivos|length if dispositivos else 0 }}</div>
+                <p class="text-muted mb-0">Total de dispositivos monitorados</p>
               </div>
             </div>
             <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
               <div class="dashboard-card">
                 <div class="dashboard-icon">
-                  <i class="bi bi-thermometer-half"></i>
+                  <i class="bi bi-activity"></i>
                 </div>
-                <h2 class="h5 mb-3">pH da Água</h2>
-                <div class="fs-2 fw-bold text-success" id="ph-agua">--</div>
-                <p class="text-muted mb-0">Qualidade da água</p>
+                <h2 class="h5 mb-3">Métricas Ativas</h2>
+                <div class="fs-2 fw-bold text-success">2</div>
+                <p class="text-muted mb-0">pH da água e nível</p>
               </div>
             </div>
             <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
               <div class="dashboard-card">
                 <div class="dashboard-icon">
-                  <i class="bi bi-bell"></i>
+                  <i class="bi bi-file-earmark-bar-graph"></i>
                 </div>
-                <h2 class="h5 mb-3">Notificações</h2>
-                <div class="fs-2 fw-bold text-primary" id="notificacoes-count">0</div>
-                <p class="text-muted mb-0">Alertas não lidos</p>
+                <h2 class="h5 mb-3">Relatórios</h2>
+                <div class="fs-5 fw-bold text-primary">
+                  Gere relatórios na aba Relatórios
+                </div>
+                <p class="text-muted mb-0">Exportação em CSV/PDF</p>
               </div>
             </div>
           </div>
         </section>
 
-        <!-- Notificacoes Section -->
-        <section id="notificacoes" class="section-panel">
+        <!-- NOVO: Relatórios Section -->
+        <section id="relatorios" class="section-panel">
           <div class="d-flex align-items-center mb-4" data-aos="fade-up">
-            <i class="bi bi-bell fs-2 text-primary me-3"></i>
+            <i class="bi bi-graph-up fs-2 text-primary me-3"></i>
             <div>
-              <h2 class="h4 mb-1">Notificações</h2>
-              <p class="text-muted mb-0">Alertas e informações importantes</p>
+              <h2 class="h4 mb-1">Relatórios</h2>
+              <p class="text-muted mb-0">Visualize e exporte relatórios de monitoramento</p>
             </div>
           </div>
-          <div class="list-group" id="notificacoes-list">
-              <div class="list-group-item text-center" data-aos="fade-up">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Carregando...</span>
+
+          <div class="card border-0 shadow-sm" data-aos="fade-up" data-aos-delay="100">
+            <div class="card-body">
+              <form id="formRelatorios" class="row gy-3 align-items-end">
+                <div class="col-md-4">
+                  <label for="inicio" class="form-label fw-semibold">
+                    <i class="bi bi-calendar-event me-2"></i>Data inicial
+                  </label>
+                  <input type="date" id="inicio" name="inicio" class="form-control" required>
                 </div>
-              </div>
+                <div class="col-md-4">
+                  <label for="fim" class="form-label fw-semibold">
+                    <i class="bi bi-calendar-check me-2"></i>Data final
+                  </label>
+                  <input type="date" id="fim" name="fim" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                  <label for="dispRel" class="form-label fw-semibold">
+                    <i class="bi bi-cpu me-2"></i>Dispositivo
+                  </label>
+                  <select id="dispRel" name="dispositivo" class="form-select">
+                    <option value="">Todos</option>
+                    {% for disp in dispositivos %}
+                      <option value="{{ disp.dispositivo }}">{{ disp.dispositivo }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-12 d-flex gap-2">
+                  <button type="button" id="btnExportCSV" class="btn btn-primary">
+                    <i class="bi bi-filetype-csv me-2"></i>Exportar CSV
+                  </button>
+                  <button type="button" id="btnExportPDF" class="btn btn-outline-primary">
+                    <i class="bi bi-filetype-pdf me-2"></i>Exportar PDF
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </section>
 
-        <!-- Cisterna Section -->
-        <section id="cisterna" class="section-panel">
+        <!-- NOVO: Sensores Section (baseado na antiga Cisterna) -->
+        <section id="sensores" class="section-panel">
           <div class="d-flex align-items-center mb-4" data-aos="fade-up">
-            <i class="bi bi-info-circle fs-2 text-primary me-3"></i>
+            <i class="bi bi-cpu fs-2 text-primary me-3"></i>
             <div>
-              <h2 class="h4 mb-1">Informações da Cisterna</h2>
+              <h2 class="h4 mb-1">Sensores</h2>
               <p class="text-muted mb-0">Monitoramento em tempo real</p>
             </div>
           </div>
-          <div id="cisterna-content">
-            <div class="text-center py-4">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Carregando...</span>
-                </div>
+
+          {% if dispositivos %}
+            <div class="mb-4">
+              <label for="selectDispositivo" class="form-label fw-semibold">Selecione o Dispositivo:</label>
+              <select class="form-select w-auto d-inline-block" id="selectDispositivo" onchange="mostrarDispositivoSelecionado()">
+                {% for disp in dispositivos %}
+                  <option value="{{ disp.dispositivo }}">{{ disp.dispositivo }}</option>
+                {% endfor %}
+              </select>
             </div>
-          </div>
+
+            {% for disp in dispositivos %}
+              <div class="dispositivo-panel" id="panel-{{ disp.dispositivo|replace(' ', '_') }}" style="display: {% if loop.first %}block{% else %}none{% endif %};">
+                <div class="row g-4">
+                  <!-- Card pH -->
+                  <div class="col-md-6 mb-4">
+                    <div class="card border-0 shadow-sm h-100">
+                      <div class="card-header bg-primary text-white">
+                        <i class="bi bi-droplet-half me-2"></i>pH da Água
+                      </div>
+                      <div class="card-body">
+                        {% set ph = ph_por_dispositivo[disp.dispositivo]['atual'] %}
+                        {% if ph %}
+                          <div class="text-center mb-4">
+                            <div class="display-4 text-primary mb-2">{{ ph.ph }}</div>
+                            <span class="badge {% if ph.ph < 6.5 %}bg-danger{% elif ph.ph > 8.5 %}bg-warning{% else %}bg-success{% endif %} fs-6">
+                              {% if ph.ph < 6.5 %}Ácido{% elif ph.ph > 8.5 %}Alcalino{% else %}Neutro{% endif %}
+                            </span>
+                            <p class="text-muted mt-3 mb-0">
+                              <i class="bi bi-clock me-1"></i>
+                              Última atualização: {{ ph.data|dateformat }}
+                            </p>
+                          </div>
+                          <div class="mt-4">
+                            <canvas id="phChart-{{ disp.dispositivo|replace(' ', '_') }}" height="200"></canvas>
+                          </div>
+                        {% else %}
+                          <div class="text-center py-5">
+                            <i class="bi bi-exclamation-circle fs-1 text-muted mb-3"></i>
+                            <p class="text-muted mb-0">Nenhum dado de pH disponível.</p>
+                          </div>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Card Nível -->
+                  <div class="col-md-6 mb-4">
+                    <div class="card border-0 shadow-sm h-100">
+                      <div class="card-header bg-primary text-white">
+                        <i class="bi bi-water me-2"></i>Nível de Água
+                      </div>
+                      <div class="card-body">
+                        {% set nivel = nivel_por_dispositivo[disp.dispositivo]['atual'] %}
+                        {% if nivel %}
+                          <div class="text-center mb-4">
+                            <div class="mb-4">
+                              <i class="bi bi-water fs-1 {% if nivel.status == 'ALTO' %}text-success{% else %}text-warning{% endif %}"></i>
+                            </div>
+                            <div class="display-6 mb-2">
+                              <span class="badge {% if nivel.status == 'ALTO' %}bg-success{% else %}bg-warning{% endif %} fs-5">
+                                {{ nivel.status }}
+                              </span>
+                            </div>
+                            <div class="mt-4">
+                              <p class="mb-2">Status da Boia:</p>
+                              <span class="badge {% if nivel.boia == 1 %}bg-primary{% else %}bg-secondary{% endif %} fs-6">
+                                {% if nivel.boia == 1 %}Ativada{% else %}Desativada{% endif %}
+                              </span>
+                            </div>
+                            <p class="text-muted mt-4 mb-0">
+                              <i class="bi bi-clock me-1"></i>
+                              Última atualização: {{ nivel.data|dateformat }}
+                            </p>
+                          </div>
+                          <div class="mt-4">
+                            <canvas id="nivelChart-{{ disp.dispositivo|replace(' ', '_') }}" height="200"></canvas>
+                          </div>
+                        {% else %}
+                          <div class="text-center py-5">
+                            <i class="bi bi-exclamation-circle fs-1 text-muted mb-3"></i>
+                            <p class="text-muted mb-0">Nenhum dado de nível disponível.</p>
+                          </div>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Histórico detalhado -->
+                <div class="row g-4 mt-2">
+                  <div class="col-md-6">
+                    <div class="card border-0 shadow-sm">
+                      <div class="card-header bg-primary text-white">
+                        <i class="bi bi-graph-up me-2"></i>Histórico de pH
+                      </div>
+                      <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                          {% for item in ph_por_dispositivo[disp.dispositivo]['historico'] %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                              <span><i class="bi bi-calendar me-2"></i>{{ item.data|dateformat }}</span>
+                              <span class="badge bg-primary">pH {{ item.ph }}</span>
+                            </li>
+                          {% else %}
+                            <li class="list-group-item text-muted">Nenhum registro encontrado</li>
+                          {% endfor %}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="card border-0 shadow-sm">
+                      <div class="card-header bg-primary text-white">
+                        <i class="bi bi-clock-history me-2"></i>Histórico de Nível
+                      </div>
+                      <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                          {% for item in nivel_por_dispositivo[disp.dispositivo]['historico'] %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                              <span><i class="bi bi-calendar me-2"></i>{{ item.data|dateformat }}</span>
+                              <span class="badge {% if item.status == 'ALTO' %}bg-success{% else %}bg-warning{% endif %}">{{ item.status }}</span>
+                            </li>
+                          {% else %}
+                            <li class="list-group-item text-muted">Nenhum registro encontrado</li>
+                          {% endfor %}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+
+            <!-- Chart.js + gráficos -->
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+              function mostrarDispositivoSelecionado() {
+                var select = document.getElementById('selectDispositivo');
+                var valor = select.value.replace(/\s/g, '_');
+                var paineis = document.querySelectorAll('.dispositivo-panel');
+                paineis.forEach(function(p) { p.style.display = 'none'; });
+                var painelAtivo = document.getElementById('panel-' + valor);
+                if (painelAtivo) painelAtivo.style.display = 'block';
+                localStorage.setItem('dispositivoSelecionado', select.value);
+              }
+
+              document.addEventListener('DOMContentLoaded', function() {
+                var select = document.getElementById('selectDispositivo');
+                var salvo = localStorage.getItem('dispositivoSelecionado');
+                if (select && salvo) {
+                  select.value = salvo;
+                  mostrarDispositivoSelecionado();
+                }
+              });
+
+              var historicoPh = {};
+              var historicoNivel = {};
+              {% for disp in dispositivos %}
+                historicoPh['{{ disp.dispositivo|replace(' ', '_') }}'] = {
+                  labels: [
+                    {% for item in ph_por_dispositivo[disp.dispositivo]['historico']|reverse %}'{{ item.data|dateformat }}'{% if not loop.last %},{% endif %}{% endfor %}
+                  ],
+                  data: [
+                    {% for item in ph_por_dispositivo[disp.dispositivo]['historico']|reverse %}{{ item.ph }}{% if not loop.last %},{% endif %}{% endfor %}
+                  ]
+                };
+                historicoNivel['{{ disp.dispositivo|replace(' ', '_') }}'] = {
+                  labels: [
+                    {% for item in nivel_por_dispositivo[disp.dispositivo]['historico']|reverse %}'{{ item.data|dateformat }}'{% if not loop.last %},{% endif %}{% endfor %}
+                  ],
+                  data: [
+                    {% for item in nivel_por_dispositivo[disp.dispositivo]['historico']|reverse %}
+                      {% if item.status == 'ALTO' %}2{% elif item.status == 'BAIXO' %}1{% else %}0{% endif %}{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                  ]
+                };
+              {% endfor %}
+
+              document.addEventListener('DOMContentLoaded', function() {
+                {% for disp in dispositivos %}
+                  var phCtx = document.getElementById('phChart-{{ disp.dispositivo|replace(' ', '_') }}');
+                  if (phCtx) {
+                    new Chart(phCtx, {
+                      type: 'line',
+                      data: {
+                        labels: historicoPh['{{ disp.dispositivo|replace(' ', '_') }}'].labels,
+                        datasets: [{
+                          label: 'Histórico de pH',
+                          data: historicoPh['{{ disp.dispositivo|replace(' ', '_') }}'].data,
+                          borderColor: '#0066cc',
+                          backgroundColor: 'rgba(0,102,204,0.1)',
+                          borderWidth: 3,
+                          pointBackgroundColor: '#0066cc',
+                          pointBorderColor: '#fff',
+                          pointRadius: 6,
+                          pointHoverRadius: 8,
+                          fill: true,
+                          tension: 0.4
+                        }]
+                      },
+                      options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: { display: false },
+                          tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: { family: "'Poppins', sans-serif", size: 14 },
+                            bodyFont: { family: "'Poppins', sans-serif", size: 13 },
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: false
+                          }
+                        },
+                        scales: {
+                          y: {
+                            beginAtZero: false,
+                            grid: { color: 'rgba(0, 0, 0, 0.05)', drawBorder: false },
+                            ticks: { font: { family: "'Poppins', sans-serif" }, padding: 10 }
+                          },
+                          x: {
+                            grid: { display: false },
+                            ticks: { font: { family: "'Poppins', sans-serif" }, maxRotation: 45, minRotation: 45, padding: 10 }
+                          }
+                        },
+                        animation: { duration: 2000, easing: 'easeOutQuart' },
+                        interaction: { intersect: false, mode: 'index' }
+                      }
+                    });
+                  }
+                  var nivelCtx = document.getElementById('nivelChart-{{ disp.dispositivo|replace(' ', '_') }}');
+                  if (nivelCtx) {
+                    new Chart(nivelCtx, {
+                      type: 'line',
+                      data: {
+                        labels: historicoNivel['{{ disp.dispositivo|replace(' ', '_') }}'].labels,
+                        datasets: [{
+                          label: 'Histórico de Nível',
+                          data: historicoNivel['{{ disp.dispositivo|replace(' ', '_') }}'].data,
+                          borderColor: '#34c759',
+                          backgroundColor: 'rgba(52,199,89,0.1)',
+                          borderWidth: 3,
+                          pointBackgroundColor: '#34c759',
+                          pointBorderColor: '#fff',
+                          pointRadius: 6,
+                          pointHoverRadius: 8,
+                          fill: true,
+                          tension: 0.4
+                        }]
+                      },
+                      options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: { display: false },
+                          tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: { family: "'Poppins', sans-serif", size: 14 },
+                            bodyFont: { family: "'Poppins', sans-serif", size: 13 },
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: false,
+                            callbacks: {
+                              label: function(context) {
+                                var v = context.parsed.y;
+                                if (v === 2) return 'ALTO';
+                                if (v === 1) return 'BAIXO';
+                                return 'Desconhecido';
+                              }
+                            }
+                          }
+                        },
+                        scales: {
+                          y: {
+                            beginAtZero: true,
+                            min: 0,
+                            max: 2,
+                            grid: { color: 'rgba(0, 0, 0, 0.05)', drawBorder: false },
+                            ticks: {
+                              font: { family: "'Poppins', sans-serif" },
+                              padding: 10,
+                              callback: function(value) {
+                                if (value === 2) return 'ALTO';
+                                if (value === 1) return 'BAIXO';
+                                return '';
+                              }
+                            }
+                          },
+                          x: {
+                            grid: { display: false },
+                            ticks: { font: { family: "'Poppins', sans-serif" }, maxRotation: 45, minRotation: 45, padding: 10 }
+                          }
+                        },
+                        animation: { duration: 2000, easing: 'easeOutQuart' },
+                        interaction: { intersect: false, mode: 'index' }
+                      }
+                    });
+                  }
+                {% endfor %}
+              });
+            </script>
+          {% else %}
+            <div class="text-center py-4">
+              <i class="bi bi-exclamation-circle text-muted fs-1 mb-2 d-block"></i>
+              <p class="mb-0">Nenhum dispositivo encontrado.</p>
+            </div>
+          {% endif %}
         </section>
       </main>
     </div>
@@ -516,309 +852,126 @@
     </div>
   </div>
 
+  <!-- Scripts base -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <script>
-    // --- CONTROLE DE NAVEGAÇÃO ---
+    // Navegação entre seções
     function showSection(event, sectionId) {
-      if(event) event.preventDefault();
+      event.preventDefault();
       document.querySelectorAll('.sidebar .nav-link').forEach(link => link.classList.remove('active'));
-      const activeLink = document.querySelector(`.sidebar .nav-link[href="#${sectionId}"]`);
-      if(activeLink) activeLink.classList.add('active');
-      
+      event.currentTarget.classList.add('active');
+
       document.querySelectorAll('.section-panel').forEach(panel => panel.classList.remove('active'));
-      document.getElementById(sectionId).classList.add('active');
-      
+      const section = document.getElementById(sectionId);
+      if (section) section.classList.add('active');
+
       history.pushState({}, '', `#${sectionId}`);
     }
 
     function handleHashChange() {
       const hash = window.location.hash.slice(1) || 'dashboard';
-      showSection(null, hash);
+      const navLink = document.querySelector(`.nav-link[href="#${hash}"]`);
+      if (navLink) navLink.click();
     }
+
     window.addEventListener('hashchange', handleHashChange);
 
-    // --- LÓGICA PRINCIPAL ---
-    document.addEventListener('DOMContentLoaded', async () => {
-        AOS.init({ duration: 800, once: true });
+    // Inicializa AOS
+    AOS.init({ duration: 800, once: true });
 
-        const token = localStorage.getItem('accessToken');
-        if (!token) {
-            window.location.href = 'login_usuario.html';
-            return;
-        }
-
-        const headers = {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        };
-
-        // Função genérica para fetch
-        async function fetchData(url) {
-            const response = await fetch(url, { headers });
-            if (response.status === 401) {
-                localStorage.removeItem('accessToken');
-                window.location.href = 'login_usuario.html';
-                throw new Error('Não autorizado');
-            }
-            if (!response.ok) {
-                throw new Error('Falha ao buscar dados');
-            }
-            return response.json();
-        }
-
-        // Carregar todos os dados em paralelo
-        try {
-            const [usuario, cisterna, notificacoes] = await Promise.all([
-                fetchData('/api/v1/usuarios/perfil'),
-                fetchData('/api/v1/local/dados-atuais'),
-                fetchData('/api/v1/notificacoes/listar')
-            ]);
-
-            populateUserInfo(usuario);
-            populateDashboardCards(cisterna, notificacoes);
-            populateNotifications(notificacoes);
-            populateCisternaSection(cisterna);
-
-        } catch (error) {
-            console.error('Erro ao carregar dados do dashboard:', error);
-            displayAlert('Erro ao carregar dados. Tente atualizar a página.', 'danger');
-        }
-        
-        handleHashChange();
-        setupEventListeners();
+    // Mostrar/ocultar senha
+    document.getElementById('toggleSenha').addEventListener('click', function() {
+      const senhaInput = document.getElementById('senha');
+      const icon = this.querySelector('i');
+      if (senhaInput.type === 'password') {
+        senhaInput.type = 'text';
+        icon.classList.remove('bi-eye');
+        icon.classList.add('bi-eye-slash');
+      } else {
+        senhaInput.type = 'password';
+        icon.classList.remove('bi-eye-slash');
+        icon.classList.add('bi-eye');
+      }
     });
 
-    // --- FUNÇÕES DE POPULAÇÃO DE DADOS ---
-    function populateUserInfo(user) {
-        document.getElementById('user-name').textContent = `Bem-vindo(a), ${user.nome}!`;
-        // Preencher modal de edição
-        document.getElementById('nome').value = user.nome;
-        document.getElementById('email').value = user.email;
-        document.getElementById('endereco').value = user.endereco;
+    // Submit do Editar Perfil via AJAX
+    document.querySelector('#modalEditarPerfil form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      fetch(this.action, {
+          method: 'POST',
+          body: formData,
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
+      .then(response => {
+          if (response.ok) {
+              const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditarPerfil'));
+              modal.hide();
+              const alertDiv = document.createElement('div');
+              alertDiv.className = 'alert alert-success alert-dismissible fade show';
+              alertDiv.role = 'alert';
+              alertDiv.innerHTML = `
+                  Perfil atualizado com sucesso!
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+              `;
+              document.querySelector('main').insertBefore(alertDiv, document.querySelector('main').firstChild);
+              document.querySelector('h1').textContent = `Bem-vindo(a), ${formData.get('nome')}!`;
+              setTimeout(() => alertDiv.remove(), 3000);
+          } else {
+              const alertDiv = document.createElement('div');
+              alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+              alertDiv.role = 'alert';
+              alertDiv.innerHTML = `
+                  Erro ao atualizar o perfil. Tente novamente.
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+              `;
+              document.querySelector('main').insertBefore(alertDiv, document.querySelector('main').firstChild);
+          }
+      })
+      .catch(() => {
+          const alertDiv = document.createElement('div');
+          alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+          alertDiv.role = 'alert';
+          alertDiv.innerHTML = `
+              Erro ao atualizar o perfil. Tente novamente.
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+          `;
+          document.querySelector('main').insertBefore(alertDiv, document.querySelector('main').firstChild);
+      });
+    });
+
+    // Exportação de Relatórios (gera URL com query params)
+    function montarQueryRelatorio(form) {
+      const params = new URLSearchParams();
+      const inicio = form.inicio.value;
+      const fim = form.fim.value;
+      const dispositivo = form.dispositivo.value;
+      if (inicio) params.append('inicio', inicio);
+      if (fim) params.append('fim', fim);
+      if (dispositivo) params.append('dispositivo', dispositivo);
+      return params.toString();
     }
 
-    function populateDashboardCards(cisterna, notificacoes) {
-        document.getElementById('nivel-agua').textContent = cisterna.nivel_agua?.status || 'N/D';
-        document.getElementById('ph-agua').textContent = cisterna.ph?.ph || 'N/D';
-        const unreadCount = notificacoes.filter(n => !n.lida).length;
-        document.getElementById('notificacoes-count').textContent = unreadCount;
-    }
+    document.getElementById('btnExportCSV').addEventListener('click', function() {
+      const form = document.getElementById('formRelatorios');
+      if (!form.inicio.value || !form.fim.value) {
+        alert('Preencha a data inicial e final.');
+        return;
+      }
+      const qs = montarQueryRelatorio(form);
+      window.location.href = `/relatorios/exportar.csv?${qs}`;
+    });
 
-    function populateNotifications(notificacoes) {
-        const list = document.getElementById('notificacoes-list');
-        if (notificacoes.length === 0) {
-            list.innerHTML = `<div class="list-group-item text-center"><i class="bi bi-bell-slash fs-1 text-muted mb-2 d-block"></i><p class="mb-0">Nenhuma notificação encontrada.</p></div>`;
-            return;
-        }
-        list.innerHTML = notificacoes.map(n => `
-            <div class="list-group-item ${n.lida ? '' : 'list-group-item-primary'}">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <i class="bi bi-envelope${n.lida ? '' : '-open'} text-primary fs-4"></i>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h3 class="h6 mb-1">${n.mensagem}</h3>
-                        <small class="text-muted">
-                            <i class="bi bi-clock me-1"></i>
-                            ${new Date(n.data_criacao).toLocaleString('pt-BR')}
-                        </small>
-                    </div>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function populateCisternaSection(cisterna) {
-        const container = document.getElementById('cisterna-content');
-        if (!cisterna.ph && !cisterna.nivel_agua) {
-            container.innerHTML = `<div class="text-center py-4"><i class="bi bi-exclamation-circle text-muted fs-1 mb-2 d-block"></i><p class="mb-0">Nenhum dado da cisterna encontrado.</p></div>`;
-            return;
-        }
-
-        container.innerHTML = `
-            <div class="row g-4">
-                <div class="col-md-6 mb-4">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-header bg-primary text-white"><i class="bi bi-droplet-half me-2"></i>pH da Água</div>
-                        <div class="card-body" id="ph-card-body"></div>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-4">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-header bg-primary text-white"><i class="bi bi-water me-2"></i>Nível de Água</div>
-                        <div class="card-body" id="nivel-card-body"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="row g-4 mt-2">
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-header bg-primary text-white"><i class="bi bi-graph-up me-2"></i>Histórico de pH</div>
-                        <div class="card-body"><canvas id="phChart" height="200"></canvas></div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-header bg-primary text-white"><i class="bi bi-clock-history me-2"></i>Histórico de Nível</div>
-                        <div class="card-body"><canvas id="nivelChart" height="200"></canvas></div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        renderPhCard(cisterna.ph);
-        renderNivelCard(cisterna.nivel_agua);
-        renderCharts(cisterna.historico_ph, cisterna.historico_nivel);
-    }
-
-    function renderPhCard(ph) {
-        const container = document.getElementById('ph-card-body');
-        if (!ph) {
-            container.innerHTML = `<div class="text-center py-5"><i class="bi bi-exclamation-circle fs-1 text-muted mb-3"></i><p class="text-muted mb-0">Nenhum dado de pH disponível.</p></div>`;
-            return;
-        }
-        const status = ph.ph < 6.5 ? 'Ácido' : ph.ph > 8.5 ? 'Alcalino' : 'Neutro';
-        const badgeClass = ph.ph < 6.5 ? 'bg-danger' : ph.ph > 8.5 ? 'bg-warning' : 'bg-success';
-        container.innerHTML = `
-            <div class="text-center mb-4">
-                <div class="display-4 text-primary mb-2">${ph.ph}</div>
-                <span class="badge ${badgeClass} fs-6">${status}</span>
-                <p class="text-muted mt-3 mb-0">
-                    <i class="bi bi-clock me-1"></i>
-                    Última atualização: ${new Date(ph.data).toLocaleString('pt-BR')}
-                </p>
-            </div>
-        `;
-    }
-
-    function renderNivelCard(nivel) {
-        const container = document.getElementById('nivel-card-body');
-        if (!nivel) {
-            container.innerHTML = `<div class="text-center py-5"><i class="bi bi-exclamation-circle fs-1 text-muted mb-3"></i><p class="text-muted mb-0">Nenhum dado de nível disponível.</p></div>`;
-            return;
-        }
-        const statusClass = nivel.status === 'ALTO' ? 'text-success' : 'text-warning';
-        const badgeClass = nivel.status === 'ALTO' ? 'bg-success' : 'bg-warning';
-        container.innerHTML = `
-            <div class="text-center mb-4">
-                <div class="mb-4"><i class="bi bi-water fs-1 ${statusClass}"></i></div>
-                <div class="display-6 mb-2"><span class="badge ${badgeClass} fs-5">${nivel.status}</span></div>
-                <p class="text-muted mt-4 mb-0">
-                    <i class="bi bi-clock me-1"></i>
-                    Última atualização: ${new Date(nivel.data).toLocaleString('pt-BR')}
-                </p>
-            </div>
-        `;
-    }
-
-    function renderCharts(historicoPh, historicoNivel) {
-        const chartOptions = {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { 
-                y: { beginAtZero: false },
-                x: { ticks: { maxRotation: 45, minRotation: 45 } }
-            }
-        };
-
-        if (historicoPh && historicoPh.length > 0) {
-            new Chart(document.getElementById('phChart'), {
-                type: 'line',
-                data: {
-                    labels: historicoPh.map(item => new Date(item.data).toLocaleTimeString('pt-BR')),
-                    datasets: [{
-                        label: 'pH',
-                        data: historicoPh.map(item => item.ph),
-                        borderColor: '#0066cc',
-                        backgroundColor: 'rgba(0,102,204,0.1)',
-                        fill: true, tension: 0.4
-                    }]
-                },
-                options: chartOptions
-            });
-        }
-
-        if (historicoNivel && historicoNivel.length > 0) {
-            new Chart(document.getElementById('nivelChart'), {
-                type: 'line',
-                data: {
-                    labels: historicoNivel.map(item => new Date(item.data).toLocaleTimeString('pt-BR')),
-                    datasets: [{
-                        label: 'Nível',
-                        data: historicoNivel.map(item => item.status === 'ALTO' ? 1 : 0),
-                        borderColor: '#34c759',
-                        backgroundColor: 'rgba(52,199,89,0.1)',
-                        fill: true, tension: 0.4, steppped: true
-                    }]
-                },
-                options: { ...chartOptions, scales: { y: { min: -0.1, max: 1.1, ticks: { callback: value => value === 1 ? 'ALTO' : 'BAIXO' } } } }
-            });
-        }
-    }
-
-    // --- EVENT LISTENERS ---
-    function setupEventListeners() {
-        document.getElementById('logout-button').addEventListener('click', (e) => {
-            e.preventDefault();
-            localStorage.removeItem('accessToken');
-            window.location.href = 'index.html';
-        });
-
-        document.getElementById('editProfileForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = e.target.querySelector('button[type="submit"]');
-            btn.disabled = true;
-
-            const formData = new FormData(e.target);
-            const data = Object.fromEntries(formData.entries());
-            if (!data.senha) delete data.senha; // Não envia senha se estiver vazia
-
-            try {
-                const token = localStorage.getItem('accessToken');
-                const response = await fetch('/api/v1/usuarios/editar-perfil', {
-                    method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                const result = await response.json();
-                if (!response.ok) throw new Error(result.detail || 'Erro ao atualizar perfil');
-                
-                displayAlert('Perfil atualizado com sucesso!', 'success');
-                document.getElementById('user-name').textContent = `Bem-vindo(a), ${result.nome}!`;
-                bootstrap.Modal.getInstance(document.getElementById('modalEditarPerfil')).hide();
-
-            } catch (error) {
-                displayAlert(error.message, 'danger');
-            } finally {
-                btn.disabled = false;
-            }
-        });
-
-        document.getElementById('toggleSenha').addEventListener('click', function() {
-            const senhaInput = document.getElementById('senha');
-            this.querySelector('i').classList.toggle('bi-eye');
-            this.querySelector('i').classList.toggle('bi-eye-slash');
-            senhaInput.type = senhaInput.type === 'password' ? 'text' : 'password';
-        });
-    }
-
-    function displayAlert(message, type = 'info') {
-        const container = document.getElementById('alert-container');
-        const alert = `
-            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        `;
-        container.innerHTML = alert;
-        setTimeout(() => {
-            const alertNode = container.querySelector('.alert');
-            if (alertNode) bootstrap.Alert.getOrCreateInstance(alertNode).close();
-        }, 5000);
-    }
+    document.getElementById('btnExportPDF').addEventListener('click', function() {
+      const form = document.getElementById('formRelatorios');
+      if (!form.inicio.value || !form.fim.value) {
+        alert('Preencha a data inicial e final.');
+        return;
+      }
+      const qs = montarQueryRelatorio(form);
+      window.location.href = `/relatorios/exportar.pdf?${qs}`;
+    });
   </script>
 </body>
 </html>

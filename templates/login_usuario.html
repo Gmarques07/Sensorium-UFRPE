@@ -157,16 +157,6 @@
             color: var(--dark-blue);
         }
 
-        .divider {
-            display: inline-block;
-            width: 5px;
-            height: 5px;
-            background-color: var(--dark-blue);
-            border-radius: 50%;
-            margin: 0 10px;
-            opacity: 0.5;
-        }
-
         @media (max-width: 576px) {
             .login-card {
                 padding: 2rem;
@@ -180,7 +170,7 @@
             <a href="index.html" class="text-decoration-none">
                 <i class="bi bi-droplet logo-icon"></i>
                 <h2 class="mt-3 mb-2">Bem-vindo ao Sensorium</h2>
-                <p class="text-muted mb-0">Acesse sua conta para gerenciar seus pedidos</p>
+                <p class="text-muted mb-0">Acesse sua conta de usuário</p>
             </a>
         </div>
 
@@ -194,15 +184,17 @@
 
         <form id="loginForm">
             <div class="mb-4">
-                <label for="cpf-login" class="form-label">CPF</label>
+                <label for="cpf-cnpj-login" class="form-label">CPF ou CNPJ</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
                     <input type="text" 
-                           id="cpf-login" 
-                           name="username" 
+                           id="cpf-cnpj-login" 
+                           name="cpf_cnpj" 
                            class="form-control" 
-                           placeholder="000.000.000-00"
-                           maxlength="14"
+                           placeholder="000.000.000-00 ou 00.000.000/0000-00"
+                           maxlength="18"
+                           pattern="^(\d{3}\.\d{3}\.\d{3}-\d{2}|\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2})$"
+                           title="Digite um CPF válido (000.000.000-00) ou CNPJ válido (00.000.000/0000-00)"
                            required>
                 </div>
             </div>
@@ -241,103 +233,45 @@
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
     <script>
         // Inicialização do AOS
-        AOS.init({
-            duration: 800,
-            once: true
-        });
+        AOS.init({ duration: 800, once: true });
 
-        // Formatação do CPF
+        // Formatação CPF ou CNPJ
         document.addEventListener('DOMContentLoaded', function() {
-            const cpfInput = document.getElementById('cpf-login');
+            const input = document.getElementById('cpf-cnpj-login');
 
-            cpfInput.addEventListener('input', function() {
+            input.addEventListener('input', function() {
                 let value = this.value.replace(/\D/g, '');
                 let formattedValue = '';
 
-                if (value.length > 0) {
-                    formattedValue += value.substring(0, 3);
-                }
-                if (value.length > 3) {
-                    formattedValue += '.' + value.substring(3, 6);
-                }
-                if (value.length > 6) {
-                    formattedValue += '.' + value.substring(6, 9);
-                }
-                if (value.length > 9) {
-                    formattedValue += '-' + value.substring(9, 11);
+                if (value.length <= 11) {
+                    // CPF
+                    if (value.length > 3) formattedValue += value.substring(0, 3) + '.';
+                    if (value.length > 6) formattedValue += value.substring(3, 6) + '.';
+                    if (value.length > 9) formattedValue += value.substring(6, 9) + '-';
+                    formattedValue += value.substring(9, 11);
+                } else {
+                    // CNPJ
+                    if (value.length > 2) formattedValue += value.substring(0, 2) + '.';
+                    if (value.length > 5) formattedValue += value.substring(2, 5) + '.';
+                    if (value.length > 8) formattedValue += value.substring(5, 8) + '/';
+                    if (value.length > 12) formattedValue += value.substring(8, 12) + '-';
+                    formattedValue += value.substring(12, 14);
                 }
                 this.value = formattedValue;
             });
         });
-    </script>
-    <script>
+
         function togglePasswordVisibilityLoginUsuario() {
             const senha = document.getElementById("senha-login");
             const icon = document.getElementById("toggleSenhaLoginUsuarioIcon");
             const tipo = senha.type === "password" ? "text" : "password";
             senha.type = tipo;
             if (tipo === "text") {
-                icon.classList.remove("bi-eye");
-                icon.classList.add("bi-eye-slash");
+                icon.classList.replace("bi-eye", "bi-eye-slash");
             } else {
-                icon.classList.remove("bi-eye-slash");
-                icon.classList.add("bi-eye");
+                icon.classList.replace("bi-eye-slash", "bi-eye");
             }
         }
-    </script>
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
-
-            const btn = document.getElementById('btnLogin');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Entrando...';
-
-            const alertContainer = document.getElementById('alert-container');
-            alertContainer.innerHTML = '';
-
-            const cpf = document.getElementById('cpf-login').value.replace(/\D/g, '');
-            const password = document.getElementById('senha-login').value;
-
-            const formData = new URLSearchParams();
-            formData.append('username', cpf);
-            formData.append('password', password);
-
-            try {
-                const response = await fetch('/api/v1/auth/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (response.ok) {
-                    localStorage.setItem('accessToken', result.access_token);
-                    window.location.href = 'dashboard_usuario.html';
-                } else {
-                    const errorMessage = result.detail || 'CPF ou senha incorretos.';
-                    const alertHTML = `
-                        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-                            <strong>Erro!</strong> ${errorMessage}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>`;
-                    alertContainer.innerHTML = alertHTML;
-                }
-            } catch (error) {
-                const alertHTML = `
-                    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-                        <strong>Erro de conexão!</strong> Não foi possível se conectar ao servidor.
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>`;
-                alertContainer.innerHTML = alertHTML;
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Entrar';
-            }
-        });
     </script>
 </body>
 </html>
