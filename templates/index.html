@@ -6,6 +6,8 @@
     <title>Sensorium - Monitoramento Inteligente com Sensores</title>
     
     <!-- Fontes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- CSS -->
@@ -59,12 +61,49 @@
             width: 100%;
         }
 
+        .btn-action {
+            background: var(--primary-blue);
+            color: white !important;
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            border: none;
+            position: relative;
+            overflow: hidden;
+            font-size: 0.9rem;
+        }
+
+        .btn-action::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: all 0.5s ease;
+        }
+
+        .btn-action:hover {
+            background: var(--dark-blue);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn-action:hover::before {
+            left: 100%;
+        }
+
         .hero-section {
             background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
             color: white;
             padding: 120px 0 80px;
             position: relative;
             overflow: hidden;
+            text-align: center;
         }
 
         .hero-title {
@@ -79,6 +118,27 @@
             font-weight: 300;
             margin-bottom: 2rem;
             opacity: 0.9;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+            text-align: center;
+            position: relative;
+            padding-bottom: 1.5rem;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--accent-color);
+            border-radius: 2px;
         }
 
         .feature-card {
@@ -114,73 +174,6 @@
             background: var(--primary-blue);
             color: white;
             transform: rotate(360deg);
-        }
-
-        .btn-action {
-            background: var(--primary-blue);
-            color: white !important;
-            padding: 0.8rem 2rem;
-            border-radius: 50px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s ease;
-            border: none;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-action::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: all 0.5s ease;
-        }
-
-        .btn-action:hover {
-            background: var(--dark-blue);
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        }
-
-        .btn-action:hover::before {
-            left: 100%;
-        }
-
-        .btn-outline-light {
-            border-color: white !important;
-            color: white !important;
-            font-weight: 500;
-        }
-
-        .btn-outline-light:hover {
-            background-color: white;
-            color: var(--dark-blue) !important;
-        }
-
-        .section-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 3rem;
-            text-align: center;
-            position: relative;
-            padding-bottom: 1.5rem;
-        }
-
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 4px;
-            background: var(--accent-color);
-            border-radius: 2px;
         }
 
         footer {
@@ -239,54 +232,31 @@
             <a class="navbar-brand" href="{{ url_for('pagina_inicial') }}">
                 <i class="bi bi-cpu"></i> Sensorium
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Abrir menu">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link active" href="{{ url_for('pagina_inicial') }}">Início</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#recursos">Recursos</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#contato">Contato</a></li>
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('pagina_inicial') }}">Início</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#recursos">Como Funciona</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#usuario">Área do Usuário</a></li>
+                    <li class="nav-item ms-3"><a class="nav-link"href="{{ url_for('login_usuario') }}">Login</a></li>
+                    <li class="nav-item ms-2"><a class="nav-link"href="{{ url_for('cadastro') }}">Cadastro</a></li>
+                    <li class="nav-item ms-2"><a class="nav-link" href="{{ url_for('sobre') }}">Sobre</a></li>
                 </ul>
             </div>
         </div>
     </nav>
-
-    <!-- Hero / Apresentação + Login Compacto -->
+    
+    <!-- Hero -->
     <section class="hero-section">
         <div class="container hero-content" data-aos="fade-up">
-            <!-- Título principal do site -->
-            <div class="row justify-content-center">
-                <div class="col-lg-6 col-md-8 text-center mb-5">
-                    <h1 class="hero-title">Sensorium</h1>
-                    <p class="hero-subtitle">Monitoramento Inteligente</p>
-                </div>
-            </div>
-            <!-- Login Empresa Compacto -->
-            <div class="row justify-content-center">
-                <div class="col-lg-4 col-md-6">
-                    <div class="text-center mb-3">
-                        <h2 class="hero-title" style="font-size: 1.8rem;">Área de usuario</h2>
-                        <p class="hero-subtitle" style="font-size: 1rem;">Acesse sua conta ou se cadastre</p>
-                    </div>
-                    <form method="POST" action="{{ url_for('login_empresa') }}">
-                        <div class="mb-3">
-                            <input type="text" class="form-control" name="usuario" placeholder="Usuário" required>
-                        </div>
-                        <div class="mb-3">
-                            <input type="password" class="form-control" name="senha" placeholder="Senha" required>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <button type="submit" class="btn btn-action">Login</button>
-                            <a href="{{ url_for('cadastro_empresa') }}" class="btn btn-outline-light btn-sm">Cadastrar</a>
-                        </div>
-                    </form>
-                </div>
-            </div>
+            <h1 class="hero-title">Sensorium</h1>
+            <p class="hero-subtitle">Plataforma inovadora para monitoramento inteligente através sensores.</p>
         </div>
     </section>
 
-    <!-- Recursos -->
+    <!-- Como Funciona -->
     <section class="py-5" id="recursos">
         <div class="container">
             <h2 class="section-title" data-aos="fade-up">Como Funciona</h2>
@@ -315,29 +285,75 @@
             </div>
         </div>
     </section>
+    
+<!-- Área do Usuário -->
+<section id="area-usuario" class="py-5 bg-light">
+  <div class="container text-center">
+    <h2 class="mb-4">Área do Usuário</h2>
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <form>
+          <!-- CPF / CNPJ -->
+          <div class="mb-3 text-start">
+            <label for="cpf-cnpj-login" class="form-label">CPF ou CNPJ</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+              <input type="text" 
+                     id="cpf-cnpj-login" 
+                     name="cpf_cnpj" 
+                     class="form-control" 
+                     placeholder="Digite seu CPF/CNPJ"
+                     maxlength="18"
+                     pattern="^(\d{3}\.\d{3}\.\d{3}-\d{2}|\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2})$"
+                     title="Digite um CPF válido (000.000.000-00) ou CNPJ válido (00.000.000/0000-00)"
+                     required>
+            </div>
+          </div>
+
+          <!-- Senha -->
+          <div class="mb-3 text-start">
+            <label for="senha-login" class="form-label">Senha</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-lock"></i></span>
+              <input type="password" 
+                     id="senha-login" 
+                     name="senha" 
+                     class="form-control" 
+                     placeholder="Digite sua senha"
+                     required>
+            </div>
+          </div>
+
+          <!-- Botões centralizados -->
+          <div class="d-flex justify-content-center gap-3">
+            <button type="submit" class="btn btn-primary">Entrar</button>
+            <a href="cadastro.html" class="btn btn-secondary">Cadastrar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
 
     <!-- Footer -->
     <footer>
         <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
-                    <h5>Sobre o Sensorium</h5>
-                    <p>Plataforma inovadora para monitoramento inteligente com sensores em comunidades rurais.</p>
-                </div>
-                <div class="footer-section">
                     <h5>Links Rápidos</h5>
                     <ul class="footer-links">
                         <li><a href="{{ url_for('sobre') }}">Sobre Nós</a></li>
                         <li><a href="#recursos">Como Funciona</a></li>
-                        <li><a href="{{ url_for('cadastro_empresa') }}">Cadastro</a></li>
-                        <li><a href="#contato">Contato</a></li>
+                        <li><a href="{{ url_for('cadastro') }}">Cadastro</a></li>
+                        <li><a href="#usuario">Área do Usuário</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h5>Contato</h5>
-                    <ul class="footer-links">
-                        <li><i class="bi bi-geo-alt me-2"></i> Belo Jardim, PE</li>
-                    </ul>
+                    <p><i class="bi bi-geo-alt me-2"></i> Belo Jardim, PE</p>
+                    <p><i class="bi bi-envelope me-2"></i> contato@sensorium.com</p>
+                    <p><i class="bi bi-telephone me-2"></i> +55 87 99999-9999</p>
                 </div>
             </div>
             <div class="text-center border-top pt-4">
