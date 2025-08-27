@@ -157,16 +157,6 @@
             color: var(--dark-blue);
         }
 
-        .divider {
-            display: inline-block;
-            width: 5px;
-            height: 5px;
-            background-color: var(--dark-blue);
-            border-radius: 50%;
-            margin: 0 10px;
-            opacity: 0.5;
-        }
-
         @media (max-width: 576px) {
             .login-card {
                 padding: 2rem;
@@ -180,7 +170,7 @@
             <a href="{{ url_for('pagina_inicial') }}" class="text-decoration-none">
                 <i class="bi bi-droplet logo-icon"></i>
                 <h2 class="mt-3 mb-2">Bem-vindo ao Sensorium</h2>
-                <p class="text-muted mb-0">Acesse sua conta para gerenciar seus pedidos</p>
+                <p class="text-muted mb-0">Acesse sua conta de usuário</p>
             </a>
         </div>
 
@@ -203,17 +193,17 @@
 
         <form action="{{ url_for('login_usuario') }}" method="post">
             <div class="mb-4">
-                <label for="cpf-login" class="form-label">CPF</label>
+                <label for="cpf-cnpj-login" class="form-label">CPF ou CNPJ</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
                     <input type="text" 
-                           id="cpf-login" 
-                           name="cpf" 
+                           id="cpf-cnpj-login" 
+                           name="cpf_cnpj" 
                            class="form-control" 
-                           placeholder="000.000.000-00"
-                           maxlength="14"
-                           pattern="\d{3}\.\d{3}\.\d{3}-\d{2}"
-                           title="Insira um CPF válido no formato 000.000.000-00"
+                           placeholder="000.000.000-00 ou 00.000.000/0000-00"
+                           maxlength="18"
+                           pattern="^(\d{3}\.\d{3}\.\d{3}-\d{2}|\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2})$"
+                           title="Digite um CPF válido (000.000.000-00) ou CNPJ válido (00.000.000/0000-00)"
                            required>
                 </div>
             </div>
@@ -252,58 +242,45 @@
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
     <script>
         // Inicialização do AOS
-        AOS.init({
-            duration: 800,
-            once: true
-        });
+        AOS.init({ duration: 800, once: true });
 
-        // Formatação do CPF
+        // Formatação CPF ou CNPJ
         document.addEventListener('DOMContentLoaded', function() {
-            const cpfInput = document.getElementById('cpf-login');
+            const input = document.getElementById('cpf-cnpj-login');
 
-            cpfInput.addEventListener('input', function() {
+            input.addEventListener('input', function() {
                 let value = this.value.replace(/\D/g, '');
                 let formattedValue = '';
 
-                if (value.length > 0) {
-                    formattedValue += value.substring(0, 3);
-                }
-                if (value.length > 3) {
-                    formattedValue += '.' + value.substring(3, 6);
-                }
-                if (value.length > 6) {
-                    formattedValue += '.' + value.substring(6, 9);
-                }
-                if (value.length > 9) {
-                    formattedValue += '-' + value.substring(9, 11);
+                if (value.length <= 11) {
+                    // CPF
+                    if (value.length > 3) formattedValue += value.substring(0, 3) + '.';
+                    if (value.length > 6) formattedValue += value.substring(3, 6) + '.';
+                    if (value.length > 9) formattedValue += value.substring(6, 9) + '-';
+                    formattedValue += value.substring(9, 11);
+                } else {
+                    // CNPJ
+                    if (value.length > 2) formattedValue += value.substring(0, 2) + '.';
+                    if (value.length > 5) formattedValue += value.substring(2, 5) + '.';
+                    if (value.length > 8) formattedValue += value.substring(5, 8) + '/';
+                    if (value.length > 12) formattedValue += value.substring(8, 12) + '-';
+                    formattedValue += value.substring(12, 14);
                 }
                 this.value = formattedValue;
             });
-
-            document.querySelector('form').addEventListener('submit', function(e) {
-                const cpfValue = cpfInput.value.replace(/\D/g, '');
-                if(cpfValue.length !== 11) {
-                    e.preventDefault();
-                    alert('CPF deve conter exatamente 11 dígitos numéricos.');
-                    cpfInput.focus();
-                }
-            });
         });
+
+        function togglePasswordVisibilityLoginUsuario() {
+            const senha = document.getElementById("senha-login");
+            const icon = document.getElementById("toggleSenhaLoginUsuarioIcon");
+            const tipo = senha.type === "password" ? "text" : "password";
+            senha.type = tipo;
+            if (tipo === "text") {
+                icon.classList.replace("bi-eye", "bi-eye-slash");
+            } else {
+                icon.classList.replace("bi-eye-slash", "bi-eye");
+            }
+        }
     </script>
-    <script>
-function togglePasswordVisibilityLoginUsuario() {
-    const senha = document.getElementById("senha-login");
-    const icon = document.getElementById("toggleSenhaLoginUsuarioIcon");
-    const tipo = senha.type === "password" ? "text" : "password";
-    senha.type = tipo;
-    if (tipo === "text") {
-        icon.classList.remove("bi-eye");
-        icon.classList.add("bi-eye-slash");
-    } else {
-        icon.classList.remove("bi-eye-slash");
-        icon.classList.add("bi-eye");
-    }
-}
-</script>
 </body>
 </html>
