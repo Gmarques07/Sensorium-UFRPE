@@ -134,17 +134,17 @@ def excluir_conta(
     current_user: Usuario = Depends(get_current_user)
 ):
     """
-    Exclui a conta do usuário atual.
+    Desativa a conta do usuário atual (soft delete).
     Requer a senha atual para confirmar a operação.
     """
-    # Valida a senha antes de excluir
+    # Valida a senha antes de desativar
     if not verify_password(senha, current_user.senha):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Senha incorreta"
         )
     
-    # Exclui o usuário
-    crud_usuario.delete(db, id=current_user.id)
+    # Desativa o usuário
+    crud_usuario.deactivate_usuario(db, usuario=current_user)
     
-    return None
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

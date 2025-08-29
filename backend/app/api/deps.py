@@ -39,6 +39,8 @@ def get_current_user(
     user = crud.usuario.get_usuario_by_cpf(db, cpf=token_data.cpf)
     if user is None:
         raise credentials_exception
+    if not user.ativo:
+        raise HTTPException(status_code=400, detail="Inactive user")
     return user
 
 def get_current_admin(
