@@ -1,0 +1,29 @@
+services:
+  backend:
+    build: .
+    container_name: sensorium_backend
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    volumes:
+      - ../templates:/app/templates
+      - ../static:/app/static
+    environment:
+      # Configurações do MySQL (usando o MySQL local do WAMP)
+      - MYSQL_HOST=host.docker.internal
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=
+      - MYSQL_DATABASE=banco_de_dados
+      - MYSQL_PORT=3306
+      - SECRET_KEY=chave_secreta_muito_longa_e_segura_para_jwt_tokens_aqui
+      - ACCESS_TOKEN_EXPIRE_MINUTES=1440
+      # Configurações de CORS
+      - BACKEND_CORS_ORIGINS=["*"]
+      # Ativar logs de debug
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=debug
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

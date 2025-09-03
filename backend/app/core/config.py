@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Sensorium UFRPE"
 
     # Configuração de CORS
-    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost", "http://localhost:8000", "http://127.0.0.1", "http://127.0.0.1:8000"]
+    BACKEND_CORS_ORIGINS: List[str] = ["*"]  # Permitir todas as origens para desenvolvimento
     
     # Configurações do banco de dados
     MYSQL_USER: str = os.getenv("MYSQL_USER", "root")

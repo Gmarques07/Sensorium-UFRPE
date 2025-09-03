@@ -167,3 +167,67 @@ A documentação automática da API está disponível em:
 ## Licença
 
 Este projeto está sob a licença MIT.
+
+## 🐳 Docker
+
+### Início Rápido com Docker
+
+```bash
+cd backend
+docker-compose up -d --build
+```
+
+**Acesse**: http://localhost:8001
+
+### Comandos Úteis
+
+```bash
+# Iniciar serviços
+docker-compose up -d
+
+# Parar serviços
+docker-compose down
+
+# Ver logs
+docker-compose logs -f backend
+
+# Rebuild
+docker-compose up -d --build
+
+# Executar comandos no container
+docker-compose exec backend bash
+```
+
+### Configuração
+
+O Docker está configurado para usar o MySQL local do seu sistema:
+
+- **Host**: `host.docker.internal` (acessa MySQL local)
+- **Porta**: `3306`
+- **Usuário**: `root`
+- **Senha**: (vazia - ajuste no docker-compose.yml se necessário)
+- **Banco**: `banco_de_dados`
+
+### Personalização
+
+Edite o `docker-compose.yml` para ajustar:
+- Credenciais do banco de dados
+- Porta do servidor
+- Variáveis de ambiente
+- Volumes montados
+
+### Troubleshooting
+
+**Problema**: Container não inicia
+- Verifique se o MySQL está rodando localmente
+- Confirme as credenciais no docker-compose.yml
+- Verifique os logs: `docker-compose logs backend`
+
+**Problema**: Porta já em uso
+- Pare outros serviços na porta 8001
+- Ou altere a porta no docker-compose.yml
+
+> 📖 **Guias Completos**: 
+> - [DOCUMENTATION_SUMMARY.md](../docs/DOCUMENTATION_SUMMARY.md) - Resumo de toda a documentação
+> - [DOCKER_GUIDE.md](../docs/guides/DOCKER_GUIDE.md) - Instruções detalhadas para Docker
+> - [DEVELOPER_GUIDE.md](../docs/guides/DEVELOPER_GUIDE.md) - Informações técnicas para desenvolvedores

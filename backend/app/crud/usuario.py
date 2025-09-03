@@ -69,14 +69,14 @@ def deactivate_usuario(db: Session, usuario: Usuario) -> Usuario:
     db.refresh(usuario)
     return usuario
 
-# def delete_usuario(db: Session, usuario: Usuario) -> bool:
-#     """
-#     Deleta um usuário permanentemente do banco de dados.
-#     """
-#     try:
-#         db.delete(usuario)
-#         db.commit()
-#         return True
-#     except Exception:
-#         db.rollback()
-#         return False
+def delete_usuario(db: Session, usuario: Usuario) -> bool:
+    """
+    Mantém compatibilidade com interfaces antigas: realiza soft-delete usando
+    deactivate_usuario e retorna True/False para sucesso.
+    """
+    try:
+        deactivate_usuario(db, usuario)
+        return True
+    except Exception:
+        db.rollback()
+        return False

@@ -6,6 +6,7 @@ from ....schemas import usuario as schemas
 from ....api.deps import get_db, get_current_user
 from ....core.security import get_password_hash, verify_password
 from ....models.usuario import Usuario
+from ....core.limiter import rate_limit
 
 router = APIRouter()
 
@@ -114,13 +115,19 @@ def editar_perfil(
 @router.post("/validar-senha")
 def validar_senha(
     senha: str,
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user),
+    __rl: None = Depends(rate_limit(5, 60, "validar-senha"))
 ) -> Any:
     """
     Valida a senha atual do usuário.
     Útil antes de realizar operações sensíveis.
     """
-    if not verify_password(senha, current_user.senha):
+    # current_user tem o atributo senha_hash ou método verificar_senha
+    if hasattr(current_user, "senha_hash"):
+        ok = verify_password(senha, current_user.senha_hash)
+    else:
+        ok = current_user.verificar_senha(senha)
+    if not ok:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Senha incorreta"
@@ -138,7 +145,12 @@ def excluir_conta(
     Requer a senha atual para confirmar a operação.
     """
     # Valida a senha antes de desativar
-    if not verify_password(senha, current_user.senha):
+    # Verifica a senha antes de desativar
+    if hasattr(current_user, "senha_hash"):
+        ok = verify_password(senha, current_user.senha_hash)
+    else:
+        ok = current_user.verificar_senha(senha)
+    if not ok:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Senha incorreta"
@@ -148,3 +160,124 @@ def excluir_conta(
     crud_usuario.deactivate_usuario(db, usuario=current_user)
     
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+@router.get("/dashboard-dados", 
+              response_model=dict,
+              status_code=status.HTTP_200_OK,
+              summary="Obter Dados do Dashboard",
+              response_description="Dados dos sensores para o dashboard do usuário",
+              tags=["usuários"])
+def obter_dados_dashboard(
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+) -> Any:
+    """
+    Retorna os dados dos sensores para o dashboard do usuário.
+    Inclui dados de pH e nível de água dos locais.
+
+    Returns:
+        dict: Dados dos sensores organizados por dispositivo
+            - dispositivos: Lista de dispositivos/locais
+            - ph_por_dispositivo: Dados de pH por dispositivo
+            - nivel_por_dispositivo: Dados de nível por dispositivo
+            
+    Raises:
+        HTTPException:
+            - 401: Usuário não autenticado
+    """
+    from ....crud import local as crud_local
+    from ....models.local import Local
+    
+    # Buscar todos os locais (dispositivos)
+    locais = db.query(Local).all()
+    
+    # Se não há locais, criar dados de exemplo
+    if not locais:
+        # Criar dados de exemplo para demonstração
+        dispositivos = [
+            {"dispositivo": "Cisterna Principal", "id": 1},
+            {"dispositivo": "Cisterna Secundária", "id": 2}
+        ]
+        
+        # Dados de exemplo para pH
+        ph_por_dispositivo = {
+            "Cisterna Principal": {
+                "atual": {"ph": 7.2, "data": "2024-01-15 10:30:00"},
+                "historico": [
+                    {"ph": 7.1, "data": "2024-01-15 09:30:00"},
+                    {"ph": 7.3, "data": "2024-01-15 08:30:00"},
+                    {"ph": 7.0, "data": "2024-01-15 07:30:00"}
+                ]
+            },
+            "Cisterna Secundária": {
+                "atual": {"ph": 6.8, "data": "2024-01-15 10:30:00"},
+                "historico": [
+                    {"ph": 6.9, "data": "2024-01-15 09:30:00"},
+                    {"ph": 6.7, "data": "2024-01-15 08:30:00"},
+                    {"ph": 6.8, "data": "2024-01-15 07:30:00"}
+                ]
+            }
+        }
+        
+        # Dados de exemplo para nível
+        nivel_por_dispositivo = {
+            "Cisterna Principal": {
+                "atual": {"status": "ALTO", "boia": 1, "data": "2024-01-15 10:30:00"},
+                "historico": [
+                    {"status": "ALTO", "data": "2024-01-15 09:30:00"},
+                    {"status": "ALTO", "data": "2024-01-15 08:30:00"},
+                    {"status": "BAIXO", "data": "2024-01-15 07:30:00"}
+                ]
+            },
+            "Cisterna Secundária": {
+                "atual": {"status": "BAIXO", "boia": 0, "data": "2024-01-15 10:30:00"},
+                "historico": [
+                    {"status": "BAIXO", "data": "2024-01-15 09:30:00"},
+                    {"status": "BAIXO", "data": "2024-01-15 08:30:00"},
+                    {"status": "ALTO", "data": "2024-01-15 07:30:00"}
+                ]
+            }
+        }
+    else:
+        # Usar dados reais do banco
+        dispositivos = [{"dispositivo": local.nome, "id": local.id} for local in locais]
+        
+        # Carregar dados reais de pH e nível
+        ph_por_dispositivo = {}
+        nivel_por_dispositivo = {}
+        
+        for local in locais:
+            ph_atual, historico_ph, nivel_atual, historico_nivel = crud_local.obter_dados_cisterna(db)
+            
+            ph_por_dispositivo[local.nome] = {
+                "atual": {
+                    "ph": ph_atual.ph if ph_atual else 7.0,
+                    "data": ph_atual.data.strftime("%Y-%m-%d %H:%M:%S") if ph_atual else "N/A"
+                } if ph_atual else None,
+                "historico": [
+                    {
+                        "ph": item.ph,
+                        "data": item.data.strftime("%Y-%m-%d %H:%M:%S")
+                    } for item in historico_ph
+                ]
+            }
+            
+            nivel_por_dispositivo[local.nome] = {
+                "atual": {
+                    "status": nivel_atual.status if nivel_atual else "NORMAL",
+                    "boia": nivel_atual.boia if nivel_atual else 0,
+                    "data": nivel_atual.data.strftime("%Y-%m-%d %H:%M:%S") if nivel_atual else "N/A"
+                } if nivel_atual else None,
+                "historico": [
+                    {
+                        "status": item.status,
+                        "data": item.data.strftime("%Y-%m-%d %H:%M:%S")
+                    } for item in historico_nivel
+                ]
+            }
+    
+    return {
+        "dispositivos": dispositivos,
+        "ph_por_dispositivo": ph_por_dispositivo,
+        "nivel_por_dispositivo": nivel_por_dispositivo
+    }

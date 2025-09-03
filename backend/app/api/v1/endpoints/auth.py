@@ -12,6 +12,7 @@ from ....core.security import (
     verify_token
 )
 from ....api.deps import get_db
+from ....core.limiter import rate_limit
 from ....core.config import settings
 from ....models.usuario import Usuario
 
@@ -24,7 +25,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
              response_description="Token de acesso JWT")
 async def login(
     login_data: schemas_auth.Login,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    __rl: None = Depends(rate_limit(5, 60, "login"))
 ) -> Any:
     """
     Realiza o login do usuário usando CPF ou CNPJ e senha.
@@ -59,6 +61,7 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
+    # Verifica senha: usa o hash armazenado
     if not verify_password(login_data.senha, usuario.senha_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
