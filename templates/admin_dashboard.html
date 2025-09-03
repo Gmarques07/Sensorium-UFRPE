@@ -220,14 +220,14 @@
                         <div class="dashboard-card">
                             <i class="bi bi-people dashboard-icon"></i>
                             <h5>Total de Usuários</h5>
-                            <h2>{{ total_usuarios or 0 }}</h2>
+                            <h2 data-stat="total-usuarios">0</h2>
                         </div>
                     </div>
                     <div class="col-md-6 col-lg-4">
                         <div class="dashboard-card">
                             <i class="bi bi-bell dashboard-icon"></i>
                             <h5>Notificações</h5>
-                            <h2>{{ total_notificacoes or 0 }}</h2>
+                            <h2 data-stat="total-notificacoes">0</h2>
                         </div>
                     </div>
                 </div>
@@ -331,10 +331,9 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="/static/js/admin_dashboard.js"></script>
     <script>
         AOS.init();
-
-        // Aqui você pode adicionar JS para editar/excluir usuários, marcar notificações como lidas, etc.
     </script>
     
     <!-- Script de autenticação -->

@@ -26,6 +26,9 @@ class UsuarioInDB(UsuarioBase):
 
 class Usuario(UsuarioBase):
     id: int
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    ativo: bool = True
     
     class Config:
         from_attributes = True
