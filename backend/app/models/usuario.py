@@ -7,7 +7,7 @@ class Usuario(Base):
     __tablename__ = "usuarios"
 
     id = Column(Integer, primary_key=True, index=True)
-    cpf = Column(String(11), unique=True, index=True, nullable=False)
+
     nome = Column(String(100), nullable=False)
     email = Column(String(100), unique=True, index=True, nullable=False)
     endereco = Column(String(200), nullable=False)
@@ -25,7 +25,6 @@ class Usuario(Base):
     def to_dict(self):
         return {
             "id": self.id,
-            "cpf": self.cpf,
             "nome": self.nome,
             "email": self.email,
             "endereco": self.endereco,

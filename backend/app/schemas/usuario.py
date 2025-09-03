@@ -3,7 +3,6 @@ from typing import Optional
 from datetime import datetime
 
 class UsuarioBase(BaseModel):
-    cpf: constr(pattern=r'^\d{11}$')  # Validação de CPF com 11 dígitos
     nome: str
     email: EmailStr
     endereco: str

@@ -133,8 +133,8 @@ async def admin_dashboard(request: Request):
     # TODO: Implementar autenticação real e buscar dados reais do banco
     # Por enquanto, vamos passar dados de exemplo
     usuarios = [
-        {"id": 1, "nome": "Usuário 1", "cpf": "12345678901", "email": "usuario1@example.com", "endereco": "Endereço 1"},
-        {"id": 2, "nome": "Usuário 2", "cpf": "12345678902", "email": "usuario2@example.com", "endereco": "Endereço 2"}
+        {"id": 1, "nome": "Usuário 1", "email": "usuario1@example.com", "endereco": "Endereço 1"},
+        {"id": 2, "nome": "Usuário 2", "email": "usuario2@example.com", "endereco": "Endereço 2"}
     ]
     
     notificacoes = [

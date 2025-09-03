@@ -34,13 +34,13 @@ def get_current_user(
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=["HS256"]
         )
-        cpf: str = payload.get("sub")
-        if cpf is None:
+        email: str = payload.get("sub")
+        if email is None:
             raise credentials_exception
-        token_data = schemas.auth.TokenData(cpf=cpf)
+        token_data = schemas.auth.TokenData(email=email)
     except JWTError:
         raise credentials_exception
-    user = crud.usuario.get_usuario_by_cpf(db, cpf=token_data.cpf)
+    user = crud.usuario.get_usuario_by_email(db, email=token_data.email)
     if user is None:
         raise credentials_exception
     if not user.ativo:

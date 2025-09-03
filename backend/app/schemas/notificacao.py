@@ -5,7 +5,7 @@ from pydantic import BaseModel
 class NotificacaoBase(BaseModel):
     mensagem: str
     local_id: Optional[int] = None
-    cpf_usuario: Optional[str] = None
+    email_usuario: Optional[str] = None
     tipo: str
 
 class NotificacaoCreate(NotificacaoBase):

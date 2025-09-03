@@ -3,7 +3,6 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr
 
 class UsuarioBase(BaseModel):
-    cpf: str
     nome: str
     email: EmailStr
     endereco: str

@@ -6,8 +6,7 @@ from app.schemas.usuario import UsuarioCreate, UsuarioUpdate
 def get_usuario(db: Session, usuario_id: int) -> Optional[Usuario]:
     return db.query(Usuario).filter(Usuario.id == usuario_id).first()
 
-def get_usuario_by_cpf(db: Session, cpf: str) -> Optional[Usuario]:
-    return db.query(Usuario).filter(Usuario.cpf == cpf, Usuario.ativo == True).first()
+
 
 def get_usuario_by_email(db: Session, email: str) -> Optional[Usuario]:
     return db.query(Usuario).filter(Usuario.email == email, Usuario.ativo == True).first()
@@ -20,7 +19,6 @@ def get_multi(db: Session, skip: int = 0, limit: int = 100) -> List[Usuario]:
 
 def create_usuario(db: Session, usuario: UsuarioCreate) -> Usuario:
     db_usuario = Usuario(
-        cpf=usuario.cpf,
         nome=usuario.nome,
         email=usuario.email,
         endereco=usuario.endereco

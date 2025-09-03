@@ -7,10 +7,10 @@ from ..schemas.notificacao import NotificacaoCreate, NotificacaoUpdate
 def get_notificacao(db: Session, notificacao_id: int) -> Optional[Notificacao]:
     return db.query(Notificacao).filter(Notificacao.id == notificacao_id).first()
 
-def get_notificacoes_usuario(db: Session, cpf_usuario: str, skip: int = 0, limit: int = 10) -> List[Notificacao]:
+def get_notificacoes_usuario(db: Session, email_usuario: str, skip: int = 0, limit: int = 10) -> List[Notificacao]:
     return (
         db.query(Notificacao)
-        .filter(Notificacao.cpf_usuario == cpf_usuario)
+        .filter(Notificacao.email_usuario == email_usuario)
         .order_by(Notificacao.data_criacao.desc())
         .offset(skip)
         .limit(limit)
@@ -31,7 +31,7 @@ def create_notificacao(db: Session, notificacao: NotificacaoCreate) -> Notificac
     db_notificacao = Notificacao(
         mensagem=notificacao.mensagem,
         local_id=notificacao.local_id,
-        cpf_usuario=notificacao.cpf_usuario,
+        email_usuario=notificacao.email_usuario,
         tipo=notificacao.tipo
     )
     db.add(db_notificacao)
