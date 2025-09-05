@@ -18,7 +18,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Copiar requirements primeiro para aproveitar cache do docker
-COPY requirements.txt ./requirements.txt
+COPY config/requirements.txt ./requirements.txt
 
 RUN pip install --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt \

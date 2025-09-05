@@ -10,6 +10,8 @@ Este guia fornece instruções completas para executar o sistema Sensorium UFRPE
 - [Comandos Úteis](#comandos-úteis)
 - [Solução de Problemas](#solução-de-problemas)
 - [Comparação: Docker vs Local](#comparação-docker-vs-local)
+- [Testes no Docker](#testes-no-docker)
+- [Testes de Integração no Docker](#testes-de-integração-no-docker)
 
 ## 🔧 Pré-requisitos
 
@@ -84,6 +86,27 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+```
+
+### Serviço de Testes no docker-compose.yml
+
+Para rodar a suíte de testes em um container isolado (usando SQLite em memória), adicione o serviço `tests` no mesmo `docker-compose.yml` do backend:
+
+```yaml
+services:
+  tests:
+    build: .
+    container_name: sensorium_tests
+    environment:
+      DATABASE_URL: "sqlite:///:memory:"
+      SECRET_KEY: "chave_secreta_muito_longa_e_segura_para_jwt_tokens_aqui"
+      ACCESS_TOKEN_EXPIRE_MINUTES: "1440"
+      BACKEND_CORS_ORIGINS: '["*"]'
+    volumes:
+      - .:/app
+      - ../templates:/app/templates
+      - ../static:/app/static
+    command: pytest -q
 ```
 
 ### Configuração do Banco de Dados
@@ -163,6 +186,79 @@ docker-compose exec backend python init_db.py
 # Verificar logs específicos
 docker-compose logs backend | grep ERROR
 ```
+
+## 🧪 Testes no Docker
+
+### Rodar toda a suíte
+
+```bash
+cd backend
+docker-compose build
+docker-compose run --rm tests
+```
+
+### Com cobertura
+
+```bash
+docker-compose run --rm tests pytest -q --cov=app --cov-report=term-missing
+```
+
+### Rodar um arquivo específico
+
+```bash
+docker-compose run --rm tests pytest -q tests/test_usuario.py
+```
+
+### Filtrar por nome
+
+```bash
+docker-compose run --rm tests pytest -q -k login
+```
+
+Notas:
+- O serviço `tests` usa `DATABASE_URL=sqlite:///:memory:` para isolar os testes do seu MySQL local.
+- Os diretórios `templates/` e `static/` são montados para que testes que referenciem assets funcionem no container.
+- Em ambientes com Docker Compose v2, `docker compose` também funciona (sem o hífen).
+
+## 🔗 Testes de Integração no Docker
+
+Os testes de integração sobem a API real (serviço `backend_int`) e executam testes contra ela (serviço `tests_integration`). A base usa SQLite de arquivo no container para persistir durante o job.
+
+### Rodar integração
+
+```bash
+cd backend
+docker-compose build
+docker-compose up -d backend_int
+docker-compose run --rm tests_integration
+docker-compose down
+```
+
+### Estrutura dos serviços
+
+```yaml
+backend_int:
+  build: .
+  environment:
+    DATABASE_URL: "sqlite:////tmp/integration.db"
+  healthcheck:
+    test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+    interval: 10s
+    timeout: 5s
+    retries: 10
+
+tests_integration:
+  depends_on:
+    backend_int:
+      condition: service_healthy
+  environment:
+    API_BASE_URL: "http://backend_int:8001"
+  command: pytest -q tests/integration -s
+```
+
+### Dicas
+- Para filtrar por marker: `pytest -m integration -q` (já configurado em `pytest.ini`).
+- Se quiser MySQL real em integração, pode adicionar um serviço `mysql` no compose e apontar `DATABASE_URL` para ele.
 
 ### Manutenção
 

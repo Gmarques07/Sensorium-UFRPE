@@ -1,0 +1,86 @@
+services:
+  backend:
+    build: 
+      context: ..
+      dockerfile: config/Dockerfile
+    container_name: sensorium_backend
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    volumes:
+      - ../templates:/app/templates
+      - ../static:/app/static
+    environment:
+      # Configurações do MySQL (usando o MySQL local do WAMP)
+      - MYSQL_HOST=host.docker.internal
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=
+      - MYSQL_DATABASE=banco_de_dados
+      - MYSQL_PORT=3306
+      - SECRET_KEY=chave_secreta_muito_longa_e_segura_para_jwt_tokens_aqui
+      - ACCESS_TOKEN_EXPIRE_MINUTES=1440
+      # Configurações de CORS
+      - BACKEND_CORS_ORIGINS=["*"]
+      # Ativar logs de debug
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=debug
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  tests:
+    build: 
+      context: ..
+      dockerfile: config/Dockerfile
+    container_name: sensorium_tests
+    environment:
+      DATABASE_URL: "sqlite:///:memory:"
+      SECRET_KEY: "chave_secreta_muito_longa_e_segura_para_jwt_tokens_aqui"
+      ACCESS_TOKEN_EXPIRE_MINUTES: "1440"
+      BACKEND_CORS_ORIGINS: '["*"]'
+    volumes:
+      - ..:/app
+      - ../templates:/app/templates
+      - ../static:/app/static
+    command: pytest -q
+
+  backend_int:
+    build: 
+      context: ..
+      dockerfile: config/Dockerfile
+    container_name: sensorium_backend_int
+    command: sh -c "python scripts/init_db.py && uvicorn app.main:app --host 0.0.0.0 --port 8001"
+    environment:
+      DATABASE_URL: "sqlite:////tmp/integration.db"
+      SECRET_KEY: "chave_secreta_muito_longa_e_segura_para_jwt_tokens_aqui"
+      ACCESS_TOKEN_EXPIRE_MINUTES: "1440"
+      BACKEND_CORS_ORIGINS: '["*"]'
+    volumes:
+      - ..:/app
+      - ../templates:/app/templates
+      - ../static:/app/static
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  tests_integration:
+    build: 
+      context: ..
+      dockerfile: config/Dockerfile
+    container_name: sensorium_tests_integration
+    depends_on:
+      backend_int:
+        condition: service_healthy
+    environment:
+      API_BASE_URL: "http://backend_int:8001"
+      SECRET_KEY: "chave_secreta_muito_longa_e_segura_para_jwt_tokens_aqui"
+      DISABLE_RATE_LIMITING: "true"
+    volumes:
+      - ..:/app
+      - ../templates:/app/templates
+      - ../static:/app/static
+    command: pytest -q tests/integration -s

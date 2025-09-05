@@ -15,8 +15,8 @@ def criar_local(db: Session, local: LocalCreate) -> Local:
     db.refresh(db_local)
     return db_local
 
-def criar_ph_nivel(db: Session, ph: PhNivelCreate) -> PhNivel:
-    db_ph = PhNivel(ph=ph.ph)
+def criar_ph_nivel(db: Session, ph: PhNivelCreate, local_id: int | None = None) -> PhNivel:
+    db_ph = PhNivel(local_id=local_id if local_id is not None else 1, ph=ph.ph)
     db.add(db_ph)
     db.commit()
     db.refresh(db_ph)
@@ -28,8 +28,9 @@ def obter_ultimo_ph(db: Session) -> Optional[PhNivel]:
 def obter_historico_ph(db: Session, limit: int = 10) -> List[PhNivel]:
     return db.query(PhNivel).order_by(desc(PhNivel.data)).limit(limit).all()
 
-def criar_nivel_agua(db: Session, nivel: NivelAguaCreate) -> NivelAgua:
+def criar_nivel_agua(db: Session, nivel: NivelAguaCreate, local_id: int | None = None) -> NivelAgua:
     db_nivel = NivelAgua(
+        local_id=local_id if local_id is not None else 1,
         boia=nivel.boia,
         status=NivelAgua.calcular_status(nivel.boia)
     )

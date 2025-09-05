@@ -1,10 +1,10 @@
 from fastapi.testclient import TestClient
 from app.core.config import settings
 
-def test_login(client: TestClient):
+def test_login(client: TestClient, usuario_normal):
     response = client.post(
         f"{settings.API_V1_STR}/auth/login",
-        data={"username": "12345678901", "password": "senha123"}
+        json={"email": "teste@example.com", "senha": "senha123"}
     )
     assert response.status_code == 200
     assert "access_token" in response.json()
@@ -20,7 +20,7 @@ def test_get_perfil(client: TestClient, headers_autenticado):
 
 def test_dados_cisterna(client: TestClient, headers_autenticado, dados_cisterna):
     response = client.get(
-        f"{settings.API_V1_STR}/cisterna/dados-atuais",
+        f"{settings.API_V1_STR}/locais/dados-atuais",
         headers=headers_autenticado
     )
     assert response.status_code == 200
@@ -28,13 +28,13 @@ def test_dados_cisterna(client: TestClient, headers_autenticado, dados_cisterna)
     assert "ph_atual" in dados
     assert "nivel_atual" in dados
     
-def test_registrar_leitura_ph(client: TestClient, headers_autenticado):
+def test_registrar_leitura_ph(client: TestClient, headers_autenticado, dados_cisterna):
     response = client.post(
-        f"{settings.API_V1_STR}/cisterna/registrar-leitura",
+        f"{settings.API_V1_STR}/locais/{dados_cisterna['local_id']}/registrar-ph",
         headers=headers_autenticado,
-        json={"tipo": "ph", "valor": 7.2}
+        json={"ph": 7.2}
     )
-    assert response.status_code == 200
+    assert response.status_code == 201
     dados = response.json()
     assert dados["ph"] == 7.2
 
