@@ -249,6 +249,7 @@ O projeto inclui scripts para facilitar a execução dos testes automatizados us
 - `scripts/run_tests.bat` - Script interativo para Windows
 - `scripts/run_tests.ps1` - Script PowerShell para Windows
 - `scripts/test.sh` - Script de comandos diretos para Linux/macOS
+- `scripts/GUIDE.md` - Guia completo de uso dos scripts de teste
 
 ### Exemplos de Uso
 
