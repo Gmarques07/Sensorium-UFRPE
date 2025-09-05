@@ -14,6 +14,7 @@ from app.db.session import engine, get_db
 from app.db.base_class import Base
 from app import models
 from app.core.security import get_password_hash
+from app.models import *  # Isso garante que todos os modelos sejam registrados
 
 def init_db():
     # Cria todas as tabelas definidas nos modelos
@@ -31,9 +32,9 @@ def create_admin_user(db: Session):
     # Criar um usuário admin padrão
     admin = models.Admin(
         cpf="12345678901",
-        nome="Administrador Padrão",
+        nome="admin",
         email="admin@hotmail.com",
-        senha_hash=get_password_hash("admin123")  # Senha padrão: admin123
+        senha_hash=get_password_hash("admin")  # Senha padrão: admin
     )
     
     db.add(admin)
