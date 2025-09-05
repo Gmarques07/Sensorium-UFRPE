@@ -4,10 +4,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.responses import HTMLResponse, RedirectResponse
 from fastapi import Request
-from app.core.config import settings
-from app.api.v1 import api_router
-from app.api.deps import get_current_user
-from app.crud.usuario import get_usuario
+from backend.app.core.config import settings
+from backend.app.api.v1 import api_router
+from backend.app.api.deps import get_current_user
+from backend.app.crud.usuario import get_usuario
 from pathlib import Path
 import warnings
 

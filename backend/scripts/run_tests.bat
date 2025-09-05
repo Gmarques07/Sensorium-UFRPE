@@ -13,6 +13,7 @@ if not exist "..\config\docker-compose.yml" (
     exit /b 1
 )
 
+:menu
 echo.
 echo Escolha uma opcao:
 echo 1) Executar todos os testes
@@ -33,25 +34,29 @@ if "%choice%"=="1" (
     echo.
     echo Testes de Integracao:
     docker-compose -f ..\config\docker-compose.yml run --rm tests_integration
+    goto menu
 ) else if "%choice%"=="2" (
     echo Executando testes de unidade...
     docker-compose -f ..\config\docker-compose.yml run --rm tests
+    goto menu
 ) else if "%choice%"=="3" (
     echo Executando testes de integracao...
     docker-compose -f ..\config\docker-compose.yml run --rm tests_integration
+    goto menu
 ) else if "%choice%"=="4" (
     echo Limpando containers de teste...
     docker-compose -f ..\config\docker-compose.yml down -v
     echo Containers limpos com sucesso!
+    goto menu
 ) else if "%choice%"=="5" (
     echo Building containers de teste...
     docker-compose -f ..\config\docker-compose.yml build tests tests_integration backend_int
     echo Build concluido!
+    goto menu
 ) else if "%choice%"=="0" (
     echo Ate logo!
     exit /b 0
 ) else (
     echo Opcao invalida!
+    goto menu
 )
-
-pause

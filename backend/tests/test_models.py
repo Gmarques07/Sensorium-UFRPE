@@ -1,11 +1,11 @@
 import pytest
 from sqlalchemy.orm import Session
 
-from app.schemas.usuario import UsuarioCreate
-from app.schemas.local import PhNivelCreate, NivelAguaCreate
-from app.crud import usuario as crud_usuario
-from app.crud import local as crud_cisterna
-from app.models.local import NivelAgua, Local
+from backend.app.schemas.usuario import UsuarioCreate
+from backend.app.schemas.local import PhNivelCreate, NivelAguaCreate
+from backend.app.crud import usuario as crud_usuario
+from backend.app.crud import local as crud_cisterna
+from backend.app.models.local import NivelAgua, Local
 
 
 def test_dummy():

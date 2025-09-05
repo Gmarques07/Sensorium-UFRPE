@@ -1,6 +1,6 @@
 import pytest
 from sqlalchemy.orm import Session
-from app.models.usuario import Usuario
+from backend.app.models.usuario import Usuario
 
 
 def test_criar_usuario(db: Session):

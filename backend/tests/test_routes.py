@@ -1,5 +1,5 @@
 from fastapi.testclient import TestClient
-from app.core.config import settings
+from backend.app.core.config import settings
 
 def test_login(client: TestClient, usuario_normal):
     response = client.post(

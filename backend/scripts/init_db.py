@@ -1,6 +1,13 @@
-from app.db.session import engine
-from app.db.base_class import Base
-from app import models
+import sys
+import os
+
+# Adiciona o diretório raiz ao path para que os módulos possam ser importados
+sys.path.insert(0, '/app')
+
+from backend.app.db.session import engine
+from backend.app.db.base_class import Base
+# Importa os modelos para garantir que eles sejam registrados
+from backend.app import models
 
 def init_db():
     # Cria todas as tabelas definidas nos modelos

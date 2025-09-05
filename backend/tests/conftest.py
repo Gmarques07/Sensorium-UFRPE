@@ -5,11 +5,11 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from fastapi.testclient import TestClient
 
-from app.db.base_class import Base
-from app.main import app
-from app.api.deps import get_db as app_get_db
-from app.core.security import create_access_token
-from app.models import Usuario, PhNivel, NivelAgua, Local
+from backend.app.db.base_class import Base
+from backend.app.main import app
+from backend.app.api.deps import get_db as app_get_db
+from backend.app.core.security import create_access_token
+from backend.app.models import Usuario, PhNivel, NivelAgua, Local
 
 # Banco SQLite em memória compartilhado entre conexões
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
@@ -42,7 +42,7 @@ def client() -> Generator:
             session.close()
 
     # Override da dependência de DB para usar o SQLite de testes
-    from app.api import deps
+    from backend.app.api import deps
     deps.get_db = override_get_db
     app.dependency_overrides[app_get_db] = override_get_db
     with TestClient(app) as c:

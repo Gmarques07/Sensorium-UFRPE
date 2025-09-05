@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
-from app.core.config import settings
-from app.core.security import create_access_token
+from backend.app.core.config import settings
+from backend.app.core.security import create_access_token
 
 def test_criar_token(client: TestClient, usuario_normal):
     token = create_access_token({"sub": usuario_normal["email"]})
