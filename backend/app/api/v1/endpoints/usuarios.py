@@ -105,10 +105,10 @@ def editar_perfil(
     if dados_atualizacao.senha:
         dados_atualizacao.senha = get_password_hash(dados_atualizacao.senha)
     
-    usuario = crud_usuario.update(
+    usuario = crud_usuario.update_usuario(
         db, 
-        db_obj=current_user,
-        obj_in=dados_atualizacao
+        usuario=current_user,
+        usuario_in=dados_atualizacao
     )
     return usuario
 

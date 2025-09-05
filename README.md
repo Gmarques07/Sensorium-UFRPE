@@ -25,6 +25,7 @@ python start_server.py --reload
 > 📖 **Guias Completos**: 
 > - [Início Rápido](docs/guides/QUICK_START.md) - Escolha entre Docker ou Local
 > - [Guia Docker](docs/guides/DOCKER_GUIDE.md) - Instruções detalhadas para Docker
+> - [Guia de Testes](docs/guides/TESTS_GUIDE.md) - Documentação completa dos testes
 
 ## ✨ Funcionalidades Principais
 
@@ -198,6 +199,39 @@ Sensorium-UFRPE/
 
 ## 🚀 Deploy
 
+## 🧪 Testes
+
+O sistema possui uma suíte completa de testes automatizados:
+
+### Testes de Unidade (20 testes)
+- Autenticação e autorização
+- Modelos de dados
+- Endpoints da API
+- Funções auxiliares
+
+### Testes de Integração (10 testes)
+- Fluxos completos do usuário
+- Integração com banco de dados
+- APIs REST completas
+
+### Execução
+
+```bash
+# Docker (recomendado)
+cd backend
+docker-compose run --rm tests              # Testes de unidade
+docker-compose run --rm tests_integration   # Testes de integração
+
+# Local
+cd backend
+python -m pytest tests/ --ignore=tests/integration  # Testes de unidade
+python -m pytest tests/integration/                 # Testes de integração
+```
+
+> 📖 **Documentação Completa**: [Guia de Testes](docs/guides/TESTS_GUIDE.md)
+
+## 🚀 Deploy
+
 ### Docker (Produção)
 ```bash
 docker-compose -f docker-compose.prod.yml up -d
@@ -226,6 +260,7 @@ Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalh
 - 📚 [Resumo da Documentação](docs/DOCUMENTATION_SUMMARY.md) para encontrar informações específicas
 - 🐳 [Guia Docker](docs/guides/DOCKER_GUIDE.md) para problemas específicos
 - 👨‍💻 [Guia do Desenvolvedor](docs/guides/DEVELOPER_GUIDE.md) para informações técnicas
+- 🧪 [Guia de Testes](docs/guides/TESTS_GUIDE.md) para informações sobre testes
 - 🐛 Abra uma [issue](https://github.com/seu-repo/issues)
 - 💬 Entre em contato com a equipe
 
