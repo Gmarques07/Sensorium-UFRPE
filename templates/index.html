@@ -286,56 +286,6 @@
         </div>
     </section>
     
-<!-- Área do Usuário -->
-<section id="area-usuario" class="py-5 bg-light">
-  <div class="container text-center">
-    <h2 class="mb-4">Área do Usuário</h2>
-    <div class="row justify-content-center">
-      <div class="col-md-6">
-        <div id="alert-container"></div>
-        
-        <form id="loginFormIndex">
-          <!-- Email -->
-          <div class="mb-3 text-start">
-            <label for="email-login" class="form-label">Email</label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-              <input type="email" 
-                     id="email-login" 
-                     name="email" 
-                     class="form-control" 
-                     placeholder="Digite seu email"
-                     title="Digite seu email"
-                     required>
-            </div>
-          </div>
-
-          <!-- Senha -->
-          <div class="mb-3 text-start">
-            <label for="senha-login" class="form-label">Senha</label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-lock"></i></span>
-              <input type="password" 
-                     id="senha-login" 
-                     name="senha" 
-                     class="form-control" 
-                     placeholder="Digite sua senha"
-                     required>
-            </div>
-          </div>
-
-          <!-- Botões centralizados -->
-          <div class="d-flex justify-content-center gap-3">
-            <button type="submit" class="btn btn-primary" id="btnLoginIndex">Entrar</button>
-            <a href="{{ url_for('cadastro') }}" class="btn btn-secondary">Cadastrar</a>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</section>
-
-
     <!-- Footer -->
     <footer>
         <div class="container">
