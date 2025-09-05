@@ -507,37 +507,47 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
           </div>
           <div class="modal-body">
-            <div class="mb-3">
-              <label for="nome" class="form-label">
-                <i class="bi bi-person me-2"></i>Nome
-              </label>
-              <input type="text" class="form-control" id="nome" name="nome" required>
-            </div>
-            <div class="mb-3">
-              <label for="email" class="form-label">
-                <i class="bi bi-envelope me-2"></i>Email
-              </label>
-              <input type="email" class="form-control" id="email" name="email" required>
-            </div>
-            <div class="mb-3">
-              <label for="endereco" class="form-label">
-                <i class="bi bi-geo-alt me-2"></i>Endereço
-              </label>
-              <input type="text" class="form-control" id="endereco" name="endereco" required>
-            </div>
-            <div class="mb-3">
-              <label for="senha" class="form-label">
-                <i class="bi bi-key me-2"></i>Nova Senha
-              </label>
-              <div class="input-group">
-                <input type="password" class="form-control" id="senha" name="senha" placeholder="Deixe em branco para manter a senha">
-                <button class="btn btn-outline-secondary" type="button" id="toggleSenha">
-                  <i class="bi bi-eye"></i>
-                </button>
-              </div>
-              <div class="form-text">Preencha apenas se desejar alterar sua senha</div>
+             <div class="mb-3">
+            <label for="nome" class="form-label">
+              <i class="bi bi-person me-2"></i>Nome
+            </label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-person"></i></span>
+              <input type="text" class="form-control" id="nome" name="nome" placeholder="Seu nome completo" required>
             </div>
           </div>
+            <div class="mb-3">
+            <label for="email" class="form-label">
+              <i class="bi bi-envelope me-2"></i>Email
+            </label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+              <input type="email" class="form-control" id="email" name="email" placeholder="seu@email.com" required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="endereco" class="form-label">
+              <i class="bi bi-geo-alt me-2"></i>Endereço
+            </label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+              <input type="text" class="form-control" id="endereco" name="endereco" placeholder="Rua, número, bairro, cidade" required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="senha" class="form-label">
+              <i class="bi bi-key me-2"></i>Nova Senha
+            </label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-key"></i></span>
+              <input type="password" class="form-control" id="senha" name="senha" placeholder="Deixe em branco para manter a senha">
+              <button class="btn btn-outline-secondary" type="button" id="toggleSenha" tabindex="-1">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+            <div class="form-text">Preencha apenas se desejar alterar sua senha</div>
+          </div>
+        </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
               <i class="bi bi-x-circle me-2"></i>Cancelar
