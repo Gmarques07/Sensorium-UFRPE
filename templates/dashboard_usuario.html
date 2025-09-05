@@ -466,6 +466,9 @@
                   <button type="button" id="btnExportPDF" class="btn btn-outline-primary">
                     <i class="bi bi-filetype-pdf me-2"></i>Exportar PDF
                   </button>
+                  <button type="button" id="btnEnviarEmail" class="btn btn-outline-secondary">
+                    <i class="bi bi-envelope me-2"></i>Enviar por E-mail
+                  </button>
                 </div>
               </form>
             </div>
@@ -668,8 +671,55 @@
         alert('Preencha a data inicial e final.');
         return;
       }
+      // Validar se a data inicial é menor ou igual à data final
+      const inicioDate = new Date(form.inicio.value);
+      const fimDate = new Date(form.fim.value);
+      if (inicioDate > fimDate) {
+        alert('A data inicial deve ser menor ou igual à data final.');
+        return;
+      }
+      
+      // Obter o token de acesso
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        alert('Você precisa estar logado para exportar relatórios.');
+        window.location.href = '/login_usuario.html';
+        return;
+      }
+      
       const qs = montarQueryRelatorio(form);
-      window.location.href = `/relatorios/exportar.csv?${qs}`;
+      const url = `/api/v1/relatorios/exportar.csv?${qs}`;
+      
+      // Usar fetch para obter o arquivo com o token de autenticação
+      fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error('Não autorizado. Faça login novamente.');
+          }
+          throw new Error('Erro ao exportar relatório.');
+        }
+        return response.blob();
+      })
+      .then(blob => {
+        // Criar um link de download dinamicamente
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = `relatorio_${form.inicio.value}_${form.fim.value}.csv`;
+        link.click();
+      })
+      .catch(error => {
+        console.error('Erro:', error);
+        alert(error.message || 'Erro ao exportar relatório.');
+        if (error.message && error.message.includes('Não autorizado')) {
+          localStorage.removeItem('accessToken');
+          window.location.href = '/login_usuario.html';
+        }
+      });
     });
 
     document.getElementById('btnExportPDF').addEventListener('click', function() {
@@ -678,8 +728,122 @@
         alert('Preencha a data inicial e final.');
         return;
       }
+      // Validar se a data inicial é menor ou igual à data final
+      const inicioDate = new Date(form.inicio.value);
+      const fimDate = new Date(form.fim.value);
+      if (inicioDate > fimDate) {
+        alert('A data inicial deve ser menor ou igual à data final.');
+        return;
+      }
+      
+      // Obter o token de acesso
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        alert('Você precisa estar logado para exportar relatórios.');
+        window.location.href = '/login_usuario.html';
+        return;
+      }
+      
       const qs = montarQueryRelatorio(form);
-      window.location.href = `/relatorios/exportar.pdf?${qs}`;
+      const url = `/api/v1/relatorios/exportar.pdf?${qs}`;
+      
+      // Usar fetch para obter o arquivo com o token de autenticação
+      fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error('Não autorizado. Faça login novamente.');
+          }
+          throw new Error('Erro ao exportar relatório.');
+        }
+        return response.blob();
+      })
+      .then(blob => {
+        // Criar um link de download dinamicamente
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = `relatorio_${form.inicio.value}_${form.fim.value}.pdf`;
+        link.click();
+      })
+      .catch(error => {
+        console.error('Erro:', error);
+        alert(error.message || 'Erro ao exportar relatório.');
+        if (error.message && error.message.includes('Não autorizado')) {
+          localStorage.removeItem('accessToken');
+          window.location.href = '/login_usuario.html';
+        }
+      });
+    });
+    
+    document.getElementById('btnEnviarEmail').addEventListener('click', function() {
+      const form = document.getElementById('formRelatorios');
+      if (!form.inicio.value || !form.fim.value) {
+        alert('Preencha a data inicial e final.');
+        return;
+      }
+      // Validar se a data inicial é menor ou igual à data final
+      const inicioDate = new Date(form.inicio.value);
+      const fimDate = new Date(form.fim.value);
+      if (inicioDate > fimDate) {
+        alert('A data inicial deve ser menor ou igual à data final.');
+        return;
+      }
+      
+      // Obter o token de acesso
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        alert('Você precisa estar logado para enviar relatórios.');
+        window.location.href = '/login_usuario.html';
+        return;
+      }
+      
+      // Mostrar mensagem de carregamento
+      const btn = this;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Enviando...';
+      btn.disabled = true;
+      
+      const qs = montarQueryRelatorio(form);
+      const url = `/api/v1/relatorios/enviar-por-email?${qs}`;
+      
+      // Usar fetch para enviar o relatório por e-mail
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error('Não autorizado. Faça login novamente.');
+          }
+          return response.json().then(data => {
+            throw new Error(data.detail || 'Erro ao enviar relatório por e-mail.');
+          });
+        }
+        return response.json();
+      })
+      .then(data => {
+        alert(data.message || 'Relatório enviado com sucesso!');
+      })
+      .catch(error => {
+        console.error('Erro:', error);
+        alert(error.message || 'Erro ao enviar relatório por e-mail.');
+        if (error.message && error.message.includes('Não autorizado')) {
+          localStorage.removeItem('accessToken');
+          window.location.href = '/login_usuario.html';
+        }
+      })
+      .finally(() => {
+        // Restaurar botão
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      });
     });
   </script>
   

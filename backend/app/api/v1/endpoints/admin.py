@@ -137,7 +137,6 @@ async def get_dashboard(
                 "id": u.id,
                 "nome": u.nome,
                 "email": u.email,
-                "cpf": u.cpf,
                 "endereco": u.endereco,
                 "data_criacao": u.data_criacao
             } for u in usuarios_objs

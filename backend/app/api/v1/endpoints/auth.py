@@ -121,7 +121,7 @@ async def recuperar_senha(
     
     # Gera um token de recuperação
     reset_token = create_access_token(
-        data={"sub": usuario.cpf, "type": "password_reset"},
+        data={"sub": usuario.email, "type": "password_reset"},
         expires_delta=timedelta(hours=1)
     )
     

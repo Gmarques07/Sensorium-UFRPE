@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Gota d'água estilizada -->
+  <path d="M50 15 Q 30 40, 35 70 Q 50 90, 65 70 Q 70 40, 50 15 Z" fill="#0066cc"/>
+  <!-- Reflexo -->
+  <ellipse cx="45" cy="45" rx="5" ry="10" fill="white" opacity="0.5"/>
+  <!-- Texto -->
+  <text x="50" y="95" font-family="Arial, sans-serif" font-size="12" fill="#003366" text-anchor="middle" font-weight="bold">SENSORIUM</text>
+</svg>
