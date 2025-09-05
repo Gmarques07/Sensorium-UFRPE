@@ -33,8 +33,9 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 # Calcular diretórios estáticos e de templates dinamicamente para
 # funcionar tanto em desenvolvimento quanto dentro do container Docker.
 BASE_DIR = Path(__file__).resolve().parents[1]
-STATIC_DIR = BASE_DIR / "static"
-TEMPLATES_DIR = BASE_DIR / "templates"
+PROJECT_ROOT = BASE_DIR.parent
+STATIC_DIR = PROJECT_ROOT / "static"
+TEMPLATES_DIR = PROJECT_ROOT / "templates"
 
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
@@ -44,8 +45,8 @@ else:
 if TEMPLATES_DIR.exists():
     templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 else:
-    # Fallback: tenta diretório relativo ao pacote app
-    fallback = Path(__file__).resolve().parents[0] / "templates"
+    # Fallback: tenta diretório na raiz do projeto
+    fallback = PROJECT_ROOT / "templates"
     if fallback.exists():
         templates = Jinja2Templates(directory=str(fallback))
     else:

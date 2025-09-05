@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from app.models.local import PhNivel, NivelAgua, Local  # Importar o modelo Local
@@ -15,7 +15,7 @@ def criar_local(db: Session, local: LocalCreate) -> Local:
     db.refresh(db_local)
     return db_local
 
-def criar_ph_nivel(db: Session, ph: PhNivelCreate, local_id: int | None = None) -> PhNivel:
+def criar_ph_nivel(db: Session, ph: PhNivelCreate, local_id: Optional[int] = None) -> PhNivel:
     db_ph = PhNivel(local_id=local_id if local_id is not None else 1, ph=ph.ph)
     db.add(db_ph)
     db.commit()
@@ -28,7 +28,7 @@ def obter_ultimo_ph(db: Session) -> Optional[PhNivel]:
 def obter_historico_ph(db: Session, limit: int = 10) -> List[PhNivel]:
     return db.query(PhNivel).order_by(desc(PhNivel.data)).limit(limit).all()
 
-def criar_nivel_agua(db: Session, nivel: NivelAguaCreate, local_id: int | None = None) -> NivelAgua:
+def criar_nivel_agua(db: Session, nivel: NivelAguaCreate, local_id: Optional[int] = None) -> NivelAgua:
     db_nivel = NivelAgua(
         local_id=local_id if local_id is not None else 1,
         boia=nivel.boia,

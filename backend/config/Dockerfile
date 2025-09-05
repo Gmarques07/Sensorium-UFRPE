@@ -18,7 +18,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Copiar requirements primeiro para aproveitar cache do docker
-COPY config/requirements.txt ./requirements.txt
+COPY backend/config/requirements.txt ./requirements.txt
 
 RUN pip install --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt \
@@ -36,4 +36,4 @@ EXPOSE 8001
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:8001/health || exit 1
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8001"]
