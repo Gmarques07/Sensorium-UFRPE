@@ -1,11 +1,24 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.responses import HTMLResponse
 import uvicorn
 from app.core.config import settings
+from app.db.session import SessionLocal
+from sqlalchemy.orm import Session
+from app import crud
+from app.models.usuario import Usuario
+from app.models.local import Local
 import os
+
+# Função para obter sessão do banco de dados
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 # Criar a aplicação principal que inclui a API
 app = FastAPI(
@@ -129,23 +142,46 @@ async def dashboard_usuario(request: Request):
     })
 
 @app.get("/admin_dashboard.html", response_class=HTMLResponse)
-async def admin_dashboard(request: Request):
-    # TODO: Implementar autenticação real e buscar dados reais do banco
-    # Por enquanto, vamos passar dados de exemplo
+async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
+    # Buscar dados reais do banco de dados
+    from app import crud
+    
+    # Obter todos os usuários
+    usuarios_objs = crud.usuario.get_multi(db, limit=100)
     usuarios = [
-        {"id": 1, "nome": "Usuário 1", "cpf": "12345678901", "email": "usuario1@example.com", "endereco": "Endereço 1"},
-        {"id": 2, "nome": "Usuário 2", "cpf": "12345678902", "email": "usuario2@example.com", "endereco": "Endereço 2"}
+        {
+            "id": u.id,
+            "nome": u.nome,
+            "cpf": u.cpf,
+            "email": u.email,
+            "endereco": u.endereco
+        } for u in usuarios_objs
     ]
     
-    notificacoes = [
-        {"id": 1, "tipo": "Alerta", "titulo": "Nível baixo", "mensagem": "Nível da cisterna baixo", "data_criacao": "2023-01-01 10:00:00", "lida": False},
-        {"id": 2, "tipo": "Info", "titulo": "Atualização", "mensagem": "Sistema atualizado", "data_criacao": "2023-01-01 09:00:00", "lida": True}
-    ]
+    # Obter todas as notificações
+    try:
+        from sqlalchemy import text
+        notificacoes_result = db.execute(
+            text("SELECT * FROM notificacoes ORDER BY data_criacao DESC LIMIT 50")
+        ).fetchall()
+        notificacoes = [dict(n) for n in notificacoes_result]
+    except Exception:
+        notificacoes = []
     
-    configuracoes = [
-        {"chave": "limite_ph_min", "valor": "6.5", "descricao": "Limite mínimo de pH", "tipo": "numero"},
-        {"chave": "limite_ph_max", "valor": "8.5", "descricao": "Limite máximo de pH", "tipo": "numero"}
-    ]
+    # Obter configurações
+    try:
+        configuracoes_objs = crud.admin.get_all_configuracoes(db, limit=100)
+        configuracoes = [
+            {
+                "id": c.id,
+                "chave": c.chave,
+                "valor": c.valor,
+                "descricao": c.descricao,
+                "tipo": "numero"  # Tipo padrão para configurações
+            } for c in configuracoes_objs
+        ]
+    except Exception:
+        configuracoes = []
     
     total_usuarios = len(usuarios)
     total_notificacoes = len(notificacoes)
@@ -157,6 +193,40 @@ async def admin_dashboard(request: Request):
         "configuracoes": configuracoes,
         "total_usuarios": total_usuarios,
         "total_notificacoes": total_notificacoes
+    })
+
+@app.get("/gerenciar_sensores/{usuario_id}", response_class=HTMLResponse)
+async def gerenciar_sensores(request: Request, usuario_id: int, db: Session = Depends(get_db)):
+    # Obter o usuário
+    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+    
+    # Obter sensores atribuídos ao usuário
+    from app.crud import usuario_sensor as crud_usuario_sensor
+    usuario_sensores = crud_usuario_sensor.get_sensores_do_usuario(db, usuario_id)
+    
+    # Converter para objetos de sensor
+    sensores_atribuidos = []
+    for usuario_sensor in usuario_sensores:
+        sensor = db.query(Local).filter(Local.id == usuario_sensor.local_id).first()
+        if sensor:
+            sensores_atribuidos.append(sensor)
+    
+    # Obter todos os sensores
+    todos_sensores = db.query(Local).all()
+    
+    return templates.TemplateResponse("gerenciar_sensores.html", {
+        "request": request,
+        "usuario": {
+            "id": usuario.id,
+            "nome": usuario.nome,
+            "cpf": usuario.cpf,
+            "email": usuario.email,
+            "endereco": usuario.endereco
+        },
+        "sensores_atribuidos": sensores_atribuidos,
+        "todos_sensores": todos_sensores
     })
 
 @app.get("/sobre.html", response_class=HTMLResponse)

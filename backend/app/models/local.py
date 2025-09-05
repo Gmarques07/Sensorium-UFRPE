@@ -15,6 +15,7 @@ class Local(Base):
     leituras_ph = relationship("PhNivel", back_populates="local")
     leituras_nivel = relationship("NivelAgua", back_populates="local")
     notificacoes = relationship("Notificacao", foreign_keys="[Notificacao.local_id]")
+    usuarios_atribuidos = relationship("UsuarioSensor", back_populates="sensor")
     
     def to_dict(self):
         return {

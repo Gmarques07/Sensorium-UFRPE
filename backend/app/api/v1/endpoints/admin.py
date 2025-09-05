@@ -6,12 +6,16 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from ....crud import admin as crud_admin
 from ....crud import usuario as crud_usuario
+from ....crud import usuario_sensor as crud_usuario_sensor
 from ....schemas import admin as schemas
-from ....schemas import usuario as usuario_schemas  # Importar o schema correto
+from ....schemas import usuario as usuario_schemas
+from ....schemas import usuario_sensor as usuario_sensor_schemas
 from ....schemas import auth as auth_schemas
+from ....schemas import local as local_schemas
 from ....api.deps import get_db, get_current_admin
 from ....models.usuario import Usuario
 from ....models.admin import Admin
+from ....models.local import Local
 from ....core.security import create_access_token, verify_password
 from ....core.config import settings
 
@@ -173,6 +177,143 @@ async def listar_usuarios(
     """
     usuarios = crud_usuario.get_multi(db, skip=skip, limit=limit)
     return usuarios
+
+@router.get("/sensores", response_model=List[local_schemas.Local])
+async def listar_sensores(
+    db: Session = Depends(get_db),
+    _: dict = Depends(get_current_admin)
+) -> Any:
+    """
+    Lista todos os sensores do sistema.
+    """
+    return db.query(Local).all()
+
+@router.get("/usuarios/{usuario_id}/sensores", response_model=List[local_schemas.Local])
+async def listar_sensores_do_usuario(
+    usuario_id: int,
+    db: Session = Depends(get_db),
+    _: dict = Depends(get_current_admin)
+) -> Any:
+    """
+    Lista todos os sensores atribuídos a um usuário específico.
+    """
+    # Verifica se o usuário existe
+    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    if not usuario:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuário não encontrado"
+        )
+    
+    # Obtém os relacionamentos usuário-sensor
+    usuario_sensores = crud_usuario_sensor.get_sensores_do_usuario(db, usuario_id)
+    
+    # Obtém os sensores correspondentes
+    sensores = []
+    for usuario_sensor in usuario_sensores:
+        sensor = db.query(Local).filter(Local.id == usuario_sensor.local_id).first()
+        if sensor:
+            sensores.append(sensor)
+    
+    return sensores
+
+@router.post("/usuarios/{usuario_id}/sensores", response_model=usuario_sensor_schemas.UsuarioSensor)
+async def atribuir_sensor_a_usuario(
+    usuario_id: int,
+    sensor_id: int,
+    db: Session = Depends(get_db),
+    _: dict = Depends(get_current_admin)
+) -> Any:
+    """
+    Atribui um sensor a um usuário.
+    """
+    # Verifica se o usuário existe
+    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    if not usuario:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuário não encontrado"
+        )
+    
+    # Verifica se o sensor existe
+    sensor = db.query(Local).filter(Local.id == sensor_id).first()
+    if not sensor:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Sensor não encontrado"
+        )
+    
+    # Verifica se o relacionamento já existe
+    usuario_sensor = crud_usuario_sensor.get_usuario_sensor(db, usuario_id, sensor_id)
+    if usuario_sensor:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Sensor já atribuído a este usuário"
+        )
+    
+    # Cria o relacionamento
+    usuario_sensor_create = usuario_sensor_schemas.UsuarioSensorCreate(
+        usuario_id=usuario_id,
+        local_id=sensor_id
+    )
+    return crud_usuario_sensor.create_usuario_sensor(db, usuario_sensor_create)
+
+@router.delete("/usuarios/{usuario_id}/sensores/{sensor_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def remover_sensor_de_usuario(
+    usuario_id: int,
+    sensor_id: int,
+    db: Session = Depends(get_db),
+    _: dict = Depends(get_current_admin)
+) -> None:
+    """
+    Remove um sensor de um usuário.
+    """
+    # Verifica se o usuário existe
+    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    if not usuario:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuário não encontrado"
+        )
+    
+    # Verifica se o sensor existe
+    sensor = db.query(Local).filter(Local.id == sensor_id).first()
+    if not sensor:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Sensor não encontrado"
+        )
+    
+    # Remove o relacionamento
+    if not crud_usuario_sensor.delete_usuario_sensor(db, usuario_id, sensor_id):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Relacionamento usuário-sensor não encontrado"
+        )
+    
+    return None
+
+@router.delete("/usuarios/{usuario_id}/sensores", status_code=status.HTTP_204_NO_CONTENT)
+async def remover_todos_sensores_do_usuario(
+    usuario_id: int,
+    db: Session = Depends(get_db),
+    _: dict = Depends(get_current_admin)
+) -> None:
+    """
+    Remove todos os sensores atribuídos a um usuário.
+    """
+    # Verifica se o usuário existe
+    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    if not usuario:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuário não encontrado"
+        )
+    
+    # Remove todos os relacionamentos
+    crud_usuario_sensor.delete_all_sensores_do_usuario(db, usuario_id)
+    
+    return None
 
 @router.get("/configuracoes", response_model=List[schemas.Configuracao])
 async def listar_configuracoes(

@@ -252,7 +252,7 @@
                                         <td>{{ usuario.endereco }}</td>
                                         <td>
                                             <button class="btn btn-sm btn-primary btn-visualizar-usuario" data-id="{{ usuario.id }}"><i class="bi bi-eye"></i></button>
-                                            <button class="btn btn-sm btn-warning btn-editar-usuario" data-id="{{ usuario.id }}"><i class="bi bi-pencil"></i></button>
+                                            <a href="/gerenciar_sensores/{{ usuario.id }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
                                             <button class="btn btn-sm btn-danger btn-excluir-usuario" data-id="{{ usuario.id }}"><i class="bi bi-trash"></i></button>
                                         </td>
                                     </tr>
