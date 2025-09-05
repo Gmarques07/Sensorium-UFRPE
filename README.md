@@ -102,6 +102,10 @@ docker-compose up -d --build
 - Frontend: http://localhost:8001
 - API Docs: http://localhost:8001/docs
 
+### Configuração de E-mails
+
+Para habilitar o envio de relatórios por e-mail, consulte o arquivo `CONFIG_EMAIL.md` para instruções detalhadas sobre como configurar as variáveis de ambiente necessárias.
+
 ### Método 2: Instalação Local
 
 1. **Clone e navegue**:
@@ -122,10 +126,11 @@ venv\Scripts\activate     # Windows
 pip install -r requirements.txt
 ```
 
-4. **Configure o banco**:
+4. **Configure o banco e e-mails**:
 ```bash
 cp .env.example .env
 # Edite o arquivo .env com suas configurações
+# Veja CONFIG_EMAIL.md para instruções sobre configuração de e-mails
 python init_db.py
 ```
 

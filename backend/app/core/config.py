@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-from typing import List
+from typing import List, Optional
 import os
 from dotenv import load_dotenv
 
@@ -33,6 +33,24 @@ class Settings(BaseSettings):
     
     # Ambiente
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
+    
+    # Configurações de e-mail
+    SMTP_HOST: Optional[str] = os.getenv("SMTP_HOST")
+    SMTP_PORT: Optional[int] = int(os.getenv("SMTP_PORT", "587"))
+    SMTP_USER: Optional[str] = os.getenv("SMTP_USER")
+    SMTP_PASSWORD: Optional[str] = os.getenv("SMTP_PASSWORD")
+    EMAILS_FROM_EMAIL: Optional[str] = os.getenv("EMAILS_FROM_EMAIL")
+    EMAILS_FROM_NAME: Optional[str] = os.getenv("EMAILS_FROM_NAME", "Sensorium UFRPE")
+    
+    @property
+    def emails_enabled(self) -> bool:
+        return all([
+            self.SMTP_HOST,
+            self.SMTP_PORT,
+            self.SMTP_USER,
+            self.SMTP_PASSWORD,
+            self.EMAILS_FROM_EMAIL
+        ])
     
     class Config:
         case_sensitive = True
