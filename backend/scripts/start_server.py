@@ -22,7 +22,7 @@ def main():
     parser.add_argument(
         "--port",
         type=int,
-        default=8001,
+        default=8002,
         help="Porta para rodar o servidor (padrão: 8001)"
     )
     parser.add_argument(

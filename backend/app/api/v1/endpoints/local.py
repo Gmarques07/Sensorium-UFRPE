@@ -206,7 +206,7 @@ async def registrar_leitura_ph(
     """
     # TODO: Verificar se o usuário tem acesso ao local
     # TODO: Verificar se o usuário tem permissão para registrar leituras
-    return crud_local.criar_ph_nivel(db, leitura)
+    return crud_local.criar_ph_nivel(db, leitura, local_id=local_id)
 
 @router.post(
     "/{local_id}/registrar-nivel",
@@ -241,4 +241,4 @@ async def registrar_leitura_nivel(
     """
     # TODO: Verificar se o usuário tem acesso ao local
     # TODO: Verificar se o usuário tem permissão para registrar leituras
-    return crud_local.criar_nivel_agua(db, leitura)
+    return crud_local.criar_nivel_agua(db, leitura, local_id=local_id)

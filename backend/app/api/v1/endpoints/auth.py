@@ -12,6 +12,7 @@ from ....core.security import (
     verify_token
 )
 from ....api.deps import get_db
+from ....core.limiter import rate_limit
 from ....core.config import settings
 from ....models.usuario import Usuario
 
@@ -20,17 +21,18 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 @router.post("/login", response_model=schemas_auth.Token, status_code=status.HTTP_200_OK,
              summary="Autenticação de usuário",
-             description="Endpoint para autenticação de usuário usando CPF/CNPJ e senha",
+             description="Endpoint para autenticação de usuário usando email e senha",
              response_description="Token de acesso JWT")
 async def login(
     login_data: schemas_auth.Login,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    __rl: None = Depends(rate_limit(5, 60, "login"))
 ) -> Any:
     """
-    Realiza o login do usuário usando CPF ou CNPJ e senha.
+    Realiza o login do usuário usando email e senha.
     
     Args:
-        login_data: Dados de login contendo CPF/CNPJ e senha
+        login_data: Dados de login contendo email e senha
         db: Sessão do banco de dados
         
     Returns:
@@ -45,30 +47,28 @@ async def login(
         >>> # Usando curl
         >>> curl -X POST "http://localhost:8000/api/v1/auth/login" \\
         >>>      -H "Content-Type: application/json" \\
-        >>>      -d '{"cpf_cnpj": "12345678900", "senha": "minhasenha123"}'
+        >>>      -d '{"email": "usuario@exemplo.com", "senha": "minhasenha123"}'
     """
-    # Remover caracteres não numéricos do CPF/CNPJ
-    cpf_cnpj_limpo = ''.join(filter(str.isdigit, login_data.cpf_cnpj))
-    
-    # Buscar usuário pelo CPF/CNPJ
-    usuario = crud_usuario.get_usuario_by_cpf(db, cpf=cpf_cnpj_limpo)
+    # Buscar usuário pelo email
+    usuario = crud_usuario.get_usuario_by_email(db, email=login_data.email)
     if not usuario:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="CPF/CNPJ ou senha incorretos",
+            detail="Email ou senha incorretos",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
+    # Verifica senha: usa o hash armazenado
     if not verify_password(login_data.senha, usuario.senha_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="CPF/CNPJ ou senha incorretos",
+            detail="Email ou senha incorretos",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": usuario.cpf}, expires_delta=access_token_expires
+        data={"sub": usuario.email}, expires_delta=access_token_expires
     )
     
     return {
@@ -84,13 +84,6 @@ async def registro(
     """
     Registra um novo usuário e retorna um token de acesso.
     """
-    # Verifica se o CPF já existe
-    if crud_usuario.get_usuario_by_cpf(db, cpf=usuario_in.cpf):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="CPF já cadastrado"
-        )
-    
     # Verifica se o email já existe
     if crud_usuario.get_usuario_by_email(db, email=usuario_in.email):
         raise HTTPException(
@@ -104,7 +97,7 @@ async def registro(
     # Gera o token de acesso
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": usuario.cpf}, expires_delta=access_token_expires
+        data={"sub": usuario.email}, expires_delta=access_token_expires
     )
     
     return {
@@ -154,7 +147,7 @@ async def resetar_senha(
             detail="Token inválido ou expirado"
         )
     
-    usuario = crud_usuario.get_usuario_by_cpf(db, cpf=token_data.cpf)
+    usuario = crud_usuario.get_usuario_by_email(db, email=token_data.email)
     if not usuario:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

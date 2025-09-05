@@ -39,10 +39,10 @@ def verify_token(token: str) -> Optional[TokenData]:
     """
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-        cpf: str = payload.get("sub")
-        if cpf is None:
+        email: str = payload.get("sub")
+        if email is None:
             return None
-        token_data = TokenData(cpf=cpf)
+        token_data = TokenData(email=email)
         return token_data
     except JWTError:
         return None

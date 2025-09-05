@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
@@ -8,11 +8,12 @@ class Usuario(Base):
     __tablename__ = "usuarios"
 
     id = Column(Integer, primary_key=True, index=True)
-    cpf = Column(String(11), unique=True, index=True, nullable=False)
+
     nome = Column(String(100), nullable=False)
     email = Column(String(100), unique=True, index=True, nullable=False)
     endereco = Column(String(200), nullable=False)
     senha_hash = Column(String(255), nullable=False)
+    ativo = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
@@ -28,10 +29,10 @@ class Usuario(Base):
     def to_dict(self):
         return {
             "id": self.id,
-            "cpf": self.cpf,
             "nome": self.nome,
             "email": self.email,
             "endereco": self.endereco,
+            "ativo": self.ativo,
             "created_at": self.created_at,
             "updated_at": self.updated_at
         }

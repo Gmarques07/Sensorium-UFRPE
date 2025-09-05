@@ -10,7 +10,7 @@ class Notificacao(Base):
     mensagem = Column(Text, nullable=False)
     data_criacao = Column(DateTime, default=datetime.utcnow, nullable=False)
     local_id = Column(Integer, ForeignKey("locais.id"), nullable=True)
-    cpf_usuario = Column(String(11), nullable=True)
+    email_usuario = Column(String(100), nullable=True)
     tipo = Column(String(50), nullable=False)  # NIVEL_BAIXO, PH_ALTERADO, MANUTENCAO, etc
     lida = Column(Boolean, default=False)
     data_leitura = Column(DateTime, nullable=True)

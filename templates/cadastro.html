@@ -185,7 +185,7 @@
     <div class="signup-card" data-aos="fade-up">
         <div class="text-center mb-4">
             <a href="{{ url_for('homepage') }}" class="text-decoration-none">
-                <i class="bi bi-droplet logo-icon"></i>
+                <i class="bi bi-cpu logo-icon"></i>
                 <h2 class="mt-3 mb-2">Criar Conta no Sensorium</h2>
                 <p class="text-muted mb-0">Preencha seus dados para começar</p>
             </a>
@@ -213,21 +213,7 @@
                 </div>
             </div>
 
-            <div class="mb-4">
-                <label for="cpf_cnpj" class="form-label">CPF ou CNPJ</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
-                    <input type="text" 
-                           id="cpf_cnpj" 
-                           name="cpf_cnpj" 
-                           class="form-control" 
-                           placeholder="000.000.000-00 ou 00.000.000/0000-00"
-                           maxlength="18"
-                           pattern="(\d{3}\.\d{3}\.\d{3}-\d{2})|(\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2})"
-                           title="Insira um CPF ou CNPJ válido"
-                           required>
-                </div>
-            </div>
+
 
             <div class="mb-4">
                 <label for="email" class="form-label">E-mail</label>
@@ -312,7 +298,7 @@
             once: true
         });
         document.addEventListener('DOMContentLoaded', function() {
-            const cpfCnpjInput = document.getElementById('cpf_cnpj');
+
             const senhaInput = document.getElementById('senha');
             const confirmSenhaInput = document.getElementById('confirmacao_senha');
             const passwordMatch = document.getElementById('passwordMatch');
@@ -367,29 +353,7 @@
                 }
             }
 
-            // Formatar CPF ou CNPJ dinamicamente
-            function formatCPForCNPJ(value) {
-                value = value.replace(/\D/g, '');
 
-                if (value.length <= 11) {
-                    // CPF: 000.000.000-00
-                    value = value.replace(/(\d{3})(\d)/, '$1.$2');
-                    value = value.replace(/(\d{3})(\d)/, '$1.$2');
-                    value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-                } else {
-                    // CNPJ: 00.000.000/0000-00
-                    value = value.replace(/^(\d{2})(\d)/, '$1.$2');
-                    value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
-                    value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
-                    value = value.replace(/(\d{4})(\d)/, '$1-$2');
-                }
-                return value;
-            }
-
-            cpfCnpjInput.addEventListener('input', function() {
-                this.value = formatCPForCNPJ(this.value);
-                checkFormValidity(); 
-            });
 
             function checkPassword() {
                 const password = senhaInput.value;
@@ -483,14 +447,12 @@
             alertContainer.innerHTML = '';
 
             const nome = document.getElementById('nome').value;
-            const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
             const email = document.getElementById('email').value;
             const endereco = document.getElementById('endereco').value;
             const senha = document.getElementById('senha').value;
 
             const data = {
                 nome,
-                cpf,
                 email,
                 endereco,
                 senha

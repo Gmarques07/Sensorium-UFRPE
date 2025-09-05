@@ -342,7 +342,7 @@
       <!-- Sidebar -->
       <nav class="sidebar col-auto">
         <a href="{{ url_for('homepage') }}" class="d-flex align-items-center text-decoration-none text-white mb-4" data-aos="fade-right">
-          <i class="bi bi-droplet fs-1"></i>
+          <i class="bi bi-cpu logo-icon"></i>
           <span class="brand-text fs-4 ms-2">Sensorium</span>
         </a>
         <div class="nav flex-column">
@@ -378,7 +378,7 @@
       <main class="content col">
         <header class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-down">
           <div>
-              <h1 class="h3 text-primary fw-bold mb-0">Bem-vindo(a), {{ usuario.nome }}!</h1>
+              <h1 class="h3 text-primary fw-bold mb-0" id="welcome-message">Bem-vindo(a)!</h1>
               <p class="text-muted mb-0">Visualize relatórios e monitore seus sensores</p>
           </div>
           <div class="d-flex gap-2">
@@ -397,7 +397,7 @@
                   <i class="bi bi-cpu"></i>
                 </div>
                 <h2 class="h5 mb-3">Dispositivos Conectados</h2>
-                <div class="fs-2 fw-bold text-primary">{{ dispositivos|length if dispositivos else 0 }}</div>
+                <div class="fs-2 fw-bold text-primary" id="total-dispositivos">0</div>
                 <p class="text-muted mb-0">Total de dispositivos monitorados</p>
               </div>
             </div>
@@ -457,9 +457,6 @@
                   </label>
                   <select id="dispRel" name="dispositivo" class="form-select">
                     <option value="">Todos</option>
-                    {% for disp in dispositivos %}
-                      <option value="{{ disp.dispositivo }}">{{ disp.dispositivo }}</option>
-                    {% endfor %}
                   </select>
                 </div>
                 <div class="col-12 d-flex gap-2">
@@ -485,312 +482,14 @@
             </div>
           </div>
 
-          {% if dispositivos %}
-            <div class="mb-4">
-              <label for="selectDispositivo" class="form-label fw-semibold">Selecione o Dispositivo:</label>
-              <select class="form-select w-auto d-inline-block" id="selectDispositivo" onchange="mostrarDispositivoSelecionado()">
-                {% for disp in dispositivos %}
-                  <option value="{{ disp.dispositivo }}">{{ disp.dispositivo }}</option>
-                {% endfor %}
-              </select>
-            </div>
-
-            {% for disp in dispositivos %}
-              <div class="dispositivo-panel" id="panel-{{ disp.dispositivo|replace(' ', '_') }}" style="display: {% if loop.first %}block{% else %}none{% endif %};">
-                <div class="row g-4">
-                  <!-- Card pH -->
-                  <div class="col-md-6 mb-4">
-                    <div class="card border-0 shadow-sm h-100">
-                      <div class="card-header bg-primary text-white">
-                        <i class="bi bi-droplet-half me-2"></i>pH da Água
-                      </div>
-                      <div class="card-body">
-                        {% set ph = ph_por_dispositivo[disp.dispositivo]['atual'] %}
-                        {% if ph %}
-                          <div class="text-center mb-4">
-                            <div class="display-4 text-primary mb-2">{{ ph.ph }}</div>
-                            <span class="badge {% if ph.ph < 6.5 %}bg-danger{% elif ph.ph > 8.5 %}bg-warning{% else %}bg-success{% endif %} fs-6">
-                              {% if ph.ph < 6.5 %}Ácido{% elif ph.ph > 8.5 %}Alcalino{% else %}Neutro{% endif %}
-                            </span>
-                            <p class="text-muted mt-3 mb-0">
-                              <i class="bi bi-clock me-1"></i>
-                              Última atualização: {{ ph.data }}
-                            </p>
-                          </div>
-                          <div class="mt-4">
-                            <canvas id="phChart-{{ disp.dispositivo|replace(' ', '_') }}" height="200"></canvas>
-                          </div>
-                        {% else %}
-                          <div class="text-center py-5">
-                            <i class="bi bi-exclamation-circle fs-1 text-muted mb-3"></i>
-                            <p class="text-muted mb-0">Nenhum dado de pH disponível.</p>
-                          </div>
-                        {% endif %}
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Card Nível -->
-                  <div class="col-md-6 mb-4">
-                    <div class="card border-0 shadow-sm h-100">
-                      <div class="card-header bg-primary text-white">
-                        <i class="bi bi-water me-2"></i>Nível de Água
-                      </div>
-                      <div class="card-body">
-                        {% set nivel = nivel_por_dispositivo[disp.dispositivo]['atual'] %}
-                        {% if nivel %}
-                          <div class="text-center mb-4">
-                            <div class="mb-4">
-                              <i class="bi bi-water fs-1 {% if nivel.status == 'ALTO' %}text-success{% else %}text-warning{% endif %}"></i>
-                            </div>
-                            <div class="display-6 mb-2">
-                              <span class="badge {% if nivel.status == 'ALTO' %}bg-success{% else %}bg-warning{% endif %} fs-5">
-                                {{ nivel.status }}
-                              </span>
-                            </div>
-                            <div class="mt-4">
-                              <p class="mb-2">Status da Boia:</p>
-                              <span class="badge {% if nivel.boia == 1 %}bg-primary{% else %}bg-secondary{% endif %} fs-6">
-                                {% if nivel.boia == 1 %}Ativada{% else %}Desativada{% endif %}
-                              </span>
-                            </div>
-                            <p class="text-muted mt-4 mb-0">
-                              <i class="bi bi-clock me-1"></i>
-                              Última atualização: {{ nivel.data }}
-                            </p>
-                          </div>
-                          <div class="mt-4">
-                            <canvas id="nivelChart-{{ disp.dispositivo|replace(' ', '_') }}" height="200"></canvas>
-                          </div>
-                        {% else %}
-                          <div class="text-center py-5">
-                            <i class="bi bi-exclamation-circle fs-1 text-muted mb-3"></i>
-                            <p class="text-muted mb-0">Nenhum dado de nível disponível.</p>
-                          </div>
-                        {% endif %}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Histórico detalhado -->
-                <div class="row g-4 mt-2">
-                  <div class="col-md-6">
-                    <div class="card border-0 shadow-sm">
-                      <div class="card-header bg-primary text-white">
-                        <i class="bi bi-graph-up me-2"></i>Histórico de pH
-                      </div>
-                      <div class="card-body">
-                        <ul class="list-group list-group-flush">
-                          {% for item in ph_por_dispositivo[disp.dispositivo]['historico'] %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                              <span><i class="bi bi-calendar me-2"></i>{{ item.data }}</span>
-                              <span class="badge bg-primary">pH {{ item.ph }}</span>
-                            </li>
-                          {% else %}
-                            <li class="list-group-item text-muted">Nenhum registro encontrado</li>
-                          {% endfor %}
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="card border-0 shadow-sm">
-                      <div class="card-header bg-primary text-white">
-                        <i class="bi bi-clock-history me-2"></i>Histórico de Nível
-                      </div>
-                      <div class="card-body">
-                        <ul class="list-group list-group-flush">
-                          {% for item in nivel_por_dispositivo[disp.dispositivo]['historico'] %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                              <span><i class="bi bi-calendar me-2"></i>{{ item.data }}</span>
-                              <span class="badge {% if item.status == 'ALTO' %}bg-success{% else %}bg-warning{% endif %}">{{ item.status }}</span>
-                            </li>
-                          {% else %}
-                            <li class="list-group-item text-muted">Nenhum registro encontrado</li>
-                          {% endfor %}
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            {% endfor %}
-
-            <!-- Chart.js + gráficos -->
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-            <script>
-              function mostrarDispositivoSelecionado() {
-                var select = document.getElementById('selectDispositivo');
-                var valor = select.value.replace(/\s/g, '_');
-                var paineis = document.querySelectorAll('.dispositivo-panel');
-                paineis.forEach(function(p) { p.style.display = 'none'; });
-                var painelAtivo = document.getElementById('panel-' + valor);
-                if (painelAtivo) painelAtivo.style.display = 'block';
-                localStorage.setItem('dispositivoSelecionado', select.value);
-              }
-
-              document.addEventListener('DOMContentLoaded', function() {
-                var select = document.getElementById('selectDispositivo');
-                var salvo = localStorage.getItem('dispositivoSelecionado');
-                if (select && salvo) {
-                  select.value = salvo;
-                  mostrarDispositivoSelecionado();
-                }
-              });
-
-              var historicoPh = {};
-              var historicoNivel = {};
-              {% for disp in dispositivos %}
-                historicoPh['{{ disp.dispositivo|replace(' ', '_') }}'] = {
-                  labels: [
-                    {% for item in ph_por_dispositivo[disp.dispositivo]['historico']|reverse %}'{{ item.data }}'{% if not loop.last %},{% endif %}{% endfor %}
-                  ],
-                  data: [
-                    {% for item in ph_por_dispositivo[disp.dispositivo]['historico']|reverse %}{{ item.ph }}{% if not loop.last %},{% endif %}{% endfor %}
-                  ]
-                };
-                historicoNivel['{{ disp.dispositivo|replace(' ', '_') }}'] = {
-                  labels: [
-                    {% for item in nivel_por_dispositivo[disp.dispositivo]['historico']|reverse %}'{{ item.data }}'{% if not loop.last %},{% endif %}{% endfor %}
-                  ],
-                  data: [
-                    {% for item in nivel_por_dispositivo[disp.dispositivo]['historico']|reverse %}
-                      {% if item.status == 'ALTO' %}2{% elif item.status == 'BAIXO' %}1{% else %}0{% endif %}{% if not loop.last %},{% endif %}
-                    {% endfor %}
-                  ]
-                };
-              {% endfor %}
-
-              document.addEventListener('DOMContentLoaded', function() {
-                {% for disp in dispositivos %}
-                  var phCtx = document.getElementById('phChart-{{ disp.dispositivo|replace(' ', '_') }}');
-                  if (phCtx) {
-                    new Chart(phCtx, {
-                      type: 'line',
-                      data: {
-                        labels: historicoPh['{{ disp.dispositivo|replace(' ', '_') }}'].labels,
-                        datasets: [{
-                          label: 'Histórico de pH',
-                          data: historicoPh['{{ disp.dispositivo|replace(' ', '_') }}'].data,
-                          borderColor: '#0066cc',
-                          backgroundColor: 'rgba(0,102,204,0.1)',
-                          borderWidth: 3,
-                          pointBackgroundColor: '#0066cc',
-                          pointBorderColor: '#fff',
-                          pointRadius: 6,
-                          pointHoverRadius: 8,
-                          fill: true,
-                          tension: 0.4
-                        }]
-                      },
-                      options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                          legend: { display: false },
-                          tooltip: {
-                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                            titleFont: { family: "'Poppins', sans-serif", size: 14 },
-                            bodyFont: { family: "'Poppins', sans-serif", size: 13 },
-                            padding: 12,
-                            cornerRadius: 8,
-                            displayColors: false
-                          }
-                        },
-                        scales: {
-                          y: {
-                            beginAtZero: false,
-                            grid: { color: 'rgba(0, 0, 0, 0.05)', drawBorder: false },
-                            ticks: { font: { family: "'Poppins', sans-serif" }, padding: 10 }
-                          },
-                          x: {
-                            grid: { display: false },
-                            ticks: { font: { family: "'Poppins', sans-serif" }, maxRotation: 45, minRotation: 45, padding: 10 }
-                          }
-                        },
-                        animation: { duration: 2000, easing: 'easeOutQuart' },
-                        interaction: { intersect: false, mode: 'index' }
-                      }
-                    });
-                  }
-                  var nivelCtx = document.getElementById('nivelChart-{{ disp.dispositivo|replace(' ', '_') }}');
-                  if (nivelCtx) {
-                    new Chart(nivelCtx, {
-                      type: 'line',
-                      data: {
-                        labels: historicoNivel['{{ disp.dispositivo|replace(' ', '_') }}'].labels,
-                        datasets: [{
-                          label: 'Histórico de Nível',
-                          data: historicoNivel['{{ disp.dispositivo|replace(' ', '_') }}'].data,
-                          borderColor: '#34c759',
-                          backgroundColor: 'rgba(52,199,89,0.1)',
-                          borderWidth: 3,
-                          pointBackgroundColor: '#34c759',
-                          pointBorderColor: '#fff',
-                          pointRadius: 6,
-                          pointHoverRadius: 8,
-                          fill: true,
-                          tension: 0.4
-                        }]
-                      },
-                      options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                          legend: { display: false },
-                          tooltip: {
-                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                            titleFont: { family: "'Poppins', sans-serif", size: 14 },
-                            bodyFont: { family: "'Poppins', sans-serif", size: 13 },
-                            padding: 12,
-                            cornerRadius: 8,
-                            displayColors: false,
-                            callbacks: {
-                              label: function(context) {
-                                var v = context.parsed.y;
-                                if (v === 2) return 'ALTO';
-                                if (v === 1) return 'BAIXO';
-                                return 'Desconhecido';
-                              }
-                            }
-                          }
-                        },
-                        scales: {
-                          y: {
-                            beginAtZero: true,
-                            min: 0,
-                            max: 2,
-                            grid: { color: 'rgba(0, 0, 0, 0.05)', drawBorder: false },
-                            ticks: {
-                              font: { family: "'Poppins', sans-serif" },
-                              padding: 10,
-                              callback: function(value) {
-                                if (value === 2) return 'ALTO';
-                                if (value === 1) return 'BAIXO';
-                                return '';
-                              }
-                            }
-                          },
-                          x: {
-                            grid: { display: false },
-                            ticks: { font: { family: "'Poppins', sans-serif" }, maxRotation: 45, minRotation: 45, padding: 10 }
-                          }
-                        },
-                        animation: { duration: 2000, easing: 'easeOutQuart' },
-                        interaction: { intersect: false, mode: 'index' }
-                      }
-                    });
-                  }
-                {% endfor %}
-              });
-            </script>
-          {% else %}
+          <div id="sensores-container">
             <div class="text-center py-4">
-              <i class="bi bi-exclamation-circle text-muted fs-1 mb-2 d-block"></i>
-              <p class="mb-0">Nenhum dispositivo encontrado.</p>
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Carregando...</span>
+              </div>
+              <p class="mt-2 text-muted">Carregando dados dos sensores...</p>
             </div>
-          {% endif %}
+          </div>
         </section>
       </main>
     </div>
@@ -972,6 +671,488 @@
       const qs = montarQueryRelatorio(form);
       window.location.href = `/relatorios/exportar.pdf?${qs}`;
     });
+  </script>
+  
+  <!-- Script de autenticação -->
+  <script>
+    // Verificar se o usuário está autenticado
+    document.addEventListener('DOMContentLoaded', function() {
+      const accessToken = localStorage.getItem('accessToken');
+      
+      if (!accessToken) {
+        // Se não houver token, redirecionar para a página de login
+        window.location.href = '/login_usuario.html';
+        return;
+      }
+      
+      // Verificar se o token é válido fazendo uma requisição para o perfil
+      fetch('/api/v1/usuarios/perfil', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          // Token inválido, remover e redirecionar
+          localStorage.removeItem('accessToken');
+          window.location.href = '/login_usuario.html';
+          return;
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Token válido, continuar carregando a página
+        console.log('Usuário autenticado:', data);
+        // Atualizar o nome do usuário na interface
+        const welcomeMessage = document.getElementById('welcome-message');
+        if (welcomeMessage && data.nome) {
+          welcomeMessage.textContent = `Bem-vindo(a), ${data.nome}!`;
+        }
+        
+        // Carregar dados dos sensores
+        carregarDadosSensores();
+      })
+      .catch(error => {
+        console.error('Erro na verificação do token:', error);
+        localStorage.removeItem('accessToken');
+        window.location.href = '/login_usuario.html';
+      });
+      
+      // Adicionar token às requisições fetch
+      const originalFetch = window.fetch;
+      window.fetch = function(input, init = {}) {
+        // Se for uma string (URL), converter para objeto
+        if (typeof input === 'string') {
+          input = new Request(input, init);
+        }
+        
+        // Adicionar o header de autorização se tivermos o token
+        if (accessToken) {
+          input.headers.set('Authorization', `Bearer ${accessToken}`);
+        }
+        
+        return originalFetch(input, init);
+      };
+      
+      // Adicionar funcionalidade de logout
+      const logoutButton = document.getElementById('logout-button');
+      if (logoutButton) {
+        logoutButton.addEventListener('click', function(e) {
+          e.preventDefault();
+          // Remover o token do localStorage
+          localStorage.removeItem('accessToken');
+          // Redirecionar para a página de login
+          window.location.href = '/login_usuario.html';
+        });
+      }
+    });
+
+    // Função para carregar dados dos sensores
+    function carregarDadosSensores() {
+      const accessToken = localStorage.getItem('accessToken');
+      
+      fetch('/api/v1/usuarios/dashboard-dados', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Erro ao carregar dados dos sensores');
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Dados dos sensores:', data);
+        
+        // Atualizar contador de dispositivos
+        const totalDispositivos = document.getElementById('total-dispositivos');
+        if (totalDispositivos) {
+          totalDispositivos.textContent = data.dispositivos.length;
+        }
+        
+        // Atualizar select de dispositivos nos relatórios
+        const selectDispositivos = document.getElementById('dispRel');
+        if (selectDispositivos) {
+          selectDispositivos.innerHTML = '<option value="">Todos</option>';
+          data.dispositivos.forEach(disp => {
+            const option = document.createElement('option');
+            option.value = disp.dispositivo;
+            option.textContent = disp.dispositivo;
+            selectDispositivos.appendChild(option);
+          });
+        }
+        
+        // Renderizar seção de sensores
+        renderizarSensores(data);
+      })
+      .catch(error => {
+        console.error('Erro ao carregar dados dos sensores:', error);
+        const container = document.getElementById('sensores-container');
+        if (container) {
+          container.innerHTML = `
+            <div class="text-center py-4">
+              <i class="bi bi-exclamation-circle text-muted fs-1 mb-2 d-block"></i>
+              <p class="mb-0">Erro ao carregar dados dos sensores.</p>
+            </div>
+          `;
+        }
+      });
+    }
+
+    // Função para renderizar a seção de sensores
+    function renderizarSensores(data) {
+      const container = document.getElementById('sensores-container');
+      
+      if (!data.dispositivos || data.dispositivos.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-4">
+            <i class="bi bi-exclamation-circle text-muted fs-1 mb-2 d-block"></i>
+            <p class="mb-0">Nenhum dispositivo encontrado.</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = `
+        <div class="mb-4">
+          <label for="selectDispositivo" class="form-label fw-semibold">Selecione o Dispositivo:</label>
+          <select class="form-select w-auto d-inline-block" id="selectDispositivo" onchange="mostrarDispositivoSelecionado()">
+      `;
+      
+      data.dispositivos.forEach((disp, index) => {
+        html += `<option value="${disp.dispositivo}">${disp.dispositivo}</option>`;
+      });
+      
+      html += `
+          </select>
+        </div>
+      `;
+
+      data.dispositivos.forEach((disp, index) => {
+        const dispositivoId = disp.dispositivo.replace(/\s/g, '_');
+        const phData = data.ph_por_dispositivo[disp.dispositivo];
+        const nivelData = data.nivel_por_dispositivo[disp.dispositivo];
+        
+        html += `
+          <div class="dispositivo-panel" id="panel-${dispositivoId}" style="display: ${index === 0 ? 'block' : 'none'};">
+            <div class="row g-4">
+              <!-- Card pH -->
+              <div class="col-md-6 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                  <div class="card-header bg-primary text-white">
+                    <i class="bi bi-droplet-half me-2"></i>pH da Água
+                  </div>
+                  <div class="card-body">
+        `;
+        
+        if (phData && phData.atual) {
+          const ph = phData.atual.ph;
+          const badgeClass = ph < 6.5 ? 'bg-danger' : (ph > 8.5 ? 'bg-warning' : 'bg-success');
+          const status = ph < 6.5 ? 'Ácido' : (ph > 8.5 ? 'Alcalino' : 'Neutro');
+          
+          html += `
+            <div class="text-center mb-4">
+              <div class="display-4 text-primary mb-2">${ph}</div>
+              <span class="badge ${badgeClass} fs-6">${status}</span>
+              <p class="text-muted mt-3 mb-0">
+                <i class="bi bi-clock me-1"></i>
+                Última atualização: ${phData.atual.data}
+              </p>
+            </div>
+            <div class="mt-4">
+              <canvas id="phChart-${dispositivoId}" height="200"></canvas>
+            </div>
+          `;
+        } else {
+          html += `
+            <div class="text-center py-5">
+              <i class="bi bi-exclamation-circle fs-1 text-muted mb-3"></i>
+              <p class="text-muted mb-0">Nenhum dado de pH disponível.</p>
+            </div>
+          `;
+        }
+        
+        html += `
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card Nível -->
+              <div class="col-md-6 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                  <div class="card-header bg-primary text-white">
+                    <i class="bi bi-water me-2"></i>Nível de Água
+                  </div>
+                  <div class="card-body">
+        `;
+        
+        if (nivelData && nivelData.atual) {
+          const status = nivelData.atual.status;
+          const boia = nivelData.atual.boia;
+          const statusClass = status === 'ALTO' ? 'text-success' : 'text-warning';
+          const badgeClass = status === 'ALTO' ? 'bg-success' : 'bg-warning';
+          const boiaClass = boia === 1 ? 'bg-primary' : 'bg-secondary';
+          const boiaText = boia === 1 ? 'Ativada' : 'Desativada';
+          
+          html += `
+            <div class="text-center mb-4">
+              <div class="mb-4">
+                <i class="bi bi-water fs-1 ${statusClass}"></i>
+              </div>
+              <div class="display-6 mb-2">
+                <span class="badge ${badgeClass} fs-5">${status}</span>
+              </div>
+              <div class="mt-4">
+                <p class="mb-2">Status da Boia:</p>
+                <span class="badge ${boiaClass} fs-6">${boiaText}</span>
+              </div>
+              <p class="text-muted mt-4 mb-0">
+                <i class="bi bi-clock me-1"></i>
+                Última atualização: ${nivelData.atual.data}
+              </p>
+            </div>
+            <div class="mt-4">
+              <canvas id="nivelChart-${dispositivoId}" height="200"></canvas>
+            </div>
+          `;
+        } else {
+          html += `
+            <div class="text-center py-5">
+              <i class="bi bi-exclamation-circle fs-1 text-muted mb-3"></i>
+              <p class="text-muted mb-0">Nenhum dado de nível disponível.</p>
+            </div>
+          `;
+        }
+        
+        html += `
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Histórico detalhado -->
+            <div class="row g-4 mt-2">
+              <div class="col-md-6">
+                <div class="card border-0 shadow-sm">
+                  <div class="card-header bg-primary text-white">
+                    <i class="bi bi-graph-up me-2"></i>Histórico de pH
+                  </div>
+                  <div class="card-body">
+                    <ul class="list-group list-group-flush">
+        `;
+        
+        if (phData && phData.historico && phData.historico.length > 0) {
+          phData.historico.forEach(item => {
+            html += `
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-calendar me-2"></i>${item.data}</span>
+                <span class="badge bg-primary">pH ${item.ph}</span>
+              </li>
+            `;
+          });
+        } else {
+          html += `<li class="list-group-item text-muted">Nenhum registro encontrado</li>`;
+        }
+        
+        html += `
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="card border-0 shadow-sm">
+                  <div class="card-header bg-primary text-white">
+                    <i class="bi bi-clock-history me-2"></i>Histórico de Nível
+                  </div>
+                  <div class="card-body">
+                    <ul class="list-group list-group-flush">
+        `;
+        
+        if (nivelData && nivelData.historico && nivelData.historico.length > 0) {
+          nivelData.historico.forEach(item => {
+            const badgeClass = item.status === 'ALTO' ? 'bg-success' : 'bg-warning';
+            html += `
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-calendar me-2"></i>${item.data}</span>
+                <span class="badge ${badgeClass}">${item.status}</span>
+              </li>
+            `;
+          });
+        } else {
+          html += `<li class="list-group-item text-muted">Nenhum registro encontrado</li>`;
+        }
+        
+        html += `
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+      
+      // Carregar Chart.js e criar gráficos
+      if (typeof Chart === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+        script.onload = () => criarGraficos(data);
+        document.head.appendChild(script);
+      } else {
+        criarGraficos(data);
+      }
+    }
+
+    // Função para criar os gráficos
+    function criarGraficos(data) {
+      data.dispositivos.forEach(disp => {
+        const dispositivoId = disp.dispositivo.replace(/\s/g, '_');
+        const phData = data.ph_por_dispositivo[disp.dispositivo];
+        const nivelData = data.nivel_por_dispositivo[disp.dispositivo];
+        
+        // Gráfico de pH
+        const phCtx = document.getElementById(`phChart-${dispositivoId}`);
+        if (phCtx && phData && phData.historico) {
+          const historicoPh = phData.historico.reverse();
+          new Chart(phCtx, {
+            type: 'line',
+            data: {
+              labels: historicoPh.map(item => item.data),
+              datasets: [{
+                label: 'Histórico de pH',
+                data: historicoPh.map(item => item.ph),
+                borderColor: '#0066cc',
+                backgroundColor: 'rgba(0,102,204,0.1)',
+                borderWidth: 3,
+                pointBackgroundColor: '#0066cc',
+                pointBorderColor: '#fff',
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                fill: true,
+                tension: 0.4
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                  titleFont: { family: "'Poppins', sans-serif", size: 14 },
+                  bodyFont: { family: "'Poppins', sans-serif", size: 13 },
+                  padding: 12,
+                  cornerRadius: 8,
+                  displayColors: false
+                }
+              },
+              scales: {
+                y: {
+                  beginAtZero: false,
+                  grid: { color: 'rgba(0, 0, 0, 0.05)', drawBorder: false },
+                  ticks: { font: { family: "'Poppins', sans-serif" }, padding: 10 }
+                },
+                x: {
+                  grid: { display: false },
+                  ticks: { font: { family: "'Poppins', sans-serif" }, maxRotation: 45, minRotation: 45, padding: 10 }
+                }
+              },
+              animation: { duration: 2000, easing: 'easeOutQuart' },
+              interaction: { intersect: false, mode: 'index' }
+            }
+          });
+        }
+        
+        // Gráfico de Nível
+        const nivelCtx = document.getElementById(`nivelChart-${dispositivoId}`);
+        if (nivelCtx && nivelData && nivelData.historico) {
+          const historicoNivel = nivelData.historico.reverse();
+          new Chart(nivelCtx, {
+            type: 'line',
+            data: {
+              labels: historicoNivel.map(item => item.data),
+              datasets: [{
+                label: 'Histórico de Nível',
+                data: historicoNivel.map(item => item.status === 'ALTO' ? 2 : (item.status === 'BAIXO' ? 1 : 0)),
+                borderColor: '#34c759',
+                backgroundColor: 'rgba(52,199,89,0.1)',
+                borderWidth: 3,
+                pointBackgroundColor: '#34c759',
+                pointBorderColor: '#fff',
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                fill: true,
+                tension: 0.4
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                  titleFont: { family: "'Poppins', sans-serif", size: 14 },
+                  bodyFont: { family: "'Poppins', sans-serif", size: 13 },
+                  padding: 12,
+                  cornerRadius: 8,
+                  displayColors: false,
+                  callbacks: {
+                    label: function(context) {
+                      var v = context.parsed.y;
+                      if (v === 2) return 'ALTO';
+                      if (v === 1) return 'BAIXO';
+                      return 'Desconhecido';
+                    }
+                  }
+                }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  min: 0,
+                  max: 2,
+                  grid: { color: 'rgba(0, 0, 0, 0.05)', drawBorder: false },
+                  ticks: {
+                    font: { family: "'Poppins', sans-serif" },
+                    padding: 10,
+                    callback: function(value) {
+                      if (value === 2) return 'ALTO';
+                      if (value === 1) return 'BAIXO';
+                      return '';
+                    }
+                  }
+                },
+                x: {
+                  grid: { display: false },
+                  ticks: { font: { family: "'Poppins', sans-serif" }, maxRotation: 45, minRotation: 45, padding: 10 }
+                }
+              },
+              animation: { duration: 2000, easing: 'easeOutQuart' },
+              interaction: { intersect: false, mode: 'index' }
+            }
+          });
+        }
+      });
+    }
+
+    // Função para mostrar dispositivo selecionado
+    function mostrarDispositivoSelecionado() {
+      var select = document.getElementById('selectDispositivo');
+      var valor = select.value.replace(/\s/g, '_');
+      var paineis = document.querySelectorAll('.dispositivo-panel');
+      paineis.forEach(function(p) { p.style.display = 'none'; });
+      var painelAtivo = document.getElementById('panel-' + valor);
+      if (painelAtivo) painelAtivo.style.display = 'block';
+      localStorage.setItem('dispositivoSelecionado', select.value);
+    }
   </script>
 </body>
 </html>

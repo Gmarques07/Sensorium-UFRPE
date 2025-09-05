@@ -18,6 +18,7 @@ from ....models.admin import Admin
 from ....models.local import Local
 from ....core.security import create_access_token, verify_password
 from ....core.config import settings
+from ....core.limiter import rate_limit
 
 router = APIRouter()
 
@@ -28,7 +29,8 @@ router = APIRouter()
              tags=["admin"])
 async def admin_login(
     form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    __rl: None = Depends(rate_limit(5, 60, "login-admin"))
 ) -> Any:
     """
     Realiza o login do administrador usando OAuth2 com JWT.

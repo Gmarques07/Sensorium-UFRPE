@@ -30,16 +30,16 @@ def atualizar_perfil(
     usuario = crud.usuario.update_usuario(db, usuario=current_user, usuario_in=usuario_in)
     return usuario
 
-@router.get("/{cpf}", response_model=schemas.Usuario)
-def ler_usuario_por_cpf(
-    cpf: str,
+@router.get("/{email}", response_model=schemas.Usuario)
+def ler_usuario_por_email(
+    email: str,
     db: Session = Depends(deps.get_db),
     current_user: models.Usuario = Depends(get_current_user)
 ) -> Any:
     """
-    Recupera um usuário pelo CPF.
+    Recupera um usuário pelo email.
     """
-    usuario = crud.usuario.get_usuario_by_cpf(db, cpf=cpf)
+    usuario = crud.usuario.get_usuario_by_email(db, email=email)
     if not usuario:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -52,16 +52,16 @@ def ler_usuario_por_cpf(
         )
     return usuario
 
-@router.delete("/{cpf}", response_model=bool)
+@router.delete("/{email}", response_model=bool)
 def excluir_usuario(
-    cpf: str,
+    email: str,
     db: Session = Depends(deps.get_db),
     current_user: models.Usuario = Depends(get_current_user)
 ) -> Any:
     """
     Exclui o usuário.
     """
-    usuario = crud.usuario.get_usuario_by_cpf(db, cpf=cpf)
+    usuario = crud.usuario.get_usuario_by_email(db, email=email)
     if not usuario:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

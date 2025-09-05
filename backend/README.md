@@ -20,14 +20,26 @@ Este é o backend do sistema Sensorium UFRPE, implementado com FastAPI, um frame
 │   ├── models/            # Modelos do SQLAlchemy
 │   ├── schemas/           # Schemas do Pydantic
 │   └── main.py           # Configuração principal da aplicação
+├── config/                # Arquivos de configuração
+│   ├── .env.example       # Exemplo de arquivo de configuração
+│   ├── docker-compose.yml # Configuração do Docker
+│   ├── Dockerfile         # Imagem do Docker
+│   └── requirements.txt   # Dependências do projeto
+├── scripts/               # Scripts de utilidade
+│   ├── init_db.py         # Script para inicializar o banco de dados
+│   ├── start_server.py    # Script para iniciar o servidor
+│   ├── run_tests.sh       # Script interativo para testes (Linux/macOS)
+│   ├── run_tests.bat      # Script interativo para testes (Windows)
+│   ├── run_tests.ps1      # Script PowerShell para testes (Windows)
+│   └── test.sh            # Script de comandos diretos para testes (Linux/macOS)
 ├── static/               # Arquivos estáticos
 ├── templates/            # Templates HTML
-├── init_db.py            # Script para inicializar o banco de dados
-├── main.py               # Ponto de entrada da aplicação
-├── start_server.py       # Script para iniciar o servidor
-├── check_mysql.py        # Script para verificar conexão com MySQL
-├── requirements.txt      # Dependências do projeto
-└── .env.example         # Exemplo de arquivo de configuração
+├── docs/                 # Documentação
+│   ├── README.md         # Este arquivo
+│   └── INSTALACAO.md     # Instruções de instalação
+└── tests/                # Testes automatizados
+    ├── integration/      # Testes de integração
+    └── unitários/        # Testes unitários
 ```
 
 ## Tecnologias Utilizadas
@@ -61,23 +73,23 @@ Este é o backend do sistema Sensorium UFRPE, implementado com FastAPI, um frame
 
 3. Instale as dependências:
    ```bash
-   pip install -r requirements.txt
+   pip install -r config/requirements.txt
    ```
 
 4. Configure o ambiente:
    ```bash
-   cp .env.example .env
+   cp config/.env.example .env
    ```
    Edite o arquivo `.env` com as configurações do seu banco de dados.
 
 5. Verifique a conexão com o MySQL:
    ```bash
-   python check_mysql.py
+   python scripts/test_local_connect.py
    ```
 
 6. Inicialize o banco de dados:
    ```bash
-   python init_db.py
+   python scripts/init_db.py
    ```
 
 ## Configuração do Banco de Dados MySQL
@@ -133,12 +145,12 @@ MYSQL_DATABASE=sensorium_db
 
 ### Para desenvolvimento:
 ```bash
-python start_server.py --reload
+python scripts/start_server.py --reload
 ```
 
 ### Para produção:
 ```bash
-python start_server.py
+python scripts/start_server.py
 ```
 
 O servidor estará disponível em `http://localhost:8000`
@@ -167,3 +179,113 @@ A documentação automática da API está disponível em:
 ## Licença
 
 Este projeto está sob a licença MIT.
+
+## 🐳 Docker
+
+### Início Rápido com Docker
+
+```bash
+cd backend
+docker-compose -f config/docker-compose.yml up -d --build
+```
+
+**Acesse**: http://localhost:8001
+
+### Comandos Úteis
+
+```bash
+# Iniciar serviços
+docker-compose -f config/docker-compose.yml up -d
+
+# Parar serviços
+docker-compose -f config/docker-compose.yml down
+
+# Ver logs
+docker-compose -f config/docker-compose.yml logs -f backend
+
+# Rebuild
+docker-compose -f config/docker-compose.yml up -d --build
+
+# Executar comandos no container
+docker-compose -f config/docker-compose.yml exec backend bash
+```
+
+### Configuração
+
+O Docker está configurado para usar o MySQL local do seu sistema:
+
+- **Host**: `host.docker.internal` (acessa MySQL local)
+- **Porta**: `3306`
+- **Usuário**: `root`
+- **Senha**: (vazia - ajuste no config/docker-compose.yml se necessário)
+- **Banco**: `banco_de_dados`
+
+### Personalização
+
+Edite o `config/docker-compose.yml` para ajustar:
+- Credenciais do banco de dados
+- Porta do servidor
+- Variáveis de ambiente
+- Volumes montados
+
+### Troubleshooting
+
+**Problema**: Container não inicia
+- Verifique se o MySQL está rodando localmente
+- Confirme as credenciais no config/docker-compose.yml
+- Verifique os logs: `docker-compose -f config/docker-compose.yml logs backend`
+
+**Problema**: Porta já em uso
+- Pare outros serviços na porta 8001
+- Ou altere a porta no config/docker-compose.yml
+
+## 🧪 Testes Automatizados
+
+O projeto inclui scripts para facilitar a execução dos testes automatizados usando Docker:
+
+### Scripts Disponíveis
+
+- `scripts/run_tests.sh` - Script interativo para Linux/macOS
+- `scripts/run_tests.bat` - Script interativo para Windows
+- `scripts/run_tests.ps1` - Script PowerShell para Windows
+- `scripts/test.sh` - Script de comandos diretos para Linux/macOS
+
+### Exemplos de Uso
+
+```bash
+# Linux/macOS
+cd backend
+./scripts/run_tests.sh        # Interface interativa
+./scripts/test.sh all         # Executar todos os testes
+./scripts/test.sh unit        # Apenas testes de unidade
+./scripts/test.sh integration # Apenas testes de integração
+
+# Windows (CMD)
+cd backend
+scripts\run_tests.bat
+
+# Windows (PowerShell)
+cd backend
+.\scripts\run_tests.ps1
+```
+
+### Comandos Diretos do Docker
+
+```bash
+# Executar testes de unidade
+docker-compose -f config/docker-compose.yml run --rm tests
+
+# Executar testes de integração
+docker-compose -f config/docker-compose.yml run --rm tests_integration
+
+# Executar testes com cobertura
+docker-compose -f config/docker-compose.yml run --rm tests pytest --cov=app --cov-report=term-missing
+```
+
+## 📁 Estrutura de Pastas
+
+O projeto foi organizado em pastas para melhor manutenção e escalabilidade. Veja mais detalhes em [docs/ESTRUTURA_DE_PASTAS.md](docs/ESTRUTURA_DE_PASTAS.md).
+
+> 📖 **Guias Completos**: 
+> - [docs/INSTALACAO.md](docs/INSTALACAO.md) - Instruções detalhadas de instalação
+> - [docs/ESTRUTURA_DE_PASTAS.md](docs/ESTRUTURA_DE_PASTAS.md) - Estrutura de pastas do projeto

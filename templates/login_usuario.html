@@ -168,7 +168,8 @@
     <div class="login-card" data-aos="fade-up">
         <div class="text-center mb-4">
             <a href="{{ url_for('homepage') }}" class="text-decoration-none">
-                <i class="bi bi-droplet logo-icon"></i>
+                <i class="bi bi-cpu logo-icon"></i>
+
                 <h2 class="mt-3 mb-2">Bem-vindo ao Sensorium</h2>
                 <p class="text-muted mb-0">Acesse sua conta de usuário</p>
             </a>
@@ -184,17 +185,15 @@
 
         <form id="loginForm">
             <div class="mb-4">
-                <label for="cpf-cnpj-login" class="form-label">CPF ou CNPJ</label>
+                <label for="email-login" class="form-label">Email</label>
                 <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
-                    <input type="text" 
-                           id="cpf-cnpj-login" 
-                           name="cpf_cnpj" 
+                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                    <input type="email" 
+                           id="email-login" 
+                           name="email" 
                            class="form-control" 
-                           placeholder="000.000.000-00 ou 00.000.000/0000-00"
-                           maxlength="18"
-                           pattern="^(\d{3}\.\d{3}\.\d{3}-\d{2}|\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2})$"
-                           title="Digite um CPF válido (000.000.000-00) ou CNPJ válido (00.000.000/0000-00)"
+                           placeholder="seu@email.com"
+                           title="Digite seu email"
                            required>
                 </div>
             </div>
@@ -235,43 +234,7 @@
         // Inicialização do AOS
         AOS.init({ duration: 800, once: true });
 
-        // Função para formatar CPF ou CNPJ
-        function formatCPForCNPJ(value) {
-            // Remover tudo que não é dígito
-            value = value.replace(/\D/g, '');
-            
-            // Limitar o tamanho máximo (14 dígitos para CNPJ)
-            if (value.length > 14) {
-                value = value.substring(0, 14);
-            }
-            
-            let formattedValue = '';
-
-            if (value.length <= 11) {
-                // CPF: 000.000.000-00
-                if (value.length > 3) formattedValue += value.substring(0, 3) + '.';
-                if (value.length > 6) formattedValue += value.substring(3, 6) + '.';
-                if (value.length > 9) formattedValue += value.substring(6, 9) + '-';
-                formattedValue += value.substring(9, 11);
-            } else {
-                // CNPJ: 00.000.000/0000-00
-                if (value.length > 2) formattedValue += value.substring(0, 2) + '.';
-                if (value.length > 5) formattedValue += value.substring(2, 5) + '.';
-                if (value.length > 8) formattedValue += value.substring(5, 8) + '/';
-                if (value.length > 12) formattedValue += value.substring(8, 12) + '-';
-                formattedValue += value.substring(12, 14);
-            }
-            return formattedValue;
-        }
-
-        // Formatação CPF ou CNPJ
         document.addEventListener('DOMContentLoaded', function() {
-            const input = document.getElementById('cpf-cnpj-login');
-
-            // Formatar quando o campo perde o foco
-            input.addEventListener('blur', function() {
-                this.value = formatCPForCNPJ(this.value);
-            });
 
             // Adicionar o evento de submit ao formulário
             document.getElementById('loginForm').addEventListener('submit', async function(e) {
@@ -284,11 +247,11 @@
                 const alertContainer = document.getElementById('alert-container');
                 alertContainer.innerHTML = '';
                 
-                const cpfCnpj = document.getElementById('cpf-cnpj-login').value;
+                const email = document.getElementById('email-login').value;
                 const senha = document.getElementById('senha-login').value;
                 
                 const data = {
-                    cpf_cnpj: cpfCnpj,
+                    email: email,
                     senha: senha
                 };
                 

@@ -6,11 +6,10 @@ from app.schemas.usuario import UsuarioCreate, UsuarioUpdate
 def get_usuario(db: Session, usuario_id: int) -> Optional[Usuario]:
     return db.query(Usuario).filter(Usuario.id == usuario_id).first()
 
-def get_usuario_by_cpf(db: Session, cpf: str) -> Optional[Usuario]:
-    return db.query(Usuario).filter(Usuario.cpf == cpf).first()
+
 
 def get_usuario_by_email(db: Session, email: str) -> Optional[Usuario]:
-    return db.query(Usuario).filter(Usuario.email == email).first()
+    return db.query(Usuario).filter(Usuario.email == email, Usuario.ativo == True).first()
 
 def get_usuarios(db: Session, skip: int = 0, limit: int = 100) -> List[Usuario]:
     return db.query(Usuario).offset(skip).limit(limit).all()
@@ -20,7 +19,6 @@ def get_multi(db: Session, skip: int = 0, limit: int = 100) -> List[Usuario]:
 
 def create_usuario(db: Session, usuario: UsuarioCreate) -> Usuario:
     db_usuario = Usuario(
-        cpf=usuario.cpf,
         nome=usuario.nome,
         email=usuario.email,
         endereco=usuario.endereco
@@ -59,10 +57,23 @@ def update_password(db: Session, usuario: Usuario, new_password: str) -> Usuario
     db.refresh(usuario)
     return usuario
 
+def deactivate_usuario(db: Session, usuario: Usuario) -> Usuario:
+    """
+    Marca um usuário como inativo em vez de deletá-lo permanentemente.
+    """
+    usuario.ativo = False
+    db.add(usuario)
+    db.commit()
+    db.refresh(usuario)
+    return usuario
+
 def delete_usuario(db: Session, usuario: Usuario) -> bool:
+    """
+    Mantém compatibilidade com interfaces antigas: realiza soft-delete usando
+    deactivate_usuario e retorna True/False para sucesso.
+    """
     try:
-        db.delete(usuario)
-        db.commit()
+        deactivate_usuario(db, usuario)
         return True
     except Exception:
         db.rollback()

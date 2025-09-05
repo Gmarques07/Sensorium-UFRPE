@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-from typing import List
+from typing import List, Optional
 import os
 from dotenv import load_dotenv
 
@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Sensorium UFRPE"
 
     # Configuração de CORS
-    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost", "http://localhost:8000", "http://127.0.0.1", "http://127.0.0.1:8000"]
+    BACKEND_CORS_ORIGINS: List[str] = ["*"]  # Permitir todas as origens para desenvolvimento
     
     # Configurações do banco de dados
     MYSQL_USER: str = os.getenv("MYSQL_USER", "root")
@@ -19,10 +19,18 @@ class Settings(BaseSettings):
     MYSQL_HOST: str = os.getenv("MYSQL_HOST", "localhost")
     MYSQL_PORT: int = int(os.getenv("MYSQL_PORT", "3306"))
     MYSQL_DATABASE: str = os.getenv("MYSQL_DATABASE", "sensorium_db")
+    # Permitir override completo via variável de ambiente DATABASE_URL (útil para testes)
+    DATABASE_URL_OVERRIDE: Optional[str] = os.getenv("DATABASE_URL")
     
     @property
     def DATABASE_URL(self) -> str:
-        return f"mysql+mysqlconnector://{self.MYSQL_USER}:{self.MYSQL_PASSWORD}@{self.MYSQL_HOST}:{self.MYSQL_PORT}/{self.MYSQL_DATABASE}?auth_plugin=mysql_native_password&charset=utf8mb4"
+        if self.DATABASE_URL_OVERRIDE:
+            return self.DATABASE_URL_OVERRIDE
+        return (
+            f"mysql+mysqlconnector://{self.MYSQL_USER}:{self.MYSQL_PASSWORD}@"
+            f"{self.MYSQL_HOST}:{self.MYSQL_PORT}/{self.MYSQL_DATABASE}"
+            f"?auth_plugin=mysql_native_password&charset=utf8mb4"
+        )
     
     # Configuração JWT
     SECRET_KEY: str = os.getenv("SECRET_KEY", "sua_chave_secreta_aqui_deve_ser_bem_longa_e_segura")
