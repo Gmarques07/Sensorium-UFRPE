@@ -189,7 +189,9 @@ cd backend
 docker-compose -f config/docker-compose.yml up -d --build
 ```
 
-**Acesse**: http://localhost:8001
+**Acesse**: 
+- Sistema Principal: http://localhost:8001
+- Testes de Integração: http://localhost:8003
 
 ### Comandos Úteis
 
@@ -209,6 +211,13 @@ docker-compose -f config/docker-compose.yml up -d --build
 # Executar comandos no container
 docker-compose -f config/docker-compose.yml exec backend bash
 ```
+
+### Acesso aos Serviços
+
+- **Sistema Principal**: http://localhost:8001
+- **Testes de Integração**: http://localhost:8003
+
+> **Nota**: Para desenvolvimento local com hot-reload, use o script `scripts/start_server.py` que roda na porta 8002.
 
 ### Configuração
 
@@ -236,8 +245,14 @@ Edite o `config/docker-compose.yml` para ajustar:
 - Verifique os logs: `docker-compose -f config/docker-compose.yml logs backend`
 
 **Problema**: Porta já em uso
-- Pare outros serviços na porta 8001
-- Ou altere a porta no config/docker-compose.yml
+- Pare outros serviços nas portas 8001 ou 8003
+- Ou altere as portas no config/docker-compose.yml
+
+**Problema**: Conflito entre serviços
+- Os serviços agora usam portas diferentes:
+  - Sistema Principal: 8001
+  - Testes de Integração: 8003
+  - Desenvolvimento local: 8002 (via start_server.py)
 
 ## 🧪 Testes Automatizados
 
