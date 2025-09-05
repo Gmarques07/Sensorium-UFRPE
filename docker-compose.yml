@@ -4,40 +4,20 @@ services:
   sensorium-backend:
     build: .
     ports:
-      - "8002:8001"
+      - "8001:8001"
     environment:
-      - MYSQL_USER=sensorium_user
-      - MYSQL_PASSWORD=sensorium_password
-      - MYSQL_HOST=mysql
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=
+      - MYSQL_HOST=host.docker.internal
       - MYSQL_PORT=3306
-      - MYSQL_DATABASE=sensorium_db
+      - MYSQL_DATABASE=banco_de_dados
       - SECRET_KEY=chave_secreta_muito_longa_e_segura_para_jwt_tokens_aqui
       - ACCESS_TOKEN_EXPIRE_MINUTES=1440
       - BASE_URL=http://localhost:8002
       - ENVIRONMENT=production
-    depends_on:
-      mysql:
-        condition: service_healthy
     volumes:
-      - ./backend:/app  # Para desenvolvimento, sincroniza o código
-      - ./static:/static  # Monta o diretório static
-      - ./templates:/templates  # Monta o diretório templates
+      - .:/app  # Para desenvolvimento, sincroniza o código
+      - ./static:/app/static  # Monta o diretório static
+      - ./templates:/app/templates  # Monta o diretório templates
 
-  mysql:
-    image: mysql:8.0
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: sensorium_db
-      MYSQL_USER: sensorium_user
-      MYSQL_PASSWORD: sensorium_password
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
-
-volumes:
-  mysql_data:
+# Removendo o serviço mysql pois estamos usando o MySQL local do WAMP
