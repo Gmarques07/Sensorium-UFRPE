@@ -1,11 +1,13 @@
-from app.db.database import test_connection
+from app.db.session import SessionLocal
+from sqlalchemy import text
+
 
 def test_db():
-    """Testa a conexão com o banco de dados"""
-    if test_connection():
-        print("✅ Conexão com o banco de dados estabelecida com sucesso!")
-    else:
-        print("❌ Erro ao conectar com o banco de dados!")
+    db = SessionLocal()
+    try:
+        db.execute(text("SELECT 1"))
+    finally:
+        db.close()
 
 if __name__ == "__main__":
     test_db()

@@ -27,3 +27,17 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+
+  tests:
+    build: .
+    container_name: sensorium_tests
+    environment:
+      DATABASE_URL: "sqlite:///:memory:"
+      SECRET_KEY: "chave_secreta_muito_longa_e_segura_para_jwt_tokens_aqui"
+      ACCESS_TOKEN_EXPIRE_MINUTES: "1440"
+      BACKEND_CORS_ORIGINS: '["*"]'
+    volumes:
+      - .:/app
+      - ../templates:/app/templates
+      - ../static:/app/static
+    command: pytest -q

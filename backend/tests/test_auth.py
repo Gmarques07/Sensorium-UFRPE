@@ -3,16 +3,16 @@ from app.core.config import settings
 from app.core.security import create_access_token
 
 def test_criar_token(client: TestClient, usuario_normal):
-    token = create_access_token(usuario_normal["id"])
+    token = create_access_token({"sub": usuario_normal["email"]})
     assert token is not None
     assert len(token) > 0
 
 def test_login_sucesso(client: TestClient):
     response = client.post(
         f"{settings.API_V1_STR}/auth/login",
-        data={
-            "username": "12345678901",
-            "password": "senha123"
+        json={
+            "email": "teste@example.com",
+            "senha": "senha123"
         }
     )
     assert response.status_code == 200
@@ -22,9 +22,9 @@ def test_login_sucesso(client: TestClient):
 def test_login_invalido(client: TestClient):
     response = client.post(
         f"{settings.API_V1_STR}/auth/login",
-        data={
-            "username": "12345678901",
-            "password": "senha_errada"
+        json={
+            "email": "teste@example.com",
+            "senha": "senha_errada"
         }
     )
     assert response.status_code == 401
@@ -38,16 +38,14 @@ def test_token_invalido(client: TestClient):
 
 def test_registro_usuario(client: TestClient):
     response = client.post(
-        f"{settings.API_V1_STR}/auth/signup",
+        f"{settings.API_V1_STR}/auth/registro",
         json={
-            "cpf": "11122233344",
             "nome": "Novo Usuario",
             "email": "novo@example.com",
             "endereco": "Novo Endereco",
             "senha": "novasenha123"
         }
     )
-    assert response.status_code == 201
+    assert response.status_code == 200
     dados = response.json()
-    assert dados["cpf"] == "11122233344"
-    assert "id" in dados
+    assert "access_token" in dados
