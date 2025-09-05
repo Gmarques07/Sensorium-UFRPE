@@ -67,7 +67,19 @@ Este arquivo fornece um resumo de toda a documentação disponível no projeto, 
   - Deploy
   - Troubleshooting
 
-### 5. **backend/README.md** - Documentação do Backend
+### 5. **TESTS_GUIDE.md** - Guia de Testes
+- **Conteúdo**: Documentação completa dos testes do sistema
+- **Público**: Desenvolvedores e QA
+- **Seções principais**:
+  - Estrutura dos testes
+  - Testes de unidade
+  - Testes de integração
+  - Execução dos testes
+  - Configuração do ambiente Docker para testes
+  - Relatórios de cobertura
+  - Melhores práticas
+
+### 6. **backend/README.md** - Documentação do Backend
 - **Conteúdo**: Documentação técnica específica do backend
 - **Público**: Desenvolvedores backend
 - **Seções principais**:
@@ -79,7 +91,7 @@ Este arquivo fornece um resumo de toda a documentação disponível no projeto, 
   - Documentação da API
   - Docker
 
-### 6. **backend/env.example** - Exemplo de Configuração
+### 7. **backend/env.example** - Exemplo de Configuração
 - **Conteúdo**: Arquivo de exemplo para configuração
 - **Público**: Desenvolvedores e administradores
 - **Seções principais**:
@@ -101,6 +113,7 @@ Este arquivo fornece um resumo de toda a documentação disponível no projeto, 
 1. **Leia**: [DEVELOPER_GUIDE.md](guides/DEVELOPER_GUIDE.md) - Informações técnicas
 2. **Configure**: [env.example](examples/env.example) - Configuração
 3. **Desenvolva**: [backend/README.md](../backend/README.md) - Documentação do backend
+4. **Teste**: [TESTS_GUIDE.md](guides/TESTS_GUIDE.md) - Guia completo de testes
 
 ### Para Usuários de Docker
 1. **Siga**: [DOCKER_GUIDE.md](guides/DOCKER_GUIDE.md) - Guia completo
@@ -120,7 +133,7 @@ Este arquivo fornece um resumo de toda a documentação disponível no projeto, 
 ### Desenvolvimento
 - **Arquitetura**: [DEVELOPER_GUIDE.md](guides/DEVELOPER_GUIDE.md) → Seção "Arquitetura do Sistema"
 - **Padrões**: [DEVELOPER_GUIDE.md](guides/DEVELOPER_GUIDE.md) → Seção "Padrões de Desenvolvimento"
-- **Testes**: [DEVELOPER_GUIDE.md](guides/DEVELOPER_GUIDE.md) → Seção "Testes"
+- **Testes**: [TESTS_GUIDE.md](guides/TESTS_GUIDE.md) → Guia completo de testes
 
 ### Deploy
 - **Docker**: [DOCKER_GUIDE.md](guides/DOCKER_GUIDE.md) → Seção "Deploy"
