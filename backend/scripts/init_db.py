@@ -3,7 +3,7 @@ import os
 import time
 
 # Adiciona o diretório raiz ao path para que os módulos possam ser importados
-sys.path.insert(0, '/app')
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 from backend.app.db.session import engine
 from backend.app.db.base_class import Base
