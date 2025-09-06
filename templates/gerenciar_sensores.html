@@ -168,7 +168,7 @@
             <!-- Sidebar -->
             <div class="col-auto sidebar">
                 <a href="/admin_dashboard.html" class="d-flex align-items-center mb-4 text-decoration-none text-white">
-                    <i class="bi bi-droplet fs-1"></i>
+                    <i class="bi bi-cpu logo-icon"></i>
                     <span class="fs-4 ms-2">Sensorium</span>
                 </a>
                 <nav class="nav flex-column w-100">
@@ -200,7 +200,6 @@
                     <div class="row">
                         <div class="col-md-6">
                             <p><strong>Nome:</strong> {{ usuario.nome }}</p>
-                            <p><strong>CPF:</strong> {{ usuario.cpf }}</p>
                         </div>
                         <div class="col-md-6">
                             <p><strong>Email:</strong> {{ usuario.email }}</p>
@@ -287,11 +286,11 @@
                                         </td>
                                         <td>
                                             {% if sensor in sensores_atribuidos %}
-                                            <button class="btn btn-sm btn-danger btn-remover-sensor" data-id="{{ sensor.id }}">
+                                            <button class="btn btn-sm btn-danger btn-remover-sensor" data-id="{{ sensor.id }}" data-nome="{{ sensor.nome }}">
                                                 <i class="bi bi-trash"></i> Remover
                                             </button>
                                             {% else %}
-                                            <button class="btn btn-sm btn-success btn-atribuir-sensor" data-id="{{ sensor.id }}">
+                                            <button class="btn btn-sm btn-success btn-atribuir-sensor" data-id="{{ sensor.id }}" data-nome="{{ sensor.nome }}">
                                                 <i class="bi bi-plus"></i> Atribuir
                                             </button>
                                             {% endif %}
@@ -343,7 +342,10 @@
         document.querySelectorAll('.btn-atribuir-sensor').forEach(button => {
             button.addEventListener('click', function() {
                 const sensorId = this.getAttribute('data-id');
-                atribuirSensor(sensorId);
+                const sensorNome = this.getAttribute('data-nome');
+                if (confirm(`Tem certeza que deseja atribuir o sensor "${sensorNome}" a este usuário?`)) {
+                    atribuirSensor(sensorId);
+                }
             });
         });
 
@@ -351,16 +353,25 @@
         document.querySelectorAll('.btn-remover-sensor').forEach(button => {
             button.addEventListener('click', function() {
                 const sensorId = this.getAttribute('data-id');
-                removerSensor(sensorId);
+                const sensorNome = this.getAttribute('data-nome');
+                if (confirm(`Tem certeza que deseja remover o sensor "${sensorNome}" deste usuário?`)) {
+                    removerSensor(sensorId);
+                }
             });
         });
 
         // Função para confirmar atribuição via modal
         document.getElementById('btnConfirmarAtribuicao').addEventListener('click', function() {
-            const sensorId = document.getElementById('selectSensor').value;
+            const selectSensor = document.getElementById('selectSensor');
+            const sensorId = selectSensor.value;
+            const sensorNome = selectSensor.options[selectSensor.selectedIndex].text;
             if (sensorId) {
-                atribuirSensor(sensorId);
-                bootstrap.Modal.getInstance(document.getElementById('adicionarSensorModal')).hide();
+                if (confirm(`Tem certeza que deseja atribuir o sensor "${sensorNome}" a este usuário?`)) {
+                    atribuirSensor(sensorId);
+                    bootstrap.Modal.getInstance(document.getElementById('adicionarSensorModal')).hide();
+                }
+            } else {
+                alert('Por favor, selecione um sensor.');
             }
         });
 
@@ -369,7 +380,7 @@
             fetch(`/api/v1/admin/usuarios/{{ usuario.id }}/sensores?sensor_id=${sensorId}`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem('admin_token'),
+                    'Authorization': 'Bearer ' + localStorage.getItem('adminAccessToken'),
                     'Content-Type': 'application/json'
                 }
             })
@@ -391,35 +402,33 @@
 
         // Função para remover sensor
         function removerSensor(sensorId) {
-            if (confirm('Tem certeza que deseja remover este sensor do usuário?')) {
-                fetch(`/api/v1/admin/usuarios/{{ usuario.id }}/sensores/${sensorId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': 'Bearer ' + localStorage.getItem('admin_token'),
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => {
-                    if (response.ok) {
-                        alert('Sensor removido com sucesso!');
-                        window.location.reload();
-                    } else {
-                        return response.json().then(data => {
-                            alert('Erro: ' + (data.detail || 'Falha ao remover sensor'));
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    alert('Erro ao remover sensor');
-                });
-            }
+            fetch(`/api/v1/admin/usuarios/{{ usuario.id }}/sensores/${sensorId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('adminAccessToken'),
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Sensor removido com sucesso!');
+                    window.location.reload();
+                } else {
+                    return response.json().then(data => {
+                        alert('Erro: ' + (data.detail || 'Falha ao remover sensor'));
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao remover sensor');
+            });
         }
 
         // Função de logout
         document.getElementById('logout-button').addEventListener('click', function(e) {
             e.preventDefault();
-            localStorage.removeItem('admin_token');
+            localStorage.removeItem('adminAccessToken');
             window.location.href = '/login_admin.html';
         });
     </script>

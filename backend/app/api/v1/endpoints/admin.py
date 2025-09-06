@@ -1,6 +1,6 @@
 from typing import Any, List
 from datetime import timedelta
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from sqlalchemy import text
@@ -223,7 +223,7 @@ async def listar_sensores_do_usuario(
 @router.post("/usuarios/{usuario_id}/sensores", response_model=usuario_sensor_schemas.UsuarioSensor)
 async def atribuir_sensor_a_usuario(
     usuario_id: int,
-    sensor_id: int,
+    sensor_id: int = Query(..., description="ID do sensor a ser atribuído"),
     db: Session = Depends(get_db),
     _: dict = Depends(get_current_admin)
 ) -> Any:
