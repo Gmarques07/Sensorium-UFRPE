@@ -173,11 +173,11 @@ def obter_dados_dashboard(
 ) -> Any:
     """
     Retorna os dados dos sensores para o dashboard do usuário.
-    Inclui dados de pH e nível de água dos locais.
+    Inclui dados de pH e nível de água dos locais atribuídos ao usuário.
 
     Returns:
         dict: Dados dos sensores organizados por dispositivo
-            - dispositivos: Lista de dispositivos/locais
+            - dispositivos: Lista de dispositivos/locais atribuídos ao usuário
             - ph_por_dispositivo: Dados de pH por dispositivo
             - nivel_por_dispositivo: Dados de nível por dispositivo
             
@@ -187,94 +187,57 @@ def obter_dados_dashboard(
     """
     from ....crud import local as crud_local
     from ....models.local import Local
+    from ....models.usuario_sensor import UsuarioSensor
     
-    # Buscar todos os locais (dispositivos)
-    locais = db.query(Local).all()
+    # Buscar apenas os locais atribuídos ao usuário
+    locais_atribuidos = db.query(Local).join(UsuarioSensor).filter(
+        UsuarioSensor.usuario_id == current_user.id
+    ).all()
     
-    # Se não há locais, criar dados de exemplo
-    if not locais:
-        # Criar dados de exemplo para demonstração
-        dispositivos = [
-            {"dispositivo": "Cisterna Principal", "id": 1},
-            {"dispositivo": "Cisterna Secundária", "id": 2}
-        ]
+    # Se não há locais atribuídos, retornar dados vazios
+    if not locais_atribuidos:
+        return {
+            "dispositivos": [],
+            "ph_por_dispositivo": {},
+            "nivel_por_dispositivo": {}
+        }
+    
+    # Usar dados reais do banco apenas para os locais atribuídos
+    dispositivos = [{"dispositivo": local.nome, "id": local.id} for local in locais_atribuidos]
+    
+    # Carregar dados reais de pH e nível apenas para os locais atribuídos
+    ph_por_dispositivo = {}
+    nivel_por_dispositivo = {}
+    
+    for local in locais_atribuidos:
+        ph_atual, historico_ph, nivel_atual, historico_nivel = crud_local.obter_dados_cisterna(db)
         
-        # Dados de exemplo para pH
-        ph_por_dispositivo = {
-            "Cisterna Principal": {
-                "atual": {"ph": 7.2, "data": "2024-01-15 10:30:00"},
-                "historico": [
-                    {"ph": 7.1, "data": "2024-01-15 09:30:00"},
-                    {"ph": 7.3, "data": "2024-01-15 08:30:00"},
-                    {"ph": 7.0, "data": "2024-01-15 07:30:00"}
-                ]
-            },
-            "Cisterna Secundária": {
-                "atual": {"ph": 6.8, "data": "2024-01-15 10:30:00"},
-                "historico": [
-                    {"ph": 6.9, "data": "2024-01-15 09:30:00"},
-                    {"ph": 6.7, "data": "2024-01-15 08:30:00"},
-                    {"ph": 6.8, "data": "2024-01-15 07:30:00"}
-                ]
-            }
+        ph_por_dispositivo[local.nome] = {
+            "atual": {
+                "ph": ph_atual.ph if ph_atual else 7.0,
+                "data": ph_atual.data.strftime("%Y-%m-%d %H:%M:%S") if ph_atual else "N/A"
+            } if ph_atual else None,
+            "historico": [
+                {
+                    "ph": item.ph,
+                    "data": item.data.strftime("%Y-%m-%d %H:%M:%S")
+                } for item in historico_ph
+            ]
         }
         
-        # Dados de exemplo para nível
-        nivel_por_dispositivo = {
-            "Cisterna Principal": {
-                "atual": {"status": "ALTO", "boia": 1, "data": "2024-01-15 10:30:00"},
-                "historico": [
-                    {"status": "ALTO", "data": "2024-01-15 09:30:00"},
-                    {"status": "ALTO", "data": "2024-01-15 08:30:00"},
-                    {"status": "BAIXO", "data": "2024-01-15 07:30:00"}
-                ]
-            },
-            "Cisterna Secundária": {
-                "atual": {"status": "BAIXO", "boia": 0, "data": "2024-01-15 10:30:00"},
-                "historico": [
-                    {"status": "BAIXO", "data": "2024-01-15 09:30:00"},
-                    {"status": "BAIXO", "data": "2024-01-15 08:30:00"},
-                    {"status": "ALTO", "data": "2024-01-15 07:30:00"}
-                ]
-            }
+        nivel_por_dispositivo[local.nome] = {
+            "atual": {
+                "status": nivel_atual.status if nivel_atual else "NORMAL",
+                "boia": nivel_atual.boia if nivel_atual else 0,
+                "data": nivel_atual.data.strftime("%Y-%m-%d %H:%M:%S") if nivel_atual else "N/A"
+            } if nivel_atual else None,
+            "historico": [
+                {
+                    "status": item.status,
+                    "data": item.data.strftime("%Y-%m-%d %H:%M:%S")
+                } for item in historico_nivel
+            ]
         }
-    else:
-        # Usar dados reais do banco
-        dispositivos = [{"dispositivo": local.nome, "id": local.id} for local in locais]
-        
-        # Carregar dados reais de pH e nível
-        ph_por_dispositivo = {}
-        nivel_por_dispositivo = {}
-        
-        for local in locais:
-            ph_atual, historico_ph, nivel_atual, historico_nivel = crud_local.obter_dados_cisterna(db)
-            
-            ph_por_dispositivo[local.nome] = {
-                "atual": {
-                    "ph": ph_atual.ph if ph_atual else 7.0,
-                    "data": ph_atual.data.strftime("%Y-%m-%d %H:%M:%S") if ph_atual else "N/A"
-                } if ph_atual else None,
-                "historico": [
-                    {
-                        "ph": item.ph,
-                        "data": item.data.strftime("%Y-%m-%d %H:%M:%S")
-                    } for item in historico_ph
-                ]
-            }
-            
-            nivel_por_dispositivo[local.nome] = {
-                "atual": {
-                    "status": nivel_atual.status if nivel_atual else "NORMAL",
-                    "boia": nivel_atual.boia if nivel_atual else 0,
-                    "data": nivel_atual.data.strftime("%Y-%m-%d %H:%M:%S") if nivel_atual else "N/A"
-                } if nivel_atual else None,
-                "historico": [
-                    {
-                        "status": item.status,
-                        "data": item.data.strftime("%Y-%m-%d %H:%M:%S")
-                    } for item in historico_nivel
-                ]
-            }
     
     return {
         "dispositivos": dispositivos,
