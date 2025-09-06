@@ -10,11 +10,11 @@ from sqlalchemy.orm import Session
 # Adicionar o diretório backend ao path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from app.db.session import engine, get_db
-from app.db.base_class import Base
-from app import models
-from app.core.security import get_password_hash
-from app.models import *  # Isso garante que todos os modelos sejam registrados
+from backend.app.db.session import engine, get_db
+from backend.app.db.base_class import Base
+from backend.app import models
+from backend.app.core.security import get_password_hash
+from backend.app.models import *  # Isso garante que todos os modelos sejam registrados
 
 def init_db():
     # Cria todas as tabelas definidas nos modelos

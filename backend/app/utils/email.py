@@ -6,7 +6,7 @@ from email.mime.base import MIMEBase
 from email import encoders
 import logging
 from typing import List, Optional
-from app.core.config import settings
+from backend.app.core.config import settings
 
 logger = logging.getLogger(__name__)
 

@@ -4,21 +4,21 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from ....crud import admin as crud_admin
-from ....crud import usuario as crud_usuario
-from ....crud import usuario_sensor as crud_usuario_sensor
-from ....schemas import admin as schemas
-from ....schemas import usuario as usuario_schemas
-from ....schemas import usuario_sensor as usuario_sensor_schemas
-from ....schemas import auth as auth_schemas
-from ....schemas import local as local_schemas
-from ....api.deps import get_db, get_current_admin
-from ....models.usuario import Usuario
-from ....models.admin import Admin
-from ....models.local import Local
-from ....core.security import create_access_token, verify_password
-from ....core.config import settings
-from ....core.limiter import rate_limit
+from backend.app.crud import admin as crud_admin
+from backend.app.crud import usuario as crud_usuario
+from backend.app.crud import usuario_sensor as crud_usuario_sensor
+from backend.app.schemas import admin as schemas
+from backend.app.schemas import usuario as usuario_schemas
+from backend.app.schemas import usuario_sensor as usuario_sensor_schemas
+from backend.app.schemas import auth as auth_schemas
+from backend.app.schemas import local as local_schemas
+from backend.app.api.deps import get_db, get_current_admin
+from backend.app.models.usuario import Usuario
+from backend.app.models.admin import Admin
+from backend.app.models.local import Local
+from backend.app.core.security import create_access_token, verify_password
+from backend.app.core.config import settings
+from backend.app.core.limiter import rate_limit
 
 router = APIRouter()
 
@@ -217,6 +217,7 @@ async def listar_sensores_do_usuario(
             sensores.append(sensor)
     
     return sensores
+
 
 @router.post("/usuarios/{usuario_id}/sensores", response_model=usuario_sensor_schemas.UsuarioSensor)
 async def atribuir_sensor_a_usuario(

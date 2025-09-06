@@ -3,12 +3,12 @@ from sqlalchemy.orm import Session
 from typing import Optional, Dict, List, Tuple
 from datetime import datetime, date
 from collections import defaultdict
-from app.api.deps import get_db, get_current_user
-from app.models.usuario import Usuario
-from app.models.local import Local, PhNivel, NivelAgua
+from backend.app.api.deps import get_db, get_current_user
+from backend.app.models.usuario import Usuario
+from backend.app.models.local import Local, PhNivel, NivelAgua
 # from app.utils.email import send_relatorio_por_email
-from app.utils.email_yagmail import send_relatorio_por_email_yagmail as send_relatorio_por_email
-from app.core.config import settings
+from backend.app.utils.email_yagmail import send_relatorio_por_email_yagmail as send_relatorio_por_email
+from backend.app.core.config import settings
 import csv
 import io
 import os

@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 8001
 
 # Comando para rodar a aplicação
-CMD ["python", "backend/main.py"]
+CMD ["python", "main.py"]

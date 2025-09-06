@@ -25,6 +25,12 @@ email-validator==2.3.0
 jinja2==3.1.5
 aiofiles==24.1.0
 
+# Email
+yagmail==0.15.293
+
+# PDF
+reportlab==4.2.5
+
 # Dependências do sistema
 typing-extensions>=4.14.1
 annotated-types>=0.7.0

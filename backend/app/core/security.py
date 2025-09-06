@@ -2,8 +2,8 @@ from datetime import datetime, timedelta
 from typing import Any, Union, Optional
 from jose import jwt, JWTError
 from passlib.context import CryptContext
-from app.core.config import settings
-from app.schemas.auth import TokenData
+from backend.app.core.config import settings
+from backend.app.schemas.auth import TokenData
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

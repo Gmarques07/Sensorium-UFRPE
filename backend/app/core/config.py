@@ -64,4 +64,10 @@ class Settings(BaseSettings):
         case_sensitive = True
         env_file = ".env"
 
+# Use o caminho absoluto para o arquivo .env
+import os
+env_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", ".env")
+if os.path.exists(env_path):
+    load_dotenv(env_path)
+
 settings = Settings()

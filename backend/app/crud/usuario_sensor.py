@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
-from app.models.usuario_sensor import UsuarioSensor
-from app.schemas.usuario_sensor import UsuarioSensorCreate, UsuarioSensorUpdate
+from backend.app.models.usuario_sensor import UsuarioSensor
+from backend.app.schemas.usuario_sensor import UsuarioSensorCreate, UsuarioSensorUpdate
 
 def get_usuario_sensor(db: Session, usuario_id: int, local_id: int) -> UsuarioSensor:
     """Obtém um relacionamento específico entre usuário e sensor."""

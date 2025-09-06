@@ -27,6 +27,7 @@ services:
       # Ativar logs de debug
       - PYTHONUNBUFFERED=1
       - LOG_LEVEL=debug
+      - PYTHONPATH=/app
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
       interval: 30s

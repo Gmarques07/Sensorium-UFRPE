@@ -1,11 +1,11 @@
 from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from ....crud import local as crud_local
-from ....schemas import local as schemas
-from ....api.deps import get_db, get_current_user
-from ....models.usuario import Usuario
-from ....models.local import Local
+from backend.app.crud import local as crud_local
+from backend.app.schemas import local as schemas
+from backend.app.api.deps import get_db, get_current_user
+from backend.app.models.usuario import Usuario
+from backend.app.models.local import Local
 
 router = APIRouter()
 

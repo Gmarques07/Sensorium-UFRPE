@@ -1,8 +1,8 @@
 from typing import List, Optional, Tuple, Union
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
-from app.models.local import PhNivel, NivelAgua, Local  # Importar o modelo Local
-from app.schemas.local import PhNivelCreate, NivelAguaCreate, LocalCreate  # Importar o schema Local
+from backend.app.models.local import PhNivel, NivelAgua, Local  # Importar o modelo Local
+from backend.app.schemas.local import PhNivelCreate, NivelAguaCreate, LocalCreate  # Importar o schema Local
 
 def criar_local(db: Session, local: LocalCreate) -> Local:
     db_local = Local(

@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, Float, String, DateTime, func, ForeignKey
 from sqlalchemy.orm import relationship
-from app.db.base_class import Base
+from backend.app.db.base_class import Base
 
 class Local(Base):
     __tablename__ = "locais"

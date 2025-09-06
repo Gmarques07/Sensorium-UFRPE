@@ -9,7 +9,7 @@ import os
 # Adicionar o diretório backend ao path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from app.utils.email import send_email_with_attachment
+from backend.app.utils.email import send_email_with_attachment
 
 def testar_envio_email():
     """Testa o envio de um e-mail simples."""

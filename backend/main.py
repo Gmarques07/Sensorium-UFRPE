@@ -4,12 +4,12 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.responses import HTMLResponse
 import uvicorn
-from app.core.config import settings
-from app.db.session import SessionLocal
+from backend.app.core.config import settings
+from backend.app.db.session import SessionLocal
 from sqlalchemy.orm import Session
-from app import crud
-from app.models.usuario import Usuario
-from app.models.local import Local
+from backend.app import crud
+from backend.app.models.usuario import Usuario
+from backend.app.models.local import Local
 import os
 
 # Função para obter sessão do banco de dados
@@ -28,7 +28,7 @@ app = FastAPI(
 )
 
 # Incluir os routers da API diretamente na aplicação principal
-from app.api.v1 import api_router
+from backend.app.api.v1 import api_router
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 # Configurar templates (apontando para o diretório correto)
@@ -144,7 +144,7 @@ async def dashboard_usuario(request: Request):
 @app.get("/admin_dashboard.html", response_class=HTMLResponse)
 async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
     # Buscar dados reais do banco de dados
-    from app import crud
+    from backend.app import crud
     
     # Obter todos os usuários
     usuarios_objs = crud.usuario.get_multi(db, limit=100)
@@ -152,7 +152,6 @@ async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
         {
             "id": u.id,
             "nome": u.nome,
-            "cpf": u.cpf,
             "email": u.email,
             "endereco": u.endereco
         } for u in usuarios_objs
@@ -203,7 +202,7 @@ async def gerenciar_sensores(request: Request, usuario_id: int, db: Session = De
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
     
     # Obter sensores atribuídos ao usuário
-    from app.crud import usuario_sensor as crud_usuario_sensor
+    from backend.app.crud import usuario_sensor as crud_usuario_sensor
     usuario_sensores = crud_usuario_sensor.get_sensores_do_usuario(db, usuario_id)
     
     # Converter para objetos de sensor
@@ -221,7 +220,6 @@ async def gerenciar_sensores(request: Request, usuario_id: int, db: Session = De
         "usuario": {
             "id": usuario.id,
             "nome": usuario.nome,
-            "cpf": usuario.cpf,
             "email": usuario.email,
             "endereco": usuario.endereco
         },
@@ -243,4 +241,3 @@ async def server_error(request: Request):
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8001, reload=True)
-

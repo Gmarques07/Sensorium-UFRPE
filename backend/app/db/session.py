@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from app.core.config import settings
+from backend.app.core.config import settings
 
 # Usa a URL de banco definida nos settings, que pode ser sobrescrita via DATABASE_URL
 SQLALCHEMY_DATABASE_URL = settings.DATABASE_URL

@@ -3,18 +3,18 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from ....crud import usuario as crud_usuario
-from ....schemas import auth as schemas_auth
-from ....core.security import (
+from backend.app.crud import usuario as crud_usuario
+from backend.app.schemas import auth as schemas_auth
+from backend.app.core.security import (
     create_access_token,
     verify_password,
     get_password_hash,
     verify_token
 )
-from ....api.deps import get_db
-from ....core.limiter import rate_limit
-from ....core.config import settings
-from ....models.usuario import Usuario
+from backend.app.api.deps import get_db
+from backend.app.core.limiter import rate_limit
+from backend.app.core.config import settings
+from backend.app.models.usuario import Usuario
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")

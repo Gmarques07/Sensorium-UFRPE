@@ -3,11 +3,11 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
-from app.core.config import settings
-from app.db.session import SessionLocal
-from app import crud, schemas
-from app.models.usuario import Usuario
-from app.models.admin import Admin
+from backend.app.core.config import settings
+from backend.app.db.session import SessionLocal
+from backend.app import crud, schemas
+from backend.app.models.usuario import Usuario
+from backend.app.models.admin import Admin
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login", auto_error=False)
 
@@ -55,6 +55,11 @@ def get_current_admin(
         detail="Could not validate admin credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    
+    # Verificar se o token foi fornecido
+    if not token:
+        raise credentials_exception
+    
     try:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=["HS256"]

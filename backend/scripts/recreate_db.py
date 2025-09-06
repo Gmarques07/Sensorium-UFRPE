@@ -3,9 +3,9 @@
 Script para verificar e recriar as tabelas do banco de dados.
 """
 
-from app.db.session import engine
-from app.db.base_class import Base
-from app import models
+from backend.app.db.session import engine
+from backend.app.db.base_class import Base
+from backend.app import models
 
 def recreate_tables():
     print("Recriando tabelas...")

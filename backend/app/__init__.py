@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi.staticfiles import StaticFiles
-from app.api.v1 import api_router
-from app.core.docs import swagger_ui_config, tags_metadata, schemas_descriptions
+from backend.app.api.v1 import api_router
+from backend.app.core.docs import swagger_ui_config, tags_metadata, schemas_descriptions
 
 app = FastAPI(
     title="Sensorium UFRPE API",

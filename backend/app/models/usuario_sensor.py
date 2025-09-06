@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from app.db.base_class import Base
+from backend.app.db.base_class import Base
 
 class UsuarioSensor(Base):
     __tablename__ = "usuario_sensor"

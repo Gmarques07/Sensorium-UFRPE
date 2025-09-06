@@ -9,7 +9,7 @@ import os
 # Adicionar o diretório backend ao path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from app.utils.email_yagmail import send_email_with_yagmail
+from backend.app.utils.email_yagmail import send_email_with_yagmail
 
 def testar_envio_email_yagmail():
     """Testa o envio de um e-mail simples usando yagmail."""

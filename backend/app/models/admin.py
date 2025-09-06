@@ -23,9 +23,9 @@ class Admin(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def set_senha(self, senha: str):
-        from app.core.security import get_password_hash
+        from backend.app.core.security import get_password_hash
         self.senha_hash = get_password_hash(senha)
 
     def verificar_senha(self, senha: str) -> bool:
-        from app.core.security import verify_password
+        from backend.app.core.security import verify_password
         return verify_password(senha, self.senha_hash)
