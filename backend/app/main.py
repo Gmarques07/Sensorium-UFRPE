@@ -9,6 +9,10 @@ from backend.app.api.v1 import api_router
 from backend.app.api.deps import get_current_user
 from backend.app.crud.usuario import get_usuario
 from pathlib import Path
+from sqlalchemy.orm import Session
+from backend.app.api.deps import get_db
+from backend.app.models.usuario import Usuario
+from backend.app.models.local import Local
 import warnings
 
 app = FastAPI(
@@ -92,8 +96,94 @@ async def test_token(request: Request):
     return templates.TemplateResponse("test_token.html", {"request": request})
 
 @app.get("/admin_dashboard.html", response_class=HTMLResponse)
-async def admin_dashboard(request: Request):
-    return templates.TemplateResponse("admin_dashboard.html", {"request": request})
+async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
+    # Buscar dados reais do banco de dados
+    from backend.app import crud
+    
+    # Obter todos os usuários
+    usuarios_objs = crud.usuario.get_multi(db, limit=100)
+    usuarios = [
+        {
+            "id": u.id,
+            "nome": u.nome,
+            "email": u.email,
+            "endereco": u.endereco
+        } for u in usuarios_objs
+    ]
+    
+    # Obter todas as notificações
+    try:
+        from sqlalchemy import text
+        notificacoes_result = db.execute(
+            text("SELECT * FROM notificacoes ORDER BY data_criacao DESC LIMIT 50")
+        ).fetchall()
+        notificacoes = [dict(n) for n in notificacoes_result]
+    except Exception:
+        notificacoes = []
+    
+    # Obter configurações
+    try:
+        configuracoes_objs = crud.admin.get_all_configuracoes(db, limit=100)
+        configuracoes = [
+            {
+                "id": c.id,
+                "chave": c.chave,
+                "valor": c.valor,
+                "descricao": c.descricao,
+                "tipo": "numero"  # Tipo padrão para configurações
+            } for c in configuracoes_objs
+        ]
+    except Exception:
+        configuracoes = []
+    
+    total_usuarios = len(usuarios)
+    total_notificacoes = len(notificacoes)
+    
+    # Obter todos os sensores
+    sensores = db.query(Local).all()
+    
+    return templates.TemplateResponse("admin_dashboard.html", {
+        "request": request,
+        "usuarios": usuarios,
+        "notificacoes": notificacoes,
+        "configuracoes": configuracoes,
+        "total_usuarios": total_usuarios,
+        "total_notificacoes": total_notificacoes,
+        "sensores": sensores
+    })
+
+@app.get("/gerenciar_sensores/{usuario_id}", response_class=HTMLResponse)
+async def gerenciar_sensores(request: Request, usuario_id: int, db: Session = Depends(get_db)):
+    # Obter o usuário
+    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+    
+    # Obter sensores atribuídos ao usuário
+    from backend.app.crud import usuario_sensor as crud_usuario_sensor
+    usuario_sensores = crud_usuario_sensor.get_sensores_do_usuario(db, usuario_id)
+    
+    # Converter para objetos de sensor
+    sensores_atribuidos = []
+    for usuario_sensor in usuario_sensores:
+        sensor = db.query(Local).filter(Local.id == usuario_sensor.local_id).first()
+        if sensor:
+            sensores_atribuidos.append(sensor)
+    
+    # Obter todos os sensores
+    todos_sensores = db.query(Local).all()
+    
+    return templates.TemplateResponse("gerenciar_sensores.html", {
+        "request": request,
+        "usuario": {
+            "id": usuario.id,
+            "nome": usuario.nome,
+            "email": usuario.email,
+            "endereco": usuario.endereco
+        },
+        "sensores_atribuidos": sensores_atribuidos,
+        "todos_sensores": todos_sensores
+    })
 
 @app.get("/sobre.html", response_class=HTMLResponse)
 async def sobre(request: Request):

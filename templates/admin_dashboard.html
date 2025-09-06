@@ -194,6 +194,7 @@
                 <nav class="nav flex-column w-100">
                     <a class="nav-link active" href="#painel"><i class="bi bi-speedometer2"></i> Painel</a>
                     <a class="nav-link" href="#usuarios"><i class="bi bi-people"></i> Usuários</a>
+                    <a class="nav-link" href="#sensores"><i class="bi bi-cpu"></i> Sensores</a>
                     <a class="nav-link" href="#notificacoes"><i class="bi bi-bell"></i> Notificações</a>
                     <a class="nav-link" href="#configuracoes"><i class="bi bi-gear"></i> Configurações</a>
                 </nav>
@@ -253,6 +254,39 @@
                                             <button class="btn btn-sm btn-primary btn-visualizar-usuario" data-id="{{ usuario.id }}"><i class="bi bi-eye"></i></button>
                                             <a href="/gerenciar_sensores/{{ usuario.id }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
                                             <button class="btn btn-sm btn-danger btn-excluir-usuario" data-id="{{ usuario.id }}"><i class="bi bi-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção Sensores -->
+                <div id="sensores" class="mt-5">
+                    <h4><i class="bi bi-cpu-fill me-2 text-primary"></i> Gerenciamento de Sensores</h4>
+                    <div class="dashboard-card">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nome</th>
+                                        <th>Localização</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for sensor in sensores %}
+                                    <tr>
+                                        <td>{{ sensor.id }}</td>
+                                        <td>{{ sensor.nome }}</td>
+                                        <td>{{ sensor.latitude }}, {{ sensor.longitude }}</td>
+                                        <td><span class="badge bg-success">Ativo</span></td>
+                                        <td>
+                                            <a href="/gerenciar_sensores/{{ sensor.id }}" class="btn btn-sm btn-info"><i class="bi bi-gear"></i> Gerenciar</a>
                                         </td>
                                     </tr>
                                     {% endfor %}
