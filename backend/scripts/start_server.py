@@ -12,7 +12,7 @@ from pathlib import Path
 # Obter o diretório backend (dois níveis acima do diretório scripts)
 backend_dir = Path(__file__).resolve().parents[1]
 project_root = backend_dir.parent
-sys.path.insert(0, str(backend_dir))
+sys.path.insert(0, str(project_root))
 
 def main():
     parser = argparse.ArgumentParser(description="Iniciar servidor Sensorium UFRPE")
@@ -48,7 +48,7 @@ def main():
     
     # Verificar se o módulo app.main existe
     try:
-        import app.main
+        import backend.app.main
         print("Módulo app.main encontrado com sucesso!")
     except ImportError as e:
         print(f"Erro ao importar app.main: {e}")
@@ -66,7 +66,7 @@ def main():
         print(f"ATENÇÃO: Pasta templates não encontrada: {templates_dir}")
     
     uvicorn.run(
-        "app.main:app",
+        "backend.app.main:app",
         host=args.host,
         port=args.port,
         reload=args.reload,
