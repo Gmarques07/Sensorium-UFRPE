@@ -30,46 +30,48 @@ run_all_tests() {
     echo -e "${BLUE}Executando todos os testes...${NC}"
     echo
     echo -e "${YELLOW}Testes de Unidade:${NC}"
-    docker-compose -f ../config/docker-compose.yml run --rm tests
+    docker-compose run --rm tests
     echo
     echo -e "${YELLOW}Testes de Integracao:${NC}"
-    docker-compose -f ../config/docker-compose.yml run --rm tests_integration
+    docker-compose run --rm tests_integration
 }
 
 run_unit_tests() {
     echo -e "${BLUE}Executando testes de unidade...${NC}"
-    docker-compose -f ../config/docker-compose.yml run --rm tests
+    docker-compose run --rm tests
 }
 
 run_integration_tests() {
     echo -e "${BLUE}Executando testes de integracao...${NC}"
-    docker-compose -f ../config/docker-compose.yml run --rm tests_integration
+    docker-compose run --rm tests_integration
 }
 
 run_coverage_tests() {
     echo -e "${BLUE}Executando testes com cobertura...${NC}"
     echo
     echo -e "${YELLOW}Cobertura - Testes de Unidade:${NC}"
-    docker-compose -f ../config/docker-compose.yml run --rm tests pytest --cov=app --cov-report=term-missing
+    docker-compose run --rm tests pytest --cov=app --cov-report=term-missing
     echo
     echo -e "${YELLOW}Cobertura - Testes de Integracao:${NC}"
-    docker-compose -f ../config/docker-compose.yml run --rm tests_integration pytest --cov=app --cov-report=term-missing
+    docker-compose run --rm tests_integration pytest --cov=app --cov-report=term-missing
 }
 
 clean_test_containers() {
     echo -e "${BLUE}Limpando containers de teste...${NC}"
-    docker-compose -f ../config/docker-compose.yml down -v
+    docker-compose down -v --remove-orphans
+    docker rm -f sensorium_mysql sensorium_backend sensorium_backend_int sensorium_tests sensorium_tests_integration 2>/dev/null || true
+    docker network prune -f 2>/dev/null || true
     echo -e "${GREEN}Containers limpos com sucesso!${NC}"
 }
 
 build_test_containers() {
     echo -e "${BLUE}Building containers de teste...${NC}"
-    docker-compose -f ../config/docker-compose.yml build tests tests_integration backend_int
+    docker-compose build tests tests_integration backend_int
     echo -e "${GREEN}Build concluido!${NC}"
 }
 
 # Verificar se está no diretório correto
-if [ ! -f "../config/docker-compose.yml" ]; then
+if [ ! -f "../../docker-compose.yml" ]; then
     echo -e "${RED}Erro: Execute este script a partir do diretório backend/scripts/${NC}"
     echo "   cd backend/scripts/"
     echo "   ./test.sh"

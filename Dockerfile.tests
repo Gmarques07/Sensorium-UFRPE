@@ -1,0 +1,14 @@
+# Usar a mesma imagem base do backend
+FROM sensorium-ufrpe-backend_int
+
+# Garantir que o httpx esteja instalado
+RUN pip install httpx
+
+# O restante da configuração já está incluída na imagem base
+# Apenas garantir que o working directory esteja correto
+WORKDIR /app
+
+# Copiar o código do projeto
+COPY . .
+
+# O comando padrão será substituído no docker-compose.yml

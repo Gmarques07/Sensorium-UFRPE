@@ -21,6 +21,13 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# Health check endpoint
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
+print("Health endpoint registered")
+
 # Configurar CORS
 app.add_middleware(
     CORSMiddleware,
@@ -32,6 +39,8 @@ app.add_middleware(
 
 # Incluir os routers da API
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+print("API router included")
 
 # Configurar arquivos estáticos e templates
 # Calcular diretórios estáticos e de templates dinamicamente para

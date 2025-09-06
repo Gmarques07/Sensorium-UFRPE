@@ -239,5 +239,9 @@ async def not_found(request: Request):
 async def server_error(request: Request):
     return templates.TemplateResponse("500.html", {"request": request})
 
+@app.get("/health")
+async def healthcheck():
+    return {"status": "ok"}
+
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8001, reload=True)

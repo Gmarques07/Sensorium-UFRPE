@@ -4,6 +4,13 @@ FROM python:3.9-slim
 # Definir o diretório de trabalho no container
 WORKDIR /app
 
+# Instalar dependências do sistema necessárias
+RUN apt-get update && apt-get install -y \
+    default-mysql-client \
+    netcat-openbsd \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copiar os arquivos de requisitos primeiro para aproveitar o cache do Docker
 COPY requirements.txt .
 

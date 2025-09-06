@@ -12,7 +12,7 @@ echo -e "${BLUE}Sistema de Testes - Sensorium UFRPE${NC}"
 echo "======================================="
 
 # Verificar se está no diretório correto
-if [ ! -f "../config/docker-compose.yml" ]; then
+if [ ! -f "../../docker-compose.yml" ]; then
     echo -e "${RED}Erro: Execute este script a partir do diretório backend/scripts/${NC}"
     echo "   cd backend/scripts/"
     echo "   ./run_tests.sh"
@@ -38,27 +38,27 @@ while true; do
             echo -e "${BLUE}Executando todos os testes...${NC}"
             echo
             echo -e "${YELLOW}Testes de Unidade:${NC}"
-            docker-compose -f ../config/docker-compose.yml run --rm tests
+            docker-compose run --rm tests
             echo
             echo -e "${YELLOW}Testes de Integracao:${NC}"
-            docker-compose -f ../config/docker-compose.yml run --rm tests_integration
+            docker-compose run --rm tests_integration
             ;;
         2)
             echo -e "${BLUE}Executando testes de unidade...${NC}"
-            docker-compose -f ../config/docker-compose.yml run --rm tests
+            docker-compose run --rm tests
             ;;
         3)
             echo -e "${BLUE}Executando testes de integracao...${NC}"
-            docker-compose -f ../config/docker-compose.yml run --rm tests_integration
+            docker-compose run --rm tests_integration
             ;;
         4)
             echo -e "${BLUE}Executando testes com cobertura...${NC}"
             echo
             echo -e "${YELLOW}Cobertura - Testes de Unidade:${NC}"
-            docker-compose -f ../config/docker-compose.yml run --rm tests pytest --cov=app --cov-report=term-missing
+            docker-compose run --rm tests pytest --cov=app --cov-report=term-missing
             echo
             echo -e "${YELLOW}Cobertura - Testes de Integracao:${NC}"
-            docker-compose -f ../config/docker-compose.yml run --rm tests_integration pytest --cov=app --cov-report=term-missing
+            docker-compose run --rm tests_integration pytest --cov=app --cov-report=term-missing
             ;;
         5)
             echo -e "${BLUE}Executar testes especificos${NC}"
@@ -70,20 +70,22 @@ while true; do
             read -p "Comando pytest: " test_cmd
             if [[ $test_cmd == *"integration"* ]]; then
                 echo -e "${YELLOW}Executando testes de integracao especificos...${NC}"
-                docker-compose -f ../config/docker-compose.yml run --rm tests_integration pytest $test_cmd
+                docker-compose run --rm tests_integration pytest $test_cmd
             else
                 echo -e "${YELLOW}Executando testes de unidade especificos...${NC}"
-                docker-compose -f ../config/docker-compose.yml run --rm tests pytest $test_cmd
+                docker-compose run --rm tests pytest $test_cmd
             fi
             ;;
         6)
             echo -e "${BLUE}Limpando containers de teste...${NC}"
-            docker-compose -f ../config/docker-compose.yml down -v
+            docker-compose down -v --remove-orphans
+            docker rm -f sensorium_mysql sensorium_backend sensorium_backend_int sensorium_tests sensorium_tests_integration 2>/dev/null || true
+            docker network prune -f 2>/dev/null || true
             echo -e "${GREEN}Containers limpos com sucesso!${NC}"
             ;;
         7)
             echo -e "${BLUE}Building containers de teste...${NC}"
-            docker-compose -f ../config/docker-compose.yml build tests tests_integration backend_int
+            docker-compose build tests tests_integration backend_int
             echo -e "${GREEN}Build concluido!${NC}"
             ;;
         0)

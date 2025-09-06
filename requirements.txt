@@ -67,3 +67,8 @@ sniffio>=1.3.1
 
 # Dependências do python-jose
 six>=1.17.0
+
+# Testes
+pytest==8.3.3
+pytest-cov==6.0.0
+httpx>=0.27.0

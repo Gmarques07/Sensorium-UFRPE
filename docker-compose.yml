@@ -1,6 +1,21 @@
-version: '3.8'
-
 services:
+  mysql:
+    image: mysql:8.0
+    container_name: sensorium_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: banco_de_dados
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
     build: 
       context: .
@@ -28,6 +43,8 @@ services:
       - PYTHONUNBUFFERED=1
       - LOG_LEVEL=debug
       - PYTHONPATH=/app
+      # Disable reload in Docker
+      - DISABLE_RELOAD=true
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
       interval: 30s
@@ -56,9 +73,17 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: sensorium_backend_int
-    command: sh -c "PYTHONPATH=/app python backend/scripts/init_db.py && PYTHONPATH=/app uvicorn backend.app.main:app --host 0.0.0.0 --port 8003"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: ["sh", "-c", "PYTHONPATH=/app python backend/scripts/init_db.py && PYTHONPATH=/app uvicorn backend.app.main:app --host 0.0.0.0 --port 8003"]
     environment:
-      DATABASE_URL: "sqlite:////tmp/integration.db"
+      MYSQL_HOST: mysql
+      MYSQL_USER: root
+      MYSQL_PASSWORD: rootpassword
+      MYSQL_DATABASE: banco_de_dados
+      MYSQL_PORT: 3306
+      DATABASE_URL: "mysql+mysqlconnector://root:rootpassword@mysql:3306/banco_de_dados?auth_plugin=mysql_native_password&charset=utf8mb4"
       SECRET_KEY: "chave_secreta_muito_longa_e_segura_para_jwt_tokens_aqui"
       ACCESS_TOKEN_EXPIRE_MINUTES: "1440"
       BACKEND_CORS_ORIGINS: '["*"]'
@@ -72,14 +97,15 @@ services:
       - "8003:8003"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   tests_integration:
     build: 
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.tests
     container_name: sensorium_tests_integration
     depends_on:
       backend_int:
@@ -89,8 +115,17 @@ services:
       SECRET_KEY: "chave_secreta_muito_longa_e_segura_para_jwt_tokens_aqui"
       DISABLE_RATE_LIMITING: "true"
       PYTHONPATH: "/app"
+      MYSQL_HOST: mysql
+      MYSQL_USER: root
+      MYSQL_PASSWORD: rootpassword
+      MYSQL_DATABASE: banco_de_dados
+      MYSQL_PORT: 3306
+      DATABASE_URL: "mysql+mysqlconnector://root:rootpassword@mysql:3306/banco_de_dados?auth_plugin=mysql_native_password&charset=utf8mb4"
     volumes:
       - .:/app
       - ./templates:/app/templates
       - ./static:/app/static
     command: pytest -q backend/tests/integration -s
+
+volumes:
+  mysql_data:

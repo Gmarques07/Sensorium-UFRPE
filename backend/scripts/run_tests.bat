@@ -6,7 +6,7 @@ echo Sistema de Testes - Sensorium UFRPE
 echo =======================================
 
 REM Verificar se está no diretório correto
-if not exist "..\config\docker-compose.yml" (
+if not exist "..\..\docker-compose.yml" (
     echo Erro: Execute este script a partir do diretório backend/scripts/
     echo    cd backend/scripts/
     echo    run_tests.bat
@@ -30,27 +30,29 @@ if "%choice%"=="1" (
     echo Executando todos os testes...
     echo.
     echo Testes de Unidade:
-    docker-compose -f ..\config\docker-compose.yml run --rm tests
+    docker-compose run --rm tests
     echo.
     echo Testes de Integracao:
-    docker-compose -f ..\config\docker-compose.yml run --rm tests_integration
+    docker-compose run --rm tests_integration
     goto menu
 ) else if "%choice%"=="2" (
     echo Executando testes de unidade...
-    docker-compose -f ..\config\docker-compose.yml run --rm tests
+    docker-compose run --rm tests
     goto menu
 ) else if "%choice%"=="3" (
     echo Executando testes de integracao...
-    docker-compose -f ..\config\docker-compose.yml run --rm tests_integration
+    docker-compose run --rm tests_integration
     goto menu
 ) else if "%choice%"=="4" (
     echo Limpando containers de teste...
-    docker-compose -f ..\config\docker-compose.yml down -v
+    docker-compose down -v --remove-orphans
+    docker rm -f sensorium_mysql sensorium_backend sensorium_backend_int sensorium_tests sensorium_tests_integration 2>nul
+    docker network prune -f 2>nul
     echo Containers limpos com sucesso!
     goto menu
 ) else if "%choice%"=="5" (
     echo Building containers de teste...
-    docker-compose -f ..\config\docker-compose.yml build tests tests_integration backend_int
+    docker-compose build tests tests_integration backend_int
     echo Build concluido!
     goto menu
 ) else if "%choice%"=="0" (

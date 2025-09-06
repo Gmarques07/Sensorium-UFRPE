@@ -2,7 +2,7 @@
 # Autor: Qwen Code
 
 # Verificar se está no diretório correto
-if (-not (Test-Path '../config/docker-compose.yml')) {
+if (-not (Test-Path '../../docker-compose.yml')) {
     Write-Host 'Erro: Execute este script a partir do diretório backend/scripts/' -ForegroundColor Red
     Write-Host '   cd backend/scripts/' -ForegroundColor Yellow
     Write-Host '   .\run_tests.ps1' -ForegroundColor Yellow
@@ -31,30 +31,30 @@ function Run-All-Tests {
     Write-Host 'Executando todos os testes...' -ForegroundColor Blue
     Write-Host ''
     Write-Host 'Testes de Unidade:' -ForegroundColor Yellow
-    docker-compose -f ../config/docker-compose.yml run --rm tests
+    docker-compose run --rm tests
     Write-Host ''
     Write-Host 'Testes de Integracao:' -ForegroundColor Yellow
-    docker-compose -f ../config/docker-compose.yml run --rm tests_integration
+    docker-compose run --rm tests_integration
 }
 
 function Run-Unit-Tests {
     Write-Host 'Executando testes de unidade...' -ForegroundColor Blue
-    docker-compose -f ../config/docker-compose.yml run --rm tests
+    docker-compose run --rm tests
 }
 
 function Run-Integration-Tests {
     Write-Host 'Executando testes de integracao...' -ForegroundColor Blue
-    docker-compose -f ../config/docker-compose.yml run --rm tests_integration
+    docker-compose run --rm tests_integration
 }
 
 function Run-Coverage-Tests {
     Write-Host 'Executando testes com cobertura...' -ForegroundColor Blue
     Write-Host ''
     Write-Host 'Cobertura - Testes de Unidade:' -ForegroundColor Yellow
-    docker-compose -f ../config/docker-compose.yml run --rm tests pytest --cov=app --cov-report=term-missing
+    docker-compose run --rm tests pytest --cov=app --cov-report=term-missing
     Write-Host ''
     Write-Host 'Cobertura - Testes de Integracao:' -ForegroundColor Yellow
-    docker-compose -f ../config/docker-compose.yml run --rm tests_integration pytest --cov=app --cov-report=term-missing
+    docker-compose run --rm tests_integration pytest --cov=app --cov-report=term-missing
 }
 
 function Run-Specific-Tests {
@@ -69,22 +69,24 @@ function Run-Specific-Tests {
     
     if ($test_cmd -like '*integration*') {
         Write-Host 'Executando testes de integracao especificos...' -ForegroundColor Yellow
-        docker-compose -f ../config/docker-compose.yml run --rm tests_integration pytest $test_cmd
+        docker-compose run --rm tests_integration pytest $test_cmd
     } else {
         Write-Host 'Executando testes de unidade especificos...' -ForegroundColor Yellow
-        docker-compose -f ../config/docker-compose.yml run --rm tests pytest $test_cmd
+        docker-compose run --rm tests pytest $test_cmd
     }
 }
 
 function Clean-Test-Containers {
     Write-Host 'Limpando containers de teste...' -ForegroundColor Blue
-    docker-compose -f ../config/docker-compose.yml down -v
+    docker-compose down -v --remove-orphans
+    docker rm -f sensorium_mysql sensorium_backend sensorium_backend_int sensorium_tests sensorium_tests_integration 2>$null
+    docker network prune -f 2>$null
     Write-Host 'Containers limpos com sucesso!' -ForegroundColor Green
 }
 
 function Build-Test-Containers {
     Write-Host 'Building containers de teste...' -ForegroundColor Blue
-    docker-compose -f ../config/docker-compose.yml build tests tests_integration backend_int
+    docker-compose build tests tests_integration backend_int
     Write-Host 'Build concluido!' -ForegroundColor Green
 }
 
