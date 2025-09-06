@@ -339,7 +339,7 @@
     <script>
       // Verificar se o usuário está autenticado
       document.addEventListener('DOMContentLoaded', function() {
-        const accessToken = localStorage.getItem('accessToken');
+        const accessToken = localStorage.getItem('adminAccessToken');
         
         if (!accessToken) {
           // Se não houver token, redirecionar para a página de login
@@ -369,7 +369,7 @@
           logoutButton.addEventListener('click', function(e) {
             e.preventDefault();
             // Remover o token do localStorage
-            localStorage.removeItem('accessToken');
+            localStorage.removeItem('adminAccessToken');
             // Redirecionar para a página de login
             window.location.href = '/login_admin.html';
           });

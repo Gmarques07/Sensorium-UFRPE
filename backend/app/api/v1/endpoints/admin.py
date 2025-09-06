@@ -138,10 +138,11 @@ async def get_dashboard(
                 "nome": u.nome,
                 "email": u.email,
                 "endereco": u.endereco,
-                "data_criacao": u.data_criacao
+                "data_criacao": u.created_at.isoformat() if u.created_at else None
             } for u in usuarios_objs
         ]
-    except Exception:
+    except Exception as e:
+        print(f"Erro ao obter usuários recentes: {e}")
         usuarios_recentes = []
     
     # Obtém configurações

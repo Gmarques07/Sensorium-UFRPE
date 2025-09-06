@@ -26,67 +26,74 @@ async function carregarDadosDashboard() {
         const data = await response.json();
         
         // Atualizar estatísticas
-        document.querySelector('[data-stat="total-usuarios"]').textContent = data.stats.total_usuarios;
-        document.querySelector('[data-stat="total-notificacoes"]').textContent = data.stats.total_notificacoes;
+        const totalUsuariosEl = document.querySelector('[data-stat="total-usuarios"]');
+        const totalNotificacoesEl = document.querySelector('[data-stat="total-notificacoes"]');
+        
+        if (totalUsuariosEl) {
+            totalUsuariosEl.textContent = data.stats.total_usuarios || 0;
+        }
+        
+        if (totalNotificacoesEl) {
+            totalNotificacoesEl.textContent = data.stats.total_notificacoes || 0;
+        }
 
-        // Atualizar lista de usuários
+        // Atualizar lista de usuários apenas se não estiver usando template e se houver dados
         const tabelaUsuarios = document.querySelector('#usuarios table tbody');
-        
-        // Fazer uma requisição separada para obter a lista completa de usuários
-        const responseUsuarios = await fetch('/api/v1/admin/usuarios', {
-            headers: {
-                'Authorization': `Bearer ${accessToken}`
-            }
-        });
-        
-        if (responseUsuarios.ok) {
-            const usuarios = await responseUsuarios.json();
-            tabelaUsuarios.innerHTML = usuarios.map(usuario => `
+        if (tabelaUsuarios && data.usuarios_recentes && data.usuarios_recentes.length > 0) {
+            tabelaUsuarios.innerHTML = data.usuarios_recentes.map(usuario => `
                 <tr>
-                    <td><i class="bi bi-person-circle text-primary me-2"></i>${usuario.nome}</td>
-                    <td>${usuario.cpf}</td>
-                    <td>${usuario.email}</td>
+                    <td><i class="bi bi-person-circle text-primary me-2"></i>${usuario.nome || ''}</td>
+                    <td>${usuario.email || ''}</td>
                     <td>${usuario.endereco || ''}</td>
                     <td>
                         <button class="btn btn-sm btn-primary btn-visualizar-usuario" data-id="${usuario.id}"><i class="bi bi-eye"></i></button>
-                        <button class="btn btn-sm btn-warning btn-editar-usuario" data-id="${usuario.id}"><i class="bi bi-pencil"></i></button>
+                        <a href="/gerenciar_sensores/${usuario.id}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
                         <button class="btn btn-sm btn-danger btn-excluir-usuario" data-id="${usuario.id}"><i class="bi bi-trash"></i></button>
                     </td>
                 </tr>
             `).join('');
         }
 
-        // Atualizar notificações
-        const tabelaNotificacoes = document.querySelector('#notificacoes table tbody');
-        tabelaNotificacoes.innerHTML = data.ultimas_notificacoes.map(notif => `
-            <tr data-id="${notif.id}" class="${!notif.lida ? 'table-warning' : ''}">
-                <td>${notif.mensagem}</td>
-                <td>${new Date(notif.data_criacao).toLocaleDateString()}</td>
-                <td>
-                    <span class="badge ${notif.lida ? 'bg-success' : 'bg-warning'}">
-                        ${notif.lida ? 'Lida' : 'Não lida'}
-                    </span>
-                </td>
-                <td>
-                    ${!notif.lida ? `
-                        <button class="btn btn-sm btn-success btn-marcar-lida"><i class="bi bi-check-lg"></i></button>
-                    ` : ''}
-                </td>
-            </tr>
-        `).join('');
+        // Atualizar notificações apenas se não estiver usando template
+        const tabelaNotificacoes = document.querySelector('#notificacoes-lista');
+        if (tabelaNotificacoes && data.ultimas_notificacoes) {
+            tabelaNotificacoes.innerHTML = data.ultimas_notificacoes.map(notif => `
+                <tr data-id="${notif.id}" class="${!notif.lida ? 'table-warning' : ''}">
+                    <td>${notif.tipo || ''}</td>
+                    <td>${notif.titulo || ''}</td>
+                    <td>${notif.mensagem || ''}</td>
+                    <td>${notif.data_criacao ? new Date(notif.data_criacao).toLocaleDateString() : ''}</td>
+                    <td>
+                        <span class="badge ${notif.lida ? 'bg-success' : 'bg-warning'}">
+                            ${notif.lida ? 'Lida' : 'Não lida'}
+                        </span>
+                    </td>
+                    <td>
+                        ${!notif.lida ? `
+                            <button class="btn btn-sm btn-success btn-marcar-lida"><i class="bi bi-check-lg"></i></button>
+                        ` : ''}
+                    </td>
+                </tr>
+            `).join('');
+        }
 
-        // Atualizar configurações
+        // Atualizar configurações apenas se não estiver usando template
         const configContainer = document.querySelector('#form-configuracoes');
-        configContainer.innerHTML = data.configuracoes.map(config => `
-            <div class="mb-4">
-                <label class="form-label">${config.descricao || config.chave}</label>
-                <input type="text" class="form-control" data-chave="${config.chave}" value="${config.valor}">
-            </div>
-        `).join('') + '<button type="submit" class="btn btn-primary">Salvar Configurações</button>';
+        if (configContainer && data.configuracoes) {
+            configContainer.innerHTML = data.configuracoes.map(config => `
+                <div class="mb-4">
+                    <label class="form-label">${config.descricao || config.chave}</label>
+                    <input type="text" class="form-control" data-chave="${config.chave}" value="${config.valor || ''}">
+                </div>
+            `).join('') + '<button type="submit" class="btn btn-primary">Salvar Configurações</button>';
+        }
 
     } catch (error) {
         console.error('Erro:', error);
-        alert('Erro ao carregar dados do dashboard');
+        // Only show alert if we're not using server-side rendering
+        if (!document.querySelector('#usuarios table tbody tr')) {
+            alert('Erro ao carregar dados do dashboard: ' + error.message);
+        }
     }
 }
 

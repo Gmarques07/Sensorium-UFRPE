@@ -206,7 +206,7 @@
 
                 if (response.ok) {
                     localStorage.setItem('adminAccessToken', result.access_token);
-                    window.location.href = 'admin_dashboard.html';
+                    window.location.href = '/admin_dashboard.html';
                 } else {
                     throw new Error(result.detail || 'Usuário ou senha inválidos.');
                 }
