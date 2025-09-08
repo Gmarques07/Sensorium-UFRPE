@@ -1,250 +1,222 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sensorium - Monitoramento Inteligente com Sensores</title>
-    
-    <!-- Fontes -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
-    
-    <style>
-        :root {
-            --primary-blue: #0066cc;
-            --secondary-blue: #4FC3F7;
-            --dark-blue: #003366;
-            --light-bg: #f8faff;
-            --accent-color: #00E676;
-        }
+{% extends "partials/base.html" %}
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--light-bg);
-        }
+{% block title %}Sensorium - Monitoramento Inteligente{% endblock %}
 
-        .navbar {
-            background-color: rgba(0, 51, 102, 0.95) !important;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-        }
+{% block styles %}
+<style>
+    :root {
+        --primary-blue: #0066cc;
+        --secondary-blue: #4FC3F7;
+        --dark-blue: #003366;
+        --light-bg: #f8faff;
+        --accent-color: #00E676;
+    }
 
-        .navbar-brand {
-            font-weight: 600;
-            font-size: 1.5rem;
-        }
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: var(--light-bg);
+    }
 
-        .nav-link {
-            font-weight: 500;
-            margin: 0 10px;
-            position: relative;
-        }
+    .navbar {
+        background-color: rgba(0, 51, 102, 0.95) !important;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
 
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            background: var(--accent-color);
-            bottom: 0;
-            left: 0;
-            transition: width 0.3s ease;
-        }
+    .navbar-brand {
+        font-weight: 600;
+        font-size: 1.5rem;
+    }
 
-        .nav-link:hover::after {
-            width: 100%;
-        }
+    .nav-link {
+        font-weight: 500;
+        margin: 0 10px;
+        position: relative;
+    }
 
-        .btn-action {
-            background: var(--primary-blue);
-            color: white !important;
-            padding: 0.6rem 1.2rem;
-            border-radius: 50px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s ease;
-            border: none;
-            position: relative;
-            overflow: hidden;
-            font-size: 0.9rem;
-        }
+    .nav-link::after {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 2px;
+        background: var(--accent-color);
+        bottom: 0;
+        left: 0;
+        transition: width 0.3s ease;
+    }
 
-        .btn-action::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: all 0.5s ease;
-        }
+    .nav-link:hover::after {
+        width: 100%;
+    }
 
-        .btn-action:hover {
-            background: var(--dark-blue);
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        }
+    .btn-action {
+        background: var(--primary-blue);
+        color: white !important;
+        padding: 0.6rem 1.2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        border: none;
+        position: relative;
+        overflow: hidden;
+        font-size: 0.9rem;
+    }
 
-        .btn-action:hover::before {
-            left: 100%;
-        }
+    .btn-action::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: all 0.5s ease;
+    }
 
-        .hero-section {
-            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
-            color: white;
-            padding: 120px 0 80px;
-            position: relative;
-            overflow: hidden;
-            text-align: center;
-        }
+    .btn-action:hover {
+        background: var(--dark-blue);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
 
+    .btn-action:hover::before {
+        left: 100%;
+    }
+
+    .hero-section {
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
+        color: white;
+        padding: 120px 0 80px;
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+    }
+
+    .hero-title {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+
+    .hero-subtitle {
+        font-size: 1.2rem;
+        font-weight: 300;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 3rem;
+        text-align: center;
+        position: relative;
+        padding-bottom: 1.5rem;
+    }
+
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background: var(--accent-color);
+        border-radius: 2px;
+    }
+
+    .feature-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        height: 100%;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        background: var(--light-bg);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        color: var(--primary-blue);
+        font-size: 2rem;
+        transition: all 0.3s ease;
+    }
+
+    .feature-card:hover .feature-icon {
+        background: var(--primary-blue);
+        color: white;
+        transform: rotate(360deg);
+    }
+
+    footer {
+        background: var(--dark-blue);
+        color: white;
+        padding: 4rem 0 2rem;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .footer-section h5 {
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        color: var(--accent-color);
+    }
+
+    .footer-links {
+        list-style: none;
+        padding: 0;
+    }
+
+    .footer-links li {
+        margin-bottom: 0.8rem;
+    }
+
+    .footer-links a {
+        color: rgba(255,255,255,0.8);
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .footer-links a:hover {
+        color: var(--accent-color);
+        padding-left: 5px;
+    }
+
+    @media (max-width: 768px) {
         .hero-title {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            line-height: 1.2;
-        }
-
-        .hero-subtitle {
-            font-size: 1.2rem;
-            font-weight: 300;
-            margin-bottom: 2rem;
-            opacity: 0.9;
-        }
-
-        .section-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 3rem;
-            text-align: center;
-            position: relative;
-            padding-bottom: 1.5rem;
-        }
-
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 4px;
-            background: var(--accent-color);
-            border-radius: 2px;
-        }
-
-        .feature-card {
-            background: white;
-            border-radius: 20px;
-            padding: 2.5rem;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            height: 100%;
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-
-        .feature-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-        }
-
-        .feature-icon {
-            width: 80px;
-            height: 80px;
-            background: var(--light-bg);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.5rem;
-            color: var(--primary-blue);
             font-size: 2rem;
-            transition: all 0.3s ease;
         }
+        .hero-subtitle {
+            font-size: 1rem;
+        }
+    }
+</style>
+{% endblock %}
 
-        .feature-card:hover .feature-icon {
-            background: var(--primary-blue);
-            color: white;
-            transform: rotate(360deg);
-        }
-
-        footer {
-            background: var(--dark-blue);
-            color: white;
-            padding: 4rem 0 2rem;
-        }
-
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
-        }
-
-        .footer-section h5 {
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            color: var(--accent-color);
-        }
-
-        .footer-links {
-            list-style: none;
-            padding: 0;
-        }
-
-        .footer-links li {
-            margin-bottom: 0.8rem;
-        }
-
-        .footer-links a {
-            color: rgba(255,255,255,0.8);
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-
-        .footer-links a:hover {
-            color: var(--accent-color);
-            padding-left: 5px;
-        }
-
-        @media (max-width: 768px) {
-            .hero-title {
-                font-size: 2rem;
-            }
-            .hero-subtitle {
-                font-size: 1rem;
-            }
-        }
-    </style>
-</head>
-<body>
+{% block content %}
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
-        <div class="container">
-            <a class="navbar-brand" href="{{ url_for('homepage') }}">
-                <i class="bi bi-cpu"></i> Sensorium
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Abrir menu">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-center">
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('homepage') }}">Início</a></li>
-                    <li class="nav-item ms-3"><a class="nav-link"href="{{ url_for('login_usuario') }}">Login</a></li>
-                    <li class="nav-item ms-2"><a class="nav-link"href="{{ url_for('cadastro') }}">Cadastro</a></li>
-                    <li class="nav-item ms-2"><a class="nav-link" href="{{ url_for('sobre') }}">Sobre</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    {% include 'partials/navbar.html' %}
     
     <!-- Hero -->
     <section class="hero-section">
@@ -285,115 +257,91 @@
     </section>
 
     <!-- Footer -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h5>Links Rápidos</h5>
-                    <ul class="footer-links">
-                        <li><a href="{{ url_for('sobre') }}">Sobre Nós</a></li>
-                        <li><a href="{{ url_for('cadastro') }}">Cadastro</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h5>Contato</h5>
-                    <p><i class="bi bi-geo-alt me-2"></i> Belo Jardim, PE</p>
-                    <p><i class="bi bi-envelope me-2"></i> contato@sensorium.com</p>
-                    <p><i class="bi bi-telephone me-2"></i> +55 87 99999-9999</p>
-                </div>
-            </div>
-            <div class="text-center border-top pt-4">
-                <p class="mb-0">&copy; 2025 Sensorium. Todos os direitos reservados.</p>
-            </div>
-        </div>
-    </footer>
+    {% include 'partials/footer.html' %}
+{% endblock %}
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
-    <script>
-        AOS.init({ duration: 1000, once: true, offset: 100 });
-        window.addEventListener('scroll', function() {
-            document.querySelector('.navbar').style.padding = window.scrollY > 50 ? '0.5rem 0' : '1rem 0';
-        });
+{% block scripts %}
+<script>
+    window.addEventListener('scroll', function() {
+        document.querySelector('.navbar').style.padding = window.scrollY > 50 ? '0.5rem 0' : '1rem 0';
+    });
 
-        // Funcionalidade de login para o index.html
-        document.addEventListener('DOMContentLoaded', function() {
-            const loginForm = document.getElementById('loginFormIndex');
-            const btnLogin = document.getElementById('btnLoginIndex');
-            const alertContainer = document.getElementById('alert-container');
+    // Funcionalidade de login para o index.html
+    document.addEventListener('DOMContentLoaded', function() {
+        const loginForm = document.getElementById('loginFormIndex');
+        const btnLogin = document.getElementById('btnLoginIndex');
+        const alertContainer = document.getElementById('alert-container');
 
-            if (loginForm) {
-                loginForm.addEventListener('submit', async function(e) {
-                    e.preventDefault();
+        if (loginForm) {
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                btnLogin.disabled = true;
+                btnLogin.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Entrando...';
+                
+                alertContainer.innerHTML = '';
+                
+                const email = document.getElementById('email-login').value;
+                const senha = document.getElementById('senha-login').value;
+                
+                const data = {
+                    email: email,
+                    senha: senha
+                };
+                
+                try {
+                    const response = await fetch('/api/v1/auth/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
                     
-                    btnLogin.disabled = true;
-                    btnLogin.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Entrando...';
+                    const result = await response.json();
                     
-                    alertContainer.innerHTML = '';
-                    
-                    const email = document.getElementById('email-login').value;
-                    const senha = document.getElementById('senha-login').value;
-                    
-                    const data = {
-                        email: email,
-                        senha: senha
-                    };
-                    
-                    try {
-                        const response = await fetch('/api/v1/auth/login', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(data)
-                        });
+                    if (response.ok) {
+                        // Armazenar o token no localStorage
+                        localStorage.setItem('accessToken', result.access_token);
                         
-                        const result = await response.json();
-                        
-                        if (response.ok) {
-                            // Armazenar o token no localStorage
-                            localStorage.setItem('accessToken', result.access_token);
-                            
-                            // Mostrar mensagem de sucesso
-                            alertContainer.innerHTML = `
-                                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                    <i class="bi bi-check-circle me-2"></i>
-                                    Login realizado com sucesso! Redirecionando...
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                            `;
-                            
-                            // Redirecionar para o dashboard do usuário após 1 segundo
-                            setTimeout(() => {
-                                window.location.href = '/dashboard_usuario.html';
-                            }, 1000);
-                        } else {
-                            // Mostrar erro
-                            alertContainer.innerHTML = `
-                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                    <i class="bi bi-exclamation-triangle me-2"></i>
-                                    ${result.detail || 'Erro ao fazer login. Verifique suas credenciais.'}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                            `;
-                        }
-                    } catch (error) {
-                        console.error('Erro:', error);
+                        // Mostrar mensagem de sucesso
                         alertContainer.innerHTML = `
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                <i class="bi bi-exclamation-triangle me-2"></i>
-                                Erro de conexão. Verifique sua internet e tente novamente.
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Login realizado com sucesso! Redirecionando...
                                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             </div>
                         `;
-                    } finally {
-                        btnLogin.disabled = false;
-                        btnLogin.innerHTML = 'Entrar';
+                        
+                        // Redirecionar para o dashboard do usuário após 1 segundo
+                        setTimeout(() => {
+                            window.location.href = '/dashboard_usuario.html';
+                        }, 1000);
+                    } else {
+                        // Mostrar erro
+                        alertContainer.innerHTML = `
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                ${result.detail || 'Erro ao fazer login. Verifique suas credenciais.'}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        `;
                     }
-                });
-            }
-        });
-    </script>
-</body>
-</html>
+                } catch (error) {
+                    console.error('Erro:', error);
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            Erro de conexão. Verifique sua internet e tente novamente.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    `;
+                } finally {
+                    btnLogin.disabled = false;
+                    btnLogin.innerHTML = 'Entrar';
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
