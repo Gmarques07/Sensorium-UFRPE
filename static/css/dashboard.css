@@ -247,6 +247,7 @@ body.dark-mode .form-control,
 body.dark-mode .form-select {
     box-shadow: none;
     background-color: #202124;
+    color: var(--dark-text) !important;
 }
 
 body.dark-mode .form-control:focus,
