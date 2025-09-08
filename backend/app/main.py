@@ -175,7 +175,7 @@ async def gerenciar_sensores(request: Request, usuario_id: int, db: Session = De
     # Converter para objetos de sensor
     sensores_atribuidos = []
     for usuario_sensor in usuario_sensores:
-        sensor = db.query(Local).filter(Local.id == usuario_sensor.local_id).first()
+        sensor = db.query(Local).filter(Local.id == usuario_sensor.sensor_id).first()
         if sensor:
             sensores_atribuidos.append(sensor)
     

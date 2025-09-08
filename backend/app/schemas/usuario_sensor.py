@@ -4,25 +4,29 @@ from datetime import datetime
 
 class UsuarioSensorBase(BaseModel):
     usuario_id: int
-    local_id: int
+    sensor_id: int
 
 class UsuarioSensorCreate(UsuarioSensorBase):
     pass
 
 class UsuarioSensorUpdate(BaseModel):
     usuario_id: Optional[int] = None
-    local_id: Optional[int] = None
+    sensor_id: Optional[int] = None
 
 class UsuarioSensorInDB(UsuarioSensorBase):
-    id: int
+    usuario_id: int
+    sensor_id: int
     data_atribuicao: datetime
+    ativo: bool
     
     class Config:
         from_attributes = True
 
 class UsuarioSensor(UsuarioSensorBase):
-    id: int
+    usuario_id: int
+    sensor_id: int
     data_atribuicao: datetime
+    ativo: bool
     
     class Config:
         from_attributes = True
