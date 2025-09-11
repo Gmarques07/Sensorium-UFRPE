@@ -1,311 +1,297 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login de Usuário - Sensorium</title>
-    
-    <!-- Fontes -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+{% extends "partials/base.html" %}
 
-    <style>
-        :root {
-            --primary-blue: #0066cc;
-            --secondary-blue: #4FC3F7;
-            --dark-blue: #003366;
-            --light-bg: #f8faff;
-            --accent-color: #00E676;
-        }
+{% block title %}Login de Usuário - Sensorium{% endblock %}
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+{% block styles %}
+<style>
+    :root {
+        --primary-blue: #0066cc;
+        --secondary-blue: #4FC3F7;
+        --dark-blue: #003366;
+        --light-bg: #f8faff;
+        --accent-color: #00E676;
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+    }
+
+    .login-card {
+        background: rgba(255, 255, 255, 0.98);
+        border-radius: 20px;
+        padding: 3rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        max-width: 450px;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .login-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: var(--dark-blue);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        border-radius: 15px;
+        padding: 0.75rem 1.25rem;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.1);
+    }
+
+    .input-group-text {
+        border-radius: 15px 0 0 15px;
+        border: 2px solid #e9ecef;
+        border-right: none;
+        background-color: white;
+        color: var(--primary-blue);
+        padding: 0.75rem 1.25rem;
+    }
+
+    .input-group .form-control {
+        border-radius: 0 15px 15px 0;
+    }
+
+    .btn-primary {
+        background: var(--primary-blue);
+        color: white !important;
+        padding: 1rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        border: none;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-primary::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: all 0.5s ease;
+    }
+
+    .btn-primary:hover {
+        background: var(--dark-blue);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+
+    .btn-primary:hover::before {
+        left: 100%;
+    }
+
+    .link-secondary {
+        color: var(--dark-blue);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .link-secondary:hover {
+        color: var(--primary-blue);
+        transform: translateX(5px);
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .back-link:hover {
+        transform: translateX(-5px);
+    }
+
+    .alert {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .logo-icon {
+        font-size: 3rem;
+        color: var(--primary-blue);
+        margin-bottom: 1rem;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+
+    .logo-icon:hover {
+        transform: scale(1.1) rotate(15deg);
+        color: var(--dark-blue);
+    }
+
+    @media (max-width: 576px) {
+        .login-card {
             padding: 2rem;
         }
+    }
+</style>
+{% endblock %}
 
-        .login-card {
-            background: rgba(255, 255, 255, 0.98);
-            border-radius: 20px;
-            padding: 3rem;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 450px;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+{% block content %}
+<div class="login-card" data-aos="fade-up">
+    <div class="text-center mb-4">
+        <a href="{{ url_for('homepage') }}" class="text-decoration-none">
+            <i class="bi bi-cpu logo-icon"></i>
 
-        .login-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
-        }
+            <h2 class="mt-3 mb-2">Bem-vindo ao Sensorium</h2>
+            <p class="text-muted mb-0">Acesse sua conta de usuário</p>
+        </a>
+    </div>
 
-        .form-label {
-            font-weight: 500;
-            color: var(--dark-blue);
-            margin-bottom: 0.5rem;
-        }
+    <div class="mb-4">
+        <a href="{{ url_for('homepage') }}" class="link-secondary back-link">
+            <i class="bi bi-arrow-left me-2"></i>Voltar à Página Inicial
+        </a>
+    </div>
 
-        .form-control {
-            border-radius: 15px;
-            padding: 0.75rem 1.25rem;
-            border: 2px solid #e9ecef;
-            transition: all 0.3s ease;
-            font-size: 1rem;
-        }
+    <div id="alert-container"></div>
 
-        .form-control:focus {
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.1);
-        }
-
-        .input-group-text {
-            border-radius: 15px 0 0 15px;
-            border: 2px solid #e9ecef;
-            border-right: none;
-            background-color: white;
-            color: var(--primary-blue);
-            padding: 0.75rem 1.25rem;
-        }
-
-        .input-group .form-control {
-            border-radius: 0 15px 15px 0;
-        }
-
-        .btn-primary {
-            background: var(--primary-blue);
-            color: white !important;
-            padding: 1rem 2rem;
-            border-radius: 50px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s ease;
-            border: none;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-primary::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: all 0.5s ease;
-        }
-
-        .btn-primary:hover {
-            background: var(--dark-blue);
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        }
-
-        .btn-primary:hover::before {
-            left: 100%;
-        }
-
-        .link-secondary {
-            color: var(--dark-blue);
-            text-decoration: none;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-
-        .link-secondary:hover {
-            color: var(--primary-blue);
-            transform: translateX(5px);
-        }
-
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .back-link:hover {
-            transform: translateX(-5px);
-        }
-
-        .alert {
-            border-radius: 15px;
-            border: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .logo-icon {
-            font-size: 3rem;
-            color: var(--primary-blue);
-            margin-bottom: 1rem;
-            display: inline-block;
-            transition: all 0.3s ease;
-        }
-
-        .logo-icon:hover {
-            transform: scale(1.1) rotate(15deg);
-            color: var(--dark-blue);
-        }
-
-        @media (max-width: 576px) {
-            .login-card {
-                padding: 2rem;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="login-card" data-aos="fade-up">
-        <div class="text-center mb-4">
-            <a href="{{ url_for('homepage') }}" class="text-decoration-none">
-                <i class="bi bi-cpu logo-icon"></i>
-
-                <h2 class="mt-3 mb-2">Bem-vindo ao Sensorium</h2>
-                <p class="text-muted mb-0">Acesse sua conta de usuário</p>
-            </a>
+    <form id="loginForm">
+        <div class="mb-4">
+            <label for="email-login" class="form-label">Email</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                <input type="email" 
+                       id="email-login" 
+                       name="email" 
+                       class="form-control" 
+                       placeholder="seu@email.com"
+                       title="Digite seu email"
+                       required>
+            </div>
         </div>
 
         <div class="mb-4">
-            <a href="{{ url_for('homepage') }}" class="link-secondary back-link">
-                <i class="bi bi-arrow-left me-2"></i>Voltar à Página Inicial
-            </a>
+            <label for="senha-login" class="form-label">Senha</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                <input type="password" 
+                       id="senha-login" 
+                       name="password" 
+                       class="form-control" 
+                       placeholder="••••••••" 
+                       required>
+                <button class="btn btn-outline-secondary" type="button" tabindex="-1" onclick="togglePasswordVisibilityLoginUsuario()" style="border-radius: 0 15px 15px 0;">
+                    <i class="bi bi-eye" id="toggleSenhaLoginUsuarioIcon"></i>
+                </button>
+            </div>
         </div>
 
-        <div id="alert-container"></div>
+        <button type="submit" class="btn btn-primary w-100 mb-4" id="btnLogin">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Entrar
+        </button>
 
-        <form id="loginForm">
-            <div class="mb-4">
-                <label for="email-login" class="form-label">Email</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                    <input type="email" 
-                           id="email-login" 
-                           name="email" 
-                           class="form-control" 
-                           placeholder="seu@email.com"
-                           title="Digite seu email"
-                           required>
-                </div>
-            </div>
+        <div class="text-center">
+            <p class="mb-0">
+                Ainda não tem uma conta?
+                <a href="{{ url_for('cadastro') }}" class="link-secondary ms-1">Cadastre-se aqui</a>
+            </p>
+        </div>
+    </form>
+</div>
+{% endblock %}
 
-            <div class="mb-4">
-                <label for="senha-login" class="form-label">Senha</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                    <input type="password" 
-                           id="senha-login" 
-                           name="password" 
-                           class="form-control" 
-                           placeholder="••••••••" 
-                           required>
-                    <button class="btn btn-outline-secondary" type="button" tabindex="-1" onclick="togglePasswordVisibilityLoginUsuario()" style="border-radius: 0 15px 15px 0;">
-                        <i class="bi bi-eye" id="toggleSenhaLoginUsuarioIcon"></i>
-                    </button>
-                </div>
-            </div>
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
 
-            <button type="submit" class="btn btn-primary w-100 mb-4" id="btnLogin">
-                <i class="bi bi-box-arrow-in-right me-2"></i>Entrar
-            </button>
-
-            <div class="text-center">
-                <p class="mb-0">
-                    Ainda não tem uma conta?
-                    <a href="{{ url_for('cadastro') }}" class="link-secondary ms-1">Cadastre-se aqui</a>
-                </p>
-            </div>
-        </form>
-    </div>
-
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
-    <script>
-        // Inicialização do AOS
-        AOS.init({ duration: 800, once: true });
-
-        document.addEventListener('DOMContentLoaded', function() {
-
-            // Adicionar o evento de submit ao formulário
-            document.getElementById('loginForm').addEventListener('submit', async function(e) {
-                e.preventDefault();
+        // Adicionar o evento de submit ao formulário
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('btnLogin');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Entrando...';
+            
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.innerHTML = '';
+            
+            const email = document.getElementById('email-login').value;
+            const senha = document.getElementById('senha-login').value;
+            
+            const data = {
+                email: email,
+                senha: senha
+            };
+            
+            try {
+                const response = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
                 
-                const btn = document.getElementById('btnLogin');
-                btn.disabled = true;
-                btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Entrando...';
+                const result = await response.json();
                 
-                const alertContainer = document.getElementById('alert-container');
-                alertContainer.innerHTML = '';
-                
-                const email = document.getElementById('email-login').value;
-                const senha = document.getElementById('senha-login').value;
-                
-                const data = {
-                    email: email,
-                    senha: senha
-                };
-                
-                try {
-                    const response = await fetch('/api/v1/auth/login', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(data)
-                    });
+                if (response.ok) {
+                    // Armazenar o token no localStorage
+                    localStorage.setItem('accessToken', result.access_token);
                     
-                    const result = await response.json();
-                    
-                    if (response.ok) {
-                        // Armazenar o token no localStorage
-                        localStorage.setItem('accessToken', result.access_token);
-                        
-                        // Redirecionar para o dashboard do usuário
-                        window.location.href = '/dashboard_usuario.html';
-                    } else {
-                        const errorMessage = result.detail || 'Ocorreu um erro ao tentar fazer login.';
-                        const alertHTML = `
-                            <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-                                <strong>Erro!</strong> ${errorMessage}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>`;
-                        alertContainer.innerHTML = alertHTML;
-                    }
-                } catch (error) {
+                    // Redirecionar para o dashboard do usuário
+                    window.location.href = '/dashboard_usuario.html';
+                } else {
+                    const errorMessage = result.detail || 'Ocorreu um erro ao tentar fazer login.';
                     const alertHTML = `
                         <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-                            <strong>Erro de conexão!</strong> Não foi possível se conectar ao servidor.
+                            <strong>Erro!</strong> ${errorMessage}
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>`;
                     alertContainer.innerHTML = alertHTML;
-                } finally {
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Entrar';
                 }
-            });
-        });
-
-        function togglePasswordVisibilityLoginUsuario() {
-            const senha = document.getElementById("senha-login");
-            const icon = document.getElementById("toggleSenhaLoginUsuarioIcon");
-            const tipo = senha.type === "password" ? "text" : "password";
-            senha.type = tipo;
-            if (tipo === "text") {
-                icon.classList.replace("bi-eye", "bi-eye-slash");
-            } else {
-                icon.classList.replace("bi-eye-slash", "bi-eye");
+            } catch (error) {
+                const alertHTML = `
+                    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                        <strong>Erro de conexão!</strong> Não foi possível se conectar ao servidor.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>`;
+                alertContainer.innerHTML = alertHTML;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Entrar';
             }
+        });
+    });
+
+    function togglePasswordVisibilityLoginUsuario() {
+        const senha = document.getElementById("senha-login");
+        const icon = document.getElementById("toggleSenhaLoginUsuarioIcon");
+        const tipo = senha.type === "password" ? "text" : "password";
+        senha.type = tipo;
+        if (tipo === "text") {
+            icon.classList.replace("bi-eye", "bi-eye-slash");
+        } else {
+            icon.classList.replace("bi-eye-slash", "bi-eye");
         }
-    </script>
-</body>
-</html>
+    }
+</script>
+{% endblock %}

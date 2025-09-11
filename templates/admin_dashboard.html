@@ -1,414 +1,239 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Admin - Sensorium</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #0066cc;
-            --secondary-color: #003366;
-            --accent-color: #00E676;
-            --light-bg: #f5f9ff;
-            --dark-text: #2c3e50;
-            --light-text: #ffffff;
-            --border-radius: 15px;
-            --transition: all 0.3s ease;
-        }
+{% extends "partials/base.html" %}
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: var(--light-bg);
-            color: var(--dark-text);
-        }
+{% block title %}Dashboard Admin - Sensorium{% endblock %}
 
-        /* Sidebar */
-        .sidebar {
-            background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
-            min-height: 100vh;
-            color: var(--light-text);
-            padding: 2rem 1.5rem;
-            position: fixed;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            width: 280px;
-            z-index: 1000;
-            transition: var(--transition);
-        }
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', path='css/dashboard.css') }}">
+{% endblock %}
 
-        .sidebar .nav-link {
-            color: var(--light-text);
-            margin-bottom: 0.75rem;
-            font-weight: 500;
-            border-radius: var(--border-radius);
-            padding: 0.75rem 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            transition: var(--transition);
-        }
+{% block content %}
+<div class="container-fluid">
+    <div class="row flex-nowrap">
+        <!-- Sidebar -->
+        <div class="col-auto sidebar">
+            <a href="{{ url_for('homepage') }}" class="d-flex align-items-center mb-4 text-decoration-none text-white">
+                <i class="bi bi-cpu logo-icon"></i>
+                <span class="fs-4 ms-2">Sensorium</span>
+            </a>
+            <nav class="nav flex-column w-100">
+                <a class="nav-link active" href="#painel"><i class="bi bi-speedometer2"></i> Painel</a>
+                <a class="nav-link" href="#usuarios"><i class="bi bi-people"></i> Usuários</a>
+                <a class="nav-link" href="#sensores"><i class="bi bi-cpu"></i> Sensores</a>
+                <a class="nav-link" href="#notificacoes"><i class="bi bi-bell"></i> Notificações</a>
+                <a class="nav-link" href="#configuracoes"><i class="bi bi-gear"></i> Configurações</a>
+            </nav>
+            <a href="#" class="logout-link mt-auto" id="logout-button">
+                <i class="bi bi-box-arrow-right"></i> Sair
+            </a>
+        </div>
 
-        .logout-link {
-            color: var(--light-text);
-            text-decoration: none;
-            font-weight: 500;
-            padding: 0.75rem 1rem;
-            border-radius: var(--border-radius);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            transition: var(--transition);
-        }
-
-        .logout-link:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateX(5px);
-        }
-
-        .sidebar .nav-link i {
-            font-size: 1.25rem;
-        }
-
-        .logout-link {
-            color: var(--light-text);
-            text-decoration: none;
-            font-weight: 500;
-            padding: 0.75rem 1rem;
-            border-radius: var(--border-radius);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            transition: var(--transition);
-        }
-
-        .logout-link:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateX(5px);
-        }
-
-        /* Content */
-        .content {
-            margin-left: 280px;
-            padding: 2rem;
-            min-height: 100vh;
-        }
-
-        /* Cards */
-        .dashboard-card {
-            border-radius: var(--border-radius);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            background: #fff;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            text-align: center;
-            transition: var(--transition);
-        }
-
-        .dashboard-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-        }
-
-        .dashboard-icon {
-            font-size: 2.5rem;
-            color: var(--primary-color);
-            margin-bottom: 1rem;
-        }
-
-        /* Form & Table */
-        .form-control {
-            border-radius: var(--border-radius);
-            padding: 0.75rem;
-            border: 2px solid #e9ecef;
-            transition: var(--transition);
-        }
-
-        .form-control:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(0,102,204,0.15);
-        }
-
-        .btn {
-            border-radius: var(--border-radius);
-            transition: var(--transition);
-        }
-
-        .btn-primary {
-            background: var(--primary-color);
-            border: none;
-        }
-
-        .btn-primary:hover {
-            background: var(--secondary-color);
-        }
-
-        .btn-warning {
-            background: #ffc107;
-            border: none;
-            color: #000;
-        }
-
-        .btn-warning:hover {
-            background: #ffb300;
-        }
-
-        .btn-danger {
-            background: #dc3545;
-            border: none;
-        }
-
-        .btn-danger:hover {
-            background: #c82333;
-        }
-
-        .badge {
-            border-radius: 20px;
-            padding: 0.5rem 0.75rem;
-        }
-
-        @media (max-width: 991px) {
-            .sidebar { width: 220px; }
-            .content { margin-left: 220px; }
-        }
-
-        @media (max-width: 767px) {
-            .sidebar { width: 100%; position: relative; min-height: auto; }
-            .content { margin-left: 0; padding: 1rem; }
-        }
-    </style>
-</head>
-<body>
-    <div class="container-fluid">
-        <div class="row flex-nowrap">
-            <!-- Sidebar -->
-            <div class="col-auto sidebar">
-                <a href="{{ url_for('homepage') }}" class="d-flex align-items-center mb-4 text-decoration-none text-white">
-                    <i class="bi bi-cpu logo-icon"></i>
-                    <span class="fs-4 ms-2">Sensorium</span>
-                </a>
-                <nav class="nav flex-column w-100">
-                    <a class="nav-link active" href="#painel"><i class="bi bi-speedometer2"></i> Painel</a>
-                    <a class="nav-link" href="#usuarios"><i class="bi bi-people"></i> Usuários</a>
-                    <a class="nav-link" href="#sensores"><i class="bi bi-cpu"></i> Sensores</a>
-                    <a class="nav-link" href="#notificacoes"><i class="bi bi-bell"></i> Notificações</a>
-                    <a class="nav-link" href="#configuracoes"><i class="bi bi-gear"></i> Configurações</a>
-                </nav>
-                <a href="#" class="logout-link mt-auto" id="logout-button">
-                    <i class="bi bi-box-arrow-right"></i> Sair
-                </a>
-            </div>
-
-            <!-- Conteúdo -->
-            <div class="col content">
-                <!-- Cabeçalho -->
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2 class="mb-0 text-primary">
-                        <i class="bi bi-person-workspace me-2"></i> Bem-vindo, Administrador!
-                    </h2>
+        <!-- Conteúdo -->
+        <div class="col content">
+            <!-- Cabeçalho -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0 text-primary">
+                    <i class="bi bi-person-workspace me-2"></i> Bem-vindo, Administrador!
+                </h2>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary" id="theme-toggle" title="Alternar tema">
+                        <i class="bi bi-sun-fill"></i>
+                        <i class="bi bi-moon-fill d-none"></i>
+                    </button>
                     <button class="btn btn-outline-primary" onclick="window.location.reload()">
                         <i class="bi bi-arrow-clockwise me-2"></i> Atualizar
                     </button>
                 </div>
-
-                <!-- Painel de métricas -->
-                <div id="painel" class="row mb-4">
-                    <div class="col-md-6 col-lg-4">
-                        <div class="dashboard-card">
-                            <i class="bi bi-people dashboard-icon"></i>
-                            <h5>Total de Usuários</h5>
-                            <h2 data-stat="total-usuarios">0</h2>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-4">
-                        <div class="dashboard-card">
-                            <i class="bi bi-bell dashboard-icon"></i>
-                            <h5>Notificações</h5>
-                            <h2 data-stat="total-notificacoes">0</h2>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Seção Usuários -->
-                <div id="usuarios" class="mt-5">
-                    <h4><i class="bi bi-people-fill me-2 text-primary"></i> Usuários</h4>
-                    <div class="dashboard-card">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Nome</th><th>Email</th><th>Endereço</th><th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for usuario in usuarios %}
-                                    <tr>
-                                        <td><i class="bi bi-person-circle text-primary me-2"></i>{{ usuario.nome }}</td>
-                                        <td>{{ usuario.email }}</td>
-                                        <td>{{ usuario.endereco }}</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-primary btn-visualizar-usuario" data-id="{{ usuario.id }}"><i class="bi bi-eye"></i></button>
-                                            <a href="/gerenciar_sensores/{{ usuario.id }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
-                                            <button class="btn btn-sm btn-danger btn-excluir-usuario" data-id="{{ usuario.id }}"><i class="bi bi-trash"></i></button>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Seção Sensores -->
-                <div id="sensores" class="mt-5">
-                    <h4><i class="bi bi-cpu-fill me-2 text-primary"></i> Gerenciamento de Sensores</h4>
-                    <div class="dashboard-card">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Nome</th>
-                                        <th>Localização</th>
-                                        <th>Status</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for sensor in sensores %}
-                                    <tr>
-                                        <td>{{ sensor.id }}</td>
-                                        <td>{{ sensor.nome }}</td>
-                                        <td>{{ sensor.latitude }}, {{ sensor.longitude }}</td>
-                                        <td><span class="badge bg-success">Ativo</span></td>
-                                        <td>
-                                            <a href="/gerenciar_sensores/{{ sensor.id }}" class="btn btn-sm btn-info"><i class="bi bi-gear"></i> Gerenciar</a>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Seção Notificações -->
-                <div id="notificacoes" class="mt-5">
-                    <h4><i class="bi bi-bell-fill me-2 text-primary"></i> Notificações</h4>
-                    <div class="dashboard-card">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Mensagem</th><th>Data</th><th>Status</th><th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="notificacoes-lista">
-                                    {% for notificacao in notificacoes %}
-                                    <tr data-id="{{ notificacao.id }}" class="{% if not notificacao.lida %}table-warning{% endif %}">
-                                        <td>{{ notificacao.tipo }}</td>
-                                        <td>{{ notificacao.titulo }}</td>
-                                        <td>{{ notificacao.mensagem }}</td>
-                                        <td>{{ notificacao.data_criacao }}</td>
-                                        <td>
-                                            <span class="badge {{ 'bg-success' if notificacao.lida else 'bg-warning' }}">
-                                            {{ 'Lida' if notificacao.lida else 'Não lida' }}
-                                        </span>
-                                        </td>
-                                        <td>
-                                            {% if not notificacao.lida %}
-                                            <button class="btn btn-sm btn-success btn-marcar-lida"><i class="bi bi-check-lg"></i></button>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Seção Configurações -->
-                <div id="configuracoes" class="mt-5">
-                    <h4><i class="bi bi-gear-fill me-2 text-primary"></i> Configurações do Sistema</h4>
-                    <div class="dashboard-card">
-                        <form id="form-configuracoes">
-                            {% for config in configuracoes %}
-                            <div class="mb-4">
-                                <label class="form-label">{{ config.descricao }}</label>
-                                {% if config.tipo == 'texto' %}
-                                <input type="text" class="form-control" data-chave="{{ config.chave }}" value="{{ config.valor }}">
-                                {% elif config.tipo == 'numero' %}
-                                <input type="number" class="form-control" data-chave="{{ config.chave }}" value="{{ config.valor }}">
-                                {% elif config.tipo == 'booleano' %}
-                                <select class="form-select" data-chave="{{ config.chave }}">
-                                    <option value="True" {% if config.valor %}selected{% endif %}>Sim</option>
-                                    <option value="False" {% if not config.valor %}selected{% endif %}>Não</option>
-                                </select>
-                                {% endif %}
-                            </div>
-                            {% endfor %}
-                            <button type="submit" class="btn btn-primary">Salvar Configurações</button>
-                        </form>
-                    </div>
-                </div>
-
             </div>
+
+            <!-- Painel de métricas -->
+            <div id="painel" class="row mb-4">
+                <div class="col-md-6 col-lg-4">
+                    <div class="dashboard-card">
+                        <i class="bi bi-people dashboard-icon"></i>
+                        <h5>Total de Usuários</h5>
+                        <h2 data-stat="total-usuarios">0</h2>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="dashboard-card">
+                        <i class="bi bi-bell dashboard-icon"></i>
+                        <h5>Notificações</h5>
+                        <h2 data-stat="total-notificacoes">0</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção Usuários -->
+            <div id="usuarios" class="mt-5">
+                <h4><i class="bi bi-people-fill me-2 text-primary"></i> Usuários</h4>
+                <div class="dashboard-card">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th><th>Email</th><th>Endereço</th><th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for usuario in usuarios %}
+                                <tr>
+                                    <td><i class="bi bi-person-circle text-primary me-2"></i>{{ usuario.nome }}</td>
+                                    <td>{{ usuario.email }}</td>
+                                    <td>{{ usuario.endereco }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary btn-visualizar-usuario" data-id="{{ usuario.id }}"><i class="bi bi-eye"></i></button>
+                                        <a href="/gerenciar_sensores/{{ usuario.id }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
+                                        <button class="btn btn-sm btn-danger btn-excluir-usuario" data-id="{{ usuario.id }}"><i class="bi bi-trash"></i></button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção Sensores -->
+            <div id="sensores" class="mt-5">
+                <h4><i class="bi bi-cpu-fill me-2 text-primary"></i> Gerenciamento de Sensores</h4>
+                <div class="dashboard-card">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nome</th>
+                                    <th>Localização</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sensor in sensores %}
+                                <tr>
+                                    <td>{{ sensor.id }}</td>
+                                    <td>{{ sensor.nome }}</td>
+                                    <td>{{ sensor.latitude }}, {{ sensor.longitude }}</td>
+                                    <td><span class="badge bg-success">Ativo</span></td>
+                                    <td>
+                                        <a href="/gerenciar_sensores/{{ sensor.id }}" class="btn btn-sm btn-info"><i class="bi bi-gear"></i> Gerenciar</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção Notificações -->
+            <div id="notificacoes" class="mt-5">
+                <h4><i class="bi bi-bell-fill me-2 text-primary"></i> Notificações</h4>
+                <div class="dashboard-card">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Mensagem</th><th>Data</th><th>Status</th><th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="notificacoes-lista">
+                                {% for notificacao in notificacoes %}
+                                <tr data-id="{{ notificacao.id }}" class="{% if not notificacao.lida %}table-warning{% endif %}">
+                                    <td>{{ notificacao.tipo }}</td>
+                                    <td>{{ notificacao.titulo }}</td>
+                                    <td>{{ notificacao.mensagem }}</td>
+                                    <td>{{ notificacao.data_criacao }}</td>
+                                    <td>
+                                        <span class="badge {{ 'bg-success' if notificacao.lida else 'bg-warning' }}">
+                                        {{ 'Lida' if notificacao.lida else 'Não lida' }}
+                                    </span>
+                                    </td>
+                                    <td>
+                                        {% if not notificacao.lida %}
+                                        <button class="btn btn-sm btn-success btn-marcar-lida"><i class="bi bi-check-lg"></i></button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção Configurações -->
+            <div id="configuracoes" class="mt-5">
+                <h4><i class="bi bi-gear-fill me-2 text-primary"></i> Configurações do Sistema</h4>
+                <div class="dashboard-card">
+                    <form id="form-configuracoes">
+                        {% for config in configuracoes %}
+                        <div class="mb-4">
+                            <label class="form-label">{{ config.descricao }}</label>
+                            {% if config.tipo == 'texto' %}
+                            <input type="text" class="form-control" data-chave="{{ config.chave }}" value="{{ config.valor }}">
+                            {% elif config.tipo == 'numero' %}
+                            <input type="number" class="form-control" data-chave="{{ config.chave }}" value="{{ config.valor }}">
+                            {% elif config.tipo == 'booleano' %}
+                            <select class="form-select" data-chave="{{ config.chave }}">
+                                <option value="True" {% if config.valor %}selected{% endif %}>Sim</option>
+                                <option value="False" {% if not config.valor %}selected{% endif %}>Não</option>
+                            </select>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        <button type="submit" class="btn btn-primary">Salvar Configurações</button>
+                    </form>
+                </div>
+            </div>
+
         </div>
     </div>
+</div>
+{% endblock %}
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="/static/js/admin_dashboard.js"></script>
-    <script>
-        AOS.init();
-    </script>
+{% block scripts %}
+<script src="/static/js/admin_dashboard.js"></script>
+
+<!-- Script de autenticação -->
+<script>
+  // Verificar se o usuário está autenticado
+  document.addEventListener('DOMContentLoaded', function() {
+    const accessToken = localStorage.getItem('adminAccessToken');
     
-    <!-- Script de autenticação -->
-    <script>
-      // Verificar se o usuário está autenticado
-      document.addEventListener('DOMContentLoaded', function() {
-        const accessToken = localStorage.getItem('adminAccessToken');
-        
-        if (!accessToken) {
-          // Se não houver token, redirecionar para a página de login
-          window.location.href = '/login_admin.html';
-          return;
-        }
-        
-        // Adicionar token às requisições fetch
-        const originalFetch = window.fetch;
-        window.fetch = function(input, init = {}) {
-          // Se for uma string (URL), converter para objeto
-          if (typeof input === 'string') {
-            input = new Request(input, init);
-          }
-          
-          // Adicionar o header de autorização se tivermos o token
-          if (accessToken) {
-            input.headers.set('Authorization', `Bearer ${accessToken}`);
-          }
-          
-          return originalFetch(input, init);
-        };
-        
-        // Adicionar funcionalidade de logout
-        const logoutButton = document.getElementById('logout-button');
-        if (logoutButton) {
-          logoutButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            // Remover o token do localStorage
-            localStorage.removeItem('adminAccessToken');
-            // Redirecionar para a página de login
-            window.location.href = '/login_admin.html';
-          });
-        }
+    if (!accessToken) {
+      // Se não houver token, redirecionar para a página de login
+      window.location.href = '/login_admin.html';
+      return;
+    }
+    
+    // Adicionar token às requisições fetch
+    const originalFetch = window.fetch;
+    window.fetch = function(input, init = {}) {
+      // Se for uma string (URL), converter para objeto
+      if (typeof input === 'string') {
+        input = new Request(input, init);
+      }
+      
+      // Adicionar o header de autorização se tivermos o token
+      if (accessToken) {
+        input.headers.set('Authorization', `Bearer ${accessToken}`);
+      }
+      
+      return originalFetch(input, init);
+    };
+    
+    // Adicionar funcionalidade de logout
+    const logoutButton = document.getElementById('logout-button');
+    if (logoutButton) {
+      logoutButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Remover o token do localStorage
+        localStorage.removeItem('adminAccessToken');
+        // Redirecionar para a página de login
+        window.location.href = '/login_admin.html';
       });
-    </script>
-</body>
-</html>
+    }
+  });
+</script>
+{% endblock %}

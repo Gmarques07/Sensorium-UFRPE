@@ -213,7 +213,7 @@ async def listar_sensores_do_usuario(
     # Obtém os sensores correspondentes
     sensores = []
     for usuario_sensor in usuario_sensores:
-        sensor = db.query(Local).filter(Local.id == usuario_sensor.local_id).first()
+        sensor = db.query(Local).filter(Local.id == usuario_sensor.sensor_id).first()
         if sensor:
             sensores.append(sensor)
     
@@ -257,7 +257,7 @@ async def atribuir_sensor_a_usuario(
     # Cria o relacionamento
     usuario_sensor_create = usuario_sensor_schemas.UsuarioSensorCreate(
         usuario_id=usuario_id,
-        local_id=sensor_id
+        sensor_id=sensor_id
     )
     return crud_usuario_sensor.create_usuario_sensor(db, usuario_sensor_create)
 

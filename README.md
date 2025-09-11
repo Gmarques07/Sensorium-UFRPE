@@ -1,6 +1,33 @@
 # 🌊 Sistema Sensorium UFRPE
 
-Sistema web moderno para gerenciamento de cisternas, monitoramento de níveis de água e qualidade (pH). Desenvolvido com FastAPI e interface responsiva para usuários, empresas e administradores.
+## Descrição do Projeto
+
+Plataforma web para gerenciamento e visualização de dados de sensores em tempo real. O sistema é projetado para coletar, processar e exibir leituras de diversos tipos de sensores (como nível de água, pH, etc.), oferecendo dashboards e relatórios para usuários, empresas e administradores.
+
+*Nota: Este projeto foi totalmente migrado de Flask para FastAPI. O código-fonte atual utiliza exclusivamente FastAPI.*
+
+## Tecnologias Principais
+
+*   **Backend:**
+    *   **Framework:** FastAPI
+    *   **Servidor ASGI:** Uvicorn
+    *   **ORM:** SQLAlchemy
+    *   **Validação de Dados:** Pydantic
+    *   **Autenticação:** JWT (python-jose) & Passlib
+*   **Frontend:**
+    *   **Templates:** Jinja2
+    *   **Estilo:** Bootstrap 5, CSS3
+    *   **Scripts:** JavaScript, Chart.js
+*   **Banco de Dados:**
+    *   MySQL (via mysql-connector-python)
+*   **Testes:**
+    *   Pytest
+    *   HTTPX (para cliente de teste assíncrono)
+*   **Funcionalidades Adicionais:**
+    *   **Envio de Email:** Yagmail
+    *   **Geração de PDF:** ReportLab
+*   **DevOps:**
+    *   Docker & Docker Compose
 
 ## 🚀 Início Rápido
 
@@ -39,7 +66,7 @@ python start_server.py --reload
 
 ### 🏢 Para Empresas
 - 🔐 Painel administrativo
-- 📊 Monitoramento de múltiplas cisternas
+- 📊 Monitoramento de múltiplos reservatórios
 - 👥 Gerenciamento de usuários
 - 📈 Relatórios e análises
 - 🔔 Sistema de notificações
@@ -51,7 +78,7 @@ python start_server.py --reload
 - ⚙️ Configurações avançadas
 - 🔒 Controle de acesso
 
-## 🛠️ Tecnologias Utilizadas
+## 🛠️ Tecnologias Detalhadas
 
 ### Backend
 - **FastAPI** - Framework web moderno e assíncrono
@@ -321,12 +348,7 @@ A documentação automática da API está disponível em:
 - Proteção contra uploads maliciosos
 - CORS configurado
 
-## Processamento de Imagens
 
-O sistema utiliza OpenCV para:
-- Detecção automática de rachaduras
-- Análise de objetos nas imagens
-- Processamento e armazenamento seguro de uploads
 
 ## Contribuição
 
