@@ -1,21 +1,4 @@
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: sensorium_mysql
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: banco_de_dados
-    ports:
-      - "3307:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   tests:
     build: 
       context: .
@@ -38,17 +21,13 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: sensorium_backend_int
-    depends_on:
-      mysql:
-        condition: service_healthy
     command: ["sh", "-c", "PYTHONPATH=/app python backend/scripts/init_db.py && PYTHONPATH=/app uvicorn backend.app.main:app --host 0.0.0.0 --port 8003"]
     environment:
-      MYSQL_HOST: mysql
+      MYSQL_HOST: host.docker.internal
       MYSQL_USER: root
-      MYSQL_PASSWORD: rootpassword
+      MYSQL_PASSWORD: ""
       MYSQL_DATABASE: banco_de_dados
       MYSQL_PORT: 3306
-      DATABASE_URL: "mysql+mysqlconnector://root:rootpassword@mysql:3306/banco_de_dados?auth_plugin=mysql_native_password&charset=utf8mb4"
       SECRET_KEY: "chave_secreta_muito_longa_e_segura_para_jwt_tokens_aqui"
       ACCESS_TOKEN_EXPIRE_MINUTES: "1440"
       BACKEND_CORS_ORIGINS: '["*"]'
@@ -80,12 +59,11 @@ services:
       SECRET_KEY: "chave_secreta_muito_longa_e_segura_para_jwt_tokens_aqui"
       DISABLE_RATE_LIMITING: "true"
       PYTHONPATH: "/app"
-      MYSQL_HOST: mysql
+      MYSQL_HOST: host.docker.internal
       MYSQL_USER: root
-      MYSQL_PASSWORD: rootpassword
+      MYSQL_PASSWORD: ""
       MYSQL_DATABASE: banco_de_dados
       MYSQL_PORT: 3306
-      DATABASE_URL: "mysql+mysqlconnector://root:rootpassword@mysql:3306/banco_de_dados?auth_plugin=mysql_native_password&charset=utf8mb4"
     volumes:
       - .:/app
       - ./templates:/app/templates
@@ -105,15 +83,11 @@ services:
       SECRET_KEY: "chave_secreta_muito_longa_e_segura_para_jwt_tokens_aqui"
       DISABLE_RATE_LIMITING: "true"
       PYTHONPATH: "/app"
-      MYSQL_HOST: mysql
+      MYSQL_HOST: host.docker.internal
       MYSQL_USER: root
-      MYSQL_PASSWORD: rootpassword
+      MYSQL_PASSWORD: ""
       MYSQL_DATABASE: banco_de_dados
       MYSQL_PORT: 3306
-      DATABASE_URL: "mysql+mysqlconnector://root:rootpassword@mysql:3306/banco_de_dados?auth_plugin=mysql_native_password&charset=utf8mb4"
     volumes:
       - .:/app
     command: pytest --cov=backend/app --cov-report=term-missing backend/tests/
-
-volumes:
-  mysql_data:
