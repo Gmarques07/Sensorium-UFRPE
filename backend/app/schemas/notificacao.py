@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 class NotificacaoBase(BaseModel):
     mensagem: str
@@ -21,8 +21,7 @@ class Notificacao(NotificacaoBase):
     lida: bool = False
     data_leitura: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class NotificacaoAdmin(BaseModel):
     id: int
@@ -33,5 +32,4 @@ class NotificacaoAdmin(BaseModel):
     lida: bool = False
     data_leitura: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

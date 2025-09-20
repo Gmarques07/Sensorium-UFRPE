@@ -1,6 +1,6 @@
 from typing import List, Optional
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 class DashboardStats(BaseModel):
     total_usuarios: int
@@ -25,8 +25,7 @@ class Configuracao(ConfiguracaoBase):
     id: int
     data_atualizacao: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class AdminDashboard(BaseModel):
     stats: DashboardStats

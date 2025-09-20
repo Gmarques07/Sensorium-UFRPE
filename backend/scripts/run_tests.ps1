@@ -51,10 +51,10 @@ function Run-Coverage-Tests {
     Write-Host 'Executando testes com cobertura...' -ForegroundColor Blue
     Write-Host ''
     Write-Host 'Cobertura - Testes de Unidade:' -ForegroundColor Yellow
-    docker-compose run --rm tests pytest --cov=app --cov-report=term-missing
+    docker-compose run --rm tests pytest --cov=backend/app --cov-report=term-missing --ignore=backend/tests/integration
     Write-Host ''
     Write-Host 'Cobertura - Testes de Integracao:' -ForegroundColor Yellow
-    docker-compose run --rm tests_integration pytest --cov=app --cov-report=term-missing
+    docker-compose run --rm tests_integration pytest --cov=backend/app --cov-report=term-missing
 }
 
 function Run-Specific-Tests {

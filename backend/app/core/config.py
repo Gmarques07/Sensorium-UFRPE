@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List, Optional
 import os
 from dotenv import load_dotenv
@@ -60,9 +60,7 @@ class Settings(BaseSettings):
             self.EMAILS_FROM_EMAIL
         ])
     
-    class Config:
-        case_sensitive = True
-        env_file = ".env"
+    model_config = SettingsConfigDict(case_sensitive=True, env_file=".env")
 
 # Use o caminho absoluto para o arquivo .env
 import os

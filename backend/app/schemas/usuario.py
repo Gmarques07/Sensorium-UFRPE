@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, constr
+from pydantic import BaseModel, EmailStr, constr, ConfigDict
 from typing import Optional
 from datetime import datetime
 
@@ -20,8 +20,7 @@ class UsuarioInDB(UsuarioBase):
     id: int
     created_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class Usuario(UsuarioBase):
     id: int
@@ -29,5 +28,4 @@ class Usuario(UsuarioBase):
     updated_at: Optional[datetime] = None
     ativo: bool = True
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

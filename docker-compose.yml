@@ -16,41 +16,6 @@ services:
       timeout: 5s
       retries: 5
 
-  backend:
-    build: 
-      context: .
-      dockerfile: Dockerfile
-    container_name: sensorium_backend
-    restart: unless-stopped
-    ports:
-      - "8001:8001"
-    volumes:
-      - .:/app
-      - ./static:/app/static
-      - ./templates:/app/templates
-    environment:
-      # Configurações do MySQL (usando o MySQL local do WAMP)
-      - MYSQL_HOST=host.docker.internal
-      - MYSQL_USER=root
-      - MYSQL_PASSWORD=
-      - MYSQL_DATABASE=banco_de_dados
-      - MYSQL_PORT=3306
-      - SECRET_KEY=chave_secreta_muito_longa_e_segura_para_jwt_tokens_aqui
-      - ACCESS_TOKEN_EXPIRE_MINUTES=1440
-      # Configurações de CORS
-      - BACKEND_CORS_ORIGINS=["*"]
-      # Ativar logs de debug
-      - PYTHONUNBUFFERED=1
-      - LOG_LEVEL=debug
-      - PYTHONPATH=/app
-      # Disable reload in Docker
-      - DISABLE_RELOAD=true
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-
   tests:
     build: 
       context: .
@@ -126,6 +91,29 @@ services:
       - ./templates:/app/templates
       - ./static:/app/static
     command: pytest -q backend/tests/integration -s
+
+  coverage:
+    build:
+      context: .
+      dockerfile: Dockerfile.tests
+    container_name: sensorium_coverage
+    depends_on:
+      backend_int:
+        condition: service_healthy
+    environment:
+      API_BASE_URL: "http://backend_int:8003"
+      SECRET_KEY: "chave_secreta_muito_longa_e_segura_para_jwt_tokens_aqui"
+      DISABLE_RATE_LIMITING: "true"
+      PYTHONPATH: "/app"
+      MYSQL_HOST: mysql
+      MYSQL_USER: root
+      MYSQL_PASSWORD: rootpassword
+      MYSQL_DATABASE: banco_de_dados
+      MYSQL_PORT: 3306
+      DATABASE_URL: "mysql+mysqlconnector://root:rootpassword@mysql:3306/banco_de_dados?auth_plugin=mysql_native_password&charset=utf8mb4"
+    volumes:
+      - .:/app
+    command: pytest --cov=backend/app --cov-report=term-missing backend/tests/
 
 volumes:
   mysql_data:
