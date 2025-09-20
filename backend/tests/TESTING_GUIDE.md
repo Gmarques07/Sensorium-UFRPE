@@ -33,22 +33,41 @@ O projeto utiliza três tipos principais de testes:
 
 ## 2. Como Executar os Testes
 
-Todos os testes são executados via `docker-compose`, utilizando o script auxiliar `backend/scripts/run_tests.ps1`.
+Todos os testes são executados via `docker-compose`, utilizando scripts auxiliares.
 
-Para executar os testes, navegue até o diretório raiz do projeto (`Sensorium-UFRPE/`) no PowerShell e execute:
+### 2.1. No Windows (usando PowerShell)
+
+Navegue até o diretório raiz do projeto (`Sensorium-UFRPE/`) no PowerShell e execute:
 
 ```powershell
 backend/scripts/run_tests.ps1
 ```
 
-Você terá as seguintes opções:
+Este script usará o arquivo `docker-compose.yml` padrão, que se conecta ao seu MySQL local (WAMP).
+
+### 2.2. No Mac/Linux (usando Bash)
+
+Para um ambiente totalmente containerizado (com MySQL no Docker), navegue até o diretório raiz do projeto (`Sensorium-UFRPE/`) no terminal e execute:
+
+```bash
+bash backend/scripts/run_tests.sh
+```
+
+Este script usará o arquivo `docker-compose.dev.yml`, que inclui o serviço MySQL containerizado.
+
+### 2.3. Opções Comuns para Ambos os Scripts
+
+Ambos os scripts (`run_tests.ps1` e `run_tests.sh`) apresentarão um menu com as seguintes opções:
 
 *   **Opção 1: Executar todos os testes:** Roda tanto os testes de unidade quanto os de integração.
 *   **Opção 2: Executar testes de unidade:** Roda apenas os testes de unidade.
 *   **Opção 3: Executar testes de integração:** Roda apenas os testes de integração.
 *   **Opção 4: Executar testes com cobertura:** Roda todos os testes e gera um relatório de cobertura de código.
+*   **Opção 5: Executar testes específicos:** Permite rodar um teste ou grupo de testes específico.
+*   **Opção 6: Limpar containers de teste:** Derruba e remove os contêineres de teste.
+*   **Opção 7: Build dos containers de teste:** Reconstrói as imagens dos contêineres de teste.
 
-**Importante:** Para os testes de integração funcionarem, seu servidor WAMP (com o MySQL) deve estar rodando.
+**Importante:** Para os testes de integração funcionarem, se você estiver usando o `docker-compose.yml` padrão (no Windows), seu servidor WAMP (com o MySQL) deve estar rodando. Se estiver usando o `docker-compose.dev.yml` (no Mac/Linux), o MySQL será iniciado automaticamente em um contêiner.
 
 ## 3. Conexões e Banco de Dados
 
