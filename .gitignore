@@ -239,3 +239,6 @@ config.ini
 # Temporary files
 tmp/
 temp/
+
+# Local development files
+cookies.txt
