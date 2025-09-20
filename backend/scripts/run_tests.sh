@@ -5,20 +5,27 @@
 
 COMPOSE_FILE="docker-compose.dev.yml"
 
+# Cores ANSI
+BLUE='[0;34m'
+YELLOW='[0;33m'
+GREEN='[0;32m'
+RED='[0;31m'
+NC='[0m' # No Color
+
 # Verificar se o arquivo docker-compose.dev.yml existe
 if [ ! -f "$COMPOSE_FILE" ]; then
-    echo "Erro: O arquivo $COMPOSE_FILE não foi encontrado na raiz do projeto."
-    echo "Certifique-se de estar no diretório raiz do projeto e que o arquivo existe."
+    echo -e "${RED}Erro: O arquivo $COMPOSE_FILE não foi encontrado na raiz do projeto.${NC}"
+    echo -e "${YELLOW}Certifique-se de estar no diretório raiz do projeto e que o arquivo existe.${NC}"
     exit 1
 fi
 
 show_menu() {
     echo ""
-    echo "======================================="
-    echo "Sistema de Testes - Sensorium UFRPE (Dockerizado)"
-    echo "======================================="
+    echo -e "${BLUE}=======================================${NC}"
+    echo -e "${BLUE}Sistema de Testes - Sensorium UFRPE (Dockerizado)${NC}"
+    echo -e "${BLUE}=======================================${NC}"
     echo ""
-    echo "Escolha uma opcao:"
+    echo -e "${YELLOW}Escolha uma opcao:${NC}"
     echo "1) Executar todos os testes"
     echo "2) Executar testes de unidade"
     echo "3) Executar testes de integracao"
@@ -31,37 +38,37 @@ show_menu() {
 }
 
 run_all_tests() {
-    echo "Executando todos os testes..."
+    echo -e "${BLUE}Executando todos os testes...${NC}"
     echo ""
-    echo "Cobertura - Testes de Unidade:"
+    echo -e "${YELLOW}Cobertura - Testes de Unidade:${NC}"
     docker-compose -f "$COMPOSE_FILE" run --rm tests pytest --cov=backend/app --cov-report=term-missing --ignore=backend/tests/integration
     echo ""
-    echo "Cobertura - Testes de Integracao:"
+    echo -e "${YELLOW}Cobertura - Testes de Integracao:${NC}"
     docker-compose -f "$COMPOSE_FILE" run --rm tests_integration pytest --cov=backend/app --cov-report=term-missing
 }
 
 run_unit_tests() {
-    echo "Executando testes de unidade..."
+    echo -e "${BLUE}Executando testes de unidade...${NC}"
     docker-compose -f "$COMPOSE_FILE" run --rm tests
 }
 
 run_integration_tests() {
-    echo "Executando testes de integracao..."
+    echo -e "${BLUE}Executando testes de integracao...${NC}"
     docker-compose -f "$COMPOSE_FILE" run --rm tests_integration
 }
 
 run_coverage_tests() {
-    echo "Executando testes com cobertura..."
+    echo -e "${BLUE}Executando testes com cobertura...${NC}"
     echo ""
-    echo "Cobertura - Testes de Unidade:"
+    echo -e "${YELLOW}Cobertura - Testes de Unidade:${NC}"
     docker-compose -f "$COMPOSE_FILE" run --rm tests pytest --cov=backend/app --cov-report=term-missing --ignore=backend/tests/integration
     echo ""
-    echo "Cobertura - Testes de Integracao:"
+    echo -e "${YELLOW}Cobertura - Testes de Integracao:${NC}"
     docker-compose -f "$COMPOSE_FILE" run --rm tests_integration pytest --cov=backend/app --cov-report=term-missing
 }
 
 run_specific_tests() {
-    echo "Executar testes especificos"
+    echo -e "${BLUE}Executar testes especificos${NC}"
     echo "Exemplos:"
     echo "  - backend/tests/test_auth.py"
     echo "  - backend/tests/integration/test_usuarios_integration.py"
@@ -70,24 +77,24 @@ run_specific_tests() {
     read -p "Comando pytest: " test_cmd
     
     if [[ "$test_cmd" == *integration* ]]; then
-        echo "Executando testes de integracao especificos..."
+        echo -e "${YELLOW}Executando testes de integracao especificos...${NC}"
         docker-compose -f "$COMPOSE_FILE" run --rm tests_integration pytest $test_cmd
     else
-        echo "Executando testes de unidade especificos..."
+        echo -e "${YELLOW}Executando testes de unidade especificos...${NC}"
         docker-compose -f "$COMPOSE_FILE" run --rm tests pytest $test_cmd
     fi
 }
 
 clean_test_containers() {
-    echo "Limpando containers de teste..."
+    echo -e "${BLUE}Limpando containers de teste...${NC}"
     docker-compose -f "$COMPOSE_FILE" down -v --remove-orphans
-    echo "Containers limpos com sucesso!"
+    echo -e "${GREEN}Containers limpos com sucesso!${NC}"
 }
 
 build_test_containers() {
-    echo "Building containers de teste..."
+    echo -e "${BLUE}Building containers de teste...${NC}"
     docker-compose -f "$COMPOSE_FILE" build tests tests_integration backend_int
-    echo "Build concluido!"
+    echo -e "${GREEN}Build concluido!${NC}"
 }
 
 # Loop principal
@@ -104,11 +111,11 @@ while true; do
         6) clean_test_containers ;;
         7) build_test_containers ;;
         0) 
-            echo "Ate logo!"
+            echo -e "${GREEN}Ate logo!${NC}"
             break
             ;;
         *)
-            echo "Opcao invalida!"
+            echo -e "${RED}Opcao invalida!${NC}"
             ;;
     esac
     
