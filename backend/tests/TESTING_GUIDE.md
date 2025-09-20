@@ -88,4 +88,4 @@ Para evitar que os dados criados pelos testes de integração poluam seu banco d
 *   `pytest.ini`: Configurações gerais do Pytest, incluindo o registro de marcadores.
 *   `backend/scripts/run_tests.ps1`: Script PowerShell para facilitar a execução dos testes.
 
-Este guia deve fornecer uma compreensão clara de como o sistema de testes funciona e onde encontrar as informações relevantes no código.
+
