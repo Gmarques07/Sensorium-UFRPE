@@ -68,7 +68,9 @@ class NivelAgua(Base):
     
     @staticmethod
     def calcular_status(boia: int) -> str:
-        if boia >= 50:
+        if boia >= 75:
+            return "ALTO"
+        elif boia >= 50:
             return "NORMAL"
         elif boia >= 25:
             return "BAIXO"

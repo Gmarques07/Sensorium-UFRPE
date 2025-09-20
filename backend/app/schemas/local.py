@@ -36,7 +36,7 @@ class PhNivel(PhNivelBase):
 
 class NivelAguaBase(BaseModel):
     boia: int = Field(..., ge=0, le=100, description="Nível da boia em porcentagem")
-    status: Literal['NORMAL', 'BAIXO', 'CRITICO'] = Field(
+    status: Literal['ALTO', 'BAIXO', 'NORMAL', 'CRITICO'] = Field(
         ..., 
         description="Status do nível de água"
     )
@@ -44,7 +44,7 @@ class NivelAguaBase(BaseModel):
 
     @field_validator('status')
     def validar_status(cls, v):
-        status_permitidos = ['NORMAL', 'BAIXO', 'CRITICO']
+        status_permitidos = ['ALTO', 'BAIXO', 'NORMAL', 'CRITICO']
         if v not in status_permitidos:
             raise ValueError(f'Status deve ser um dos seguintes: {status_permitidos}')
         return v
