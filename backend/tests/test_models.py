@@ -46,15 +46,16 @@ def test_nivel_agua(db: Session):
     db.commit()
     db.refresh(local)
 
-    nivel_in = NivelAguaCreate(boia=75, status="NORMAL")
+    nivel_in = NivelAguaCreate(boia=90, status="ALTO")
     nivel = crud_cisterna.criar_nivel_agua(db, nivel_in, local_id=local.id)
-    assert nivel.boia == 75
-    assert nivel.status == "NORMAL"
+    assert nivel.boia == 90
+    assert nivel.status == "ALTO"
 
     # Teste do cálculo de status
-    assert NivelAgua.calcular_status(80) == "NORMAL"
-    assert NivelAgua.calcular_status(30) == "BAIXO"
-    assert NivelAgua.calcular_status(20) == "CRITICO"
+    assert NivelAgua.calcular_status(90) == "ALTO"
+    assert NivelAgua.calcular_status(60) == "NORMAL"
+    assert NivelAgua.calcular_status(40) == "BAIXO"
+    assert NivelAgua.calcular_status(10) == "CRITICO"
 
     # Teste de validação do nível
     with pytest.raises(ValueError):

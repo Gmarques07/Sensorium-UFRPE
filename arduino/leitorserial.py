@@ -30,6 +30,14 @@ except Exception as e:
     print("Erro ao conectar:", e)
     exit()
 
+# Buscar local_id de arquivo de configuração
+local_id_path = os.path.join(os.path.dirname(__file__), 'local_id.txt')
+try:
+    with open(local_id_path, 'r') as f:
+        local_id = int(f.read().strip())
+except Exception:
+    local_id = 1  # padrão caso não exista o arquivo
+
 # Obter uma sessão de banco de dados
 db_gen = get_db()
 db = next(db_gen)
@@ -42,16 +50,29 @@ while True:
                 dados = json.loads(linha)
                 print("📡 Dados recebidos:", dados)
                 # Exemplo: acessar campos
-                print(f"pH: {dados['ph']}, Voltagem: {dados['voltagem']}, Boia: {dados['status']}")
+                print(f"pH: {dados['ph']}, Voltagem: {dados['voltagem']}, Nível: {dados['status']}")
                 
                 # Salvar dados no banco de dados
                 # Criar leitura de pH
                 ph_create = PhNivelCreate(ph=dados['ph'])
-                ph_salvo = crud_local.criar_ph_nivel(db, ph_create, local_id=1)
+                ph_salvo = crud_local.criar_ph_nivel(db, ph_create, local_id=local_id)
+                
+                # Mapear o status do sensor para valores de boia
+                # Sua boia tem apenas duas opções: "ALTO" e "BAIXO"
+                if dados['status'] == 'BAIXO':
+                    boia_value = 25
+                    status_value = 'BAIXO'
+                elif dados['status'] == 'ALTO':
+                    boia_value = 75
+                    status_value = 'ALTO'
+                else:
+                    # Valor padrão caso receba um status inesperado
+                    boia_value = 50
+                    status_value = 'NORMAL'
                 
                 # Criar leitura de nível
-                nivel_create = NivelAguaCreate(boia=dados['status'])
-                nivel_salvo = crud_local.criar_nivel_agua(db, nivel_create, local_id=1)
+                nivel_create = NivelAguaCreate(boia=boia_value, status=status_value)
+                nivel_salvo = crud_local.criar_nivel_agua(db, nivel_create, local_id=local_id)
                 
                 print(f"💾 Dados salvos no banco de dados - pH ID: {ph_salvo.id}, Nível ID: {nivel_salvo.id}")
                 
