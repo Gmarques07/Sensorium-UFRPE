@@ -18,6 +18,16 @@ class RegistroUsuario(BaseModel):
     endereco: constr(max_length=200)
     senha: constr(min_length=6)
 
+class OAuthUserResponse(BaseModel):
+    id: int
+    nome: str
+    email: str
+
+class OAuthLoginResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: OAuthUserResponse
+
 class RecuperacaoSenha(BaseModel):
     email: EmailStr
 

@@ -43,6 +43,11 @@ anyio>=4.10.0
 click>=8.1.8
 h11>=0.16.0
 
+# Dependências do Google OAuth
+google-auth==2.36.0
+google-auth-oauthlib==1.2.2
+requests-oauthlib>=2.0.0
+
 # Dependências do SQLAlchemy
 greenlet>=3.2.4
 

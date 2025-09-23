@@ -5,7 +5,8 @@ from backend.app.api.v1.endpoints import (
     admin_router,
     local_router,
     notificacoes_router,
-    relatorios_router
+    relatorios_router,
+    oauth_router
 )
 
 api_router = APIRouter()
@@ -15,3 +16,4 @@ api_router.include_router(admin_router, prefix="/admin", tags=["admin"])
 api_router.include_router(local_router, prefix="/locais", tags=["locais"])
 api_router.include_router(notificacoes_router, prefix="/notificacoes", tags=["notificacoes"])
 api_router.include_router(relatorios_router, prefix="/relatorios", tags=["relatorios"])
+api_router.include_router(oauth_router, prefix="/oauth", tags=["oauth"])

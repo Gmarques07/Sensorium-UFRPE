@@ -4,6 +4,7 @@ from .admin import router as admin_router
 from .local import router as local_router
 from .notificacoes import router as notificacoes_router
 from .relatorios import router as relatorios_router
+from .oauth import router as oauth_router
 
 __all__ = [
     "auth_router",
@@ -11,5 +12,6 @@ __all__ = [
     "admin_router",
     "local_router",
     "notificacoes_router",
-    "relatorios_router"
+    "relatorios_router",
+    "oauth_router"
 ]
