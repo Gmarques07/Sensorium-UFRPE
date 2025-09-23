@@ -94,6 +94,26 @@ async def registro(
     # Cria o usuário
     usuario = crud_usuario.create_usuario(db, usuario=usuario_in)
     
+    # Enviar e-mail de confirmação de cadastro
+    try:
+        from backend.app.utils.email_yagmail import send_confirmacao_cadastro_yagmail
+        email_enviado = send_confirmacao_cadastro_yagmail(
+            email_to=usuario.email,
+            nome_usuario=usuario.nome,
+            endereco=usuario.endereco
+        )
+        
+        if not email_enviado:
+            # Log do erro mas não falha o registro
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Falha ao enviar e-mail de confirmação para {usuario.email}")
+    except Exception as e:
+        # Log do erro mas não falha o registro
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Erro ao enviar e-mail de confirmação para {usuario.email}: {str(e)}")
+    
     # Gera o token de acesso
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
