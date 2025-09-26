@@ -2,53 +2,53 @@
 
 Plataforma web para gerenciamento e visualização de dados de sensores em tempo real, totalmente conteinerizada com Docker.
 
-## ✨ Visão Geral do Ambiente
+## 🚀 Primeiros Passos: Rodando o Projeto
 
-Este projeto está configurado para rodar em um ambiente Docker unificado, garantindo consistência e simplicidade no desenvolvimento e execução. O ambiente é composto por dois serviços principais orquestrados pelo Docker Compose:
+Este guia é tudo que você precisa para ter o ambiente completo do Sensorium rodando na sua máquina.
 
-1.  **`app`**: O contêiner da aplicação principal (backend FastAPI e frontend).
-2.  **`mysql`**: O contêiner do banco de dados MySQL.
+### Pré-requisitos
 
-O fluxo de inicialização foi automatizado para garantir a qualidade do código:
+*   [Docker](https://www.docker.com/products/docker-desktop/)
+*   [Docker Compose](https://docs.docker.com/compose/install/) (geralmente já vem com o Docker Desktop)
+*   [Git](https://git-scm.com/)
 
-1.  Ao iniciar, o contêiner da aplicação primeiro executa a suíte de testes completa (unidade, integração e cobertura).
-2.  **Se todos os testes passarem**, o servidor web da aplicação é iniciado.
-3.  **Se qualquer teste falhar**, o contêiner da aplicação irá parar, e os logs indicarão o erro, prevenindo que a aplicação suba com problemas.
+### Executando o Ambiente
 
-##  teknolojileri
+1.  **Clone o repositório:**
+    ```bash
+    git clone <URL_DO_REPOSITORIO>
+    cd Sensorium-UFRPE
+    ```
+
+2.  **Suba os contêineres com um único comando:**
+    Na raiz do projeto, execute:
+    ```bash
+    docker-compose up --build
+    ```
+    *   O argumento `--build` é crucial na primeira vez para construir as imagens Docker do zero.
+
+### O que Acontece ao Iniciar?
+
+Ao executar o comando `up`, o Docker Compose irá orquestrar todo o setup para você:
+1.  **Banco de Dados**: Inicia um contêiner com o banco de dados MySQL e o popula com as tabelas iniciais.
+2.  **Testes de Validação**: O contêiner da aplicação é construído e **primeiro executa a suíte de testes completa**.
+3.  **Inicialização do Servidor**:
+    *   ✅ **Se todos os testes passarem**, o servidor web (API e Frontend) é iniciado.
+    *   ❌ **Se algum teste falhar**, o processo é interrompido. Os logs no seu terminal indicarão o erro, prevenindo que a aplicação suba com problemas.
+
+### Acessando o Sistema
+
+Após a conclusão dos testes e o início do servidor, a aplicação estará disponível em:
+*   **Aplicação Web**: [http://localhost:8001](http://localhost:8001)
+*   **Documentação da API (Swagger)**: [http://localhost:8001/docs](http://localhost:8001/docs)
+
+## Tecnologias
 
 *   **Backend**: FastAPI, SQLAlchemy, Pydantic, JWT
 *   **Frontend**: Jinja2, Bootstrap 5, Chart.js
 *   **Banco de Dados**: MySQL
 *   **Testes**: Pytest
 *   **DevOps**: Docker & Docker Compose
-
-## 🚀 Como Executar o Projeto
-
-### Pré-requisitos
-
-*   Docker
-*   Docker Compose
-
-### Passos para Iniciar
-
-1.  **Clone o repositório** (se ainda não o fez):
-    ```bash
-    git clone <URL_DO_REPOSITORIO>
-    cd Sensorium-UFRPE
-    ```
-
-2.  **Suba os contêineres**:
-    Na raiz do projeto, execute o comando:
-    ```bash
-    docker-compose up --build
-    ```
-    *   O `--build` é importante na primeira vez ou se houver mudanças no `Dockerfile` ou `requirements.txt`.
-
-3.  **Acesse o sistema**:
-    Após os testes passarem e o servidor iniciar, a aplicação estará disponível em:
-    *   **Aplicação Web**: [http://localhost:8001](http://localhost:8001)
-    *   **Documentação da API (Swagger)**: [http://localhost:8001/docs](http://localhost:8001/docs)
 
 ## 🛠️ Comandos Úteis do Docker
 
