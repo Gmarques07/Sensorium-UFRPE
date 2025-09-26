@@ -57,6 +57,8 @@ class Settings(BaseSettings):
     
     @property
     def emails_enabled(self) -> bool:
+        if self.ENVIRONMENT == "test":
+            return False
         return all([
             self.SMTP_HOST,
             self.SMTP_PORT,

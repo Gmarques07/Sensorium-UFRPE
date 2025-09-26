@@ -42,9 +42,6 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 
 print("API router included")
 
-# Configurar arquivos estáticos e templates
-# Calcular diretórios estáticos e de templates dinamicamente para
-# funcionar tanto em desenvolvimento quanto dentro do container Docker.
 BASE_DIR = Path(__file__).resolve().parents[1]
 PROJECT_ROOT = BASE_DIR.parent
 STATIC_DIR = PROJECT_ROOT / "static"
@@ -205,8 +202,3 @@ async def not_found(request: Request):
 @app.get("/500.html", response_class=HTMLResponse)
 async def server_error(request: Request):
     return templates.TemplateResponse("500.html", {"request": request})
-
-
-@app.get("/health")
-async def health():
-    return {"status": "ok"}

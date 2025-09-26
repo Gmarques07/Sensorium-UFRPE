@@ -1,54 +1,47 @@
 # backend/tests/integration/conftest.py
 import pytest
-from sqlalchemy.orm import Session
-import sys
-import os
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
+from typing import Generator
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
+from fastapi.testclient import TestClient
 
 # Import all necessary models
-from backend.app.db.session import SessionLocal
-from backend.app.models import Notificacao, PhNivel, NivelAgua, Local, Usuario, UsuarioSensor
+from backend.app.db.base_class import Base
+from backend.app.main import app
+from backend.app.api.deps import get_db as app_get_db
+from backend.app.models import Usuario, PhNivel, NivelAgua, Local, Notificacao, UsuarioSensor
 
-@pytest.fixture(scope="function", autouse=True)
-def auto_cleanup_db():
-    """
-    Fixture to automatically clean up known test data after each integration test.
-    """
-    yield  # Run the test
+# Banco SQLite em memória compartilhado entre conexões para testes de integração
+SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 
-    # --- Teardown: Clean up database ---
-    print("\n--- Running automatic test cleanup ---")
-    db: Session = SessionLocal()
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+)
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+@pytest.fixture(scope="function")
+def db() -> Generator:
+    """Cria um banco de dados limpo e isolado para cada teste de integração"""
+    # Isola cada teste com um schema limpo
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+    session = TestingSessionLocal()
     try:
-        # Find test users based on the email pattern used in tests
-        test_users = db.query(Usuario).filter(Usuario.email.like('%@example.com')).all()
-        if not test_users:
-            print("--- No test users found to clean up ---")
-            db.close()
-            return
-
-        test_user_ids = [user.id for user in test_users]
-        test_user_emails = [user.email for user in test_users]
-
-        # --- Delete related data first to avoid foreign key violations ---
-
-        # 1. Delete UsuarioSensor entries
-        db.query(UsuarioSensor).filter(UsuarioSensor.usuario_id.in_(test_user_ids)).delete(synchronize_session=False)
-        
-        # 2. Delete Notificacao entries
-        db.query(Notificacao).filter(Notificacao.email_usuario.in_(test_user_emails)).delete(synchronize_session=False)
-
-        # (Add cleanup for other test data like 'Local' if necessary in the future)
-
-        # 3. Now, delete the test users themselves
-        for user in test_users:
-            db.delete(user)
-
-        db.commit()
-        print(f"--- Cleanup successful: Removed {len(test_users)} test user(s) and related data. ---")
-    except Exception as e:
-        print(f"--- Cleanup failed: {e} ---")
-        db.rollback()
+        yield session
     finally:
-        db.close()
+        session.close()
+
+@pytest.fixture(scope="function")
+def client(db) -> Generator:
+    """Cliente de teste com banco de dados isolado"""
+    def override_get_db():
+        yield db
+
+    # Override da dependência de DB para usar o banco de testes
+    app.dependency_overrides[app_get_db] = override_get_db
+    with TestClient(app) as c:
+        yield c
+    app.dependency_overrides.clear()

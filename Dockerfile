@@ -1,27 +1,33 @@
-# Usar uma imagem base oficial do Python
-FROM python:3.9-slim
+# Usar uma imagem base oficial do Python 3.12
+FROM python:3.12-slim
 
-# Definir o diretório de trabalho no container
+# Evitar escrita de pyc e output bufferizado
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
 WORKDIR /app
 
-# Instalar dependências do sistema necessárias
-RUN apt-get update && apt-get install -y \
-    default-mysql-client \
-    netcat-openbsd \
-    curl \
+# Dependências do sistema necessárias para compilação de algumas wheels
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+       build-essential \
+       libssl-dev \
+       libffi-dev \
+       default-libmysqlclient-dev \
+       gcc \
+       curl \
+       procps \
     && rm -rf /var/lib/apt/lists/*
 
-# Copiar os arquivos de requisitos primeiro para aproveitar o cache do Docker
-COPY requirements.txt .
+# Copiar requirements primeiro para aproveitar cache do docker
+COPY requirements.txt ./
 
-# Instalar as dependências do projeto
-RUN pip install --no-cache-dir -r requirements.txt
+# Instalar dependências
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
 
-# Copiar o restante do código do backend para o diretório de trabalho
+# Copiar o restante do código do projeto
 COPY . .
 
 # Expôr a porta que a aplicação roda
 EXPOSE 8001
-
-# Comando para rodar a aplicação
-CMD ["python", "main.py"]
