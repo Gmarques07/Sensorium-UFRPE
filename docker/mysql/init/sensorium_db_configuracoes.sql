@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 8.0.42, for Win64 (x86_64)
 --
--- Host: 127.0.0.1    Database: banco_de_dados
+-- Host: 127.0.0.1    Database: sensorium_db
 -- ------------------------------------------------------
 -- Server version	9.1.0
 
@@ -16,32 +16,31 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `notificacoes_admin`
+-- Table structure for table `configuracoes`
 --
 
-DROP TABLE IF EXISTS `notificacoes_admin`;
+DROP TABLE IF EXISTS `configuracoes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `notificacoes_admin` (
+CREATE TABLE `configuracoes` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `tipo` varchar(50) NOT NULL,
-  `titulo` varchar(200) NOT NULL,
-  `mensagem` text NOT NULL,
-  `data_criacao` datetime NOT NULL,
-  `lida` tinyint(1) DEFAULT NULL,
-  `data_leitura` datetime DEFAULT NULL,
+  `chave` varchar(50) NOT NULL,
+  `valor` text NOT NULL,
+  `descricao` text,
+  `data_atualizacao` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `ix_notificacoes_admin_id` (`id`)
+  UNIQUE KEY `ix_configuracoes_chave` (`chave`),
+  KEY `ix_configuracoes_id` (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `notificacoes_admin`
+-- Dumping data for table `configuracoes`
 --
 
-LOCK TABLES `notificacoes_admin` WRITE;
-/*!40000 ALTER TABLE `notificacoes_admin` DISABLE KEYS */;
-/*!40000 ALTER TABLE `notificacoes_admin` ENABLE KEYS */;
+LOCK TABLES `configuracoes` WRITE;
+/*!40000 ALTER TABLE `configuracoes` DISABLE KEYS */;
+/*!40000 ALTER TABLE `configuracoes` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 8.0.42, for Win64 (x86_64)
 --
--- Host: 127.0.0.1    Database: banco_de_dados
+-- Host: 127.0.0.1    Database: sensorium_db
 -- ------------------------------------------------------
 -- Server version	9.1.0
 
@@ -16,30 +16,30 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `locais`
+-- Table structure for table `ph_niveis`
 --
 
-DROP TABLE IF EXISTS `locais`;
+DROP TABLE IF EXISTS `ph_niveis`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `locais` (
+CREATE TABLE `ph_niveis` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `nome` varchar(100) NOT NULL,
-  `tipo` varchar(50) NOT NULL,
-  `descricao` varchar(200) DEFAULT NULL,
-  `data_criacao` datetime NOT NULL DEFAULT (now()),
+  `local_id` int NOT NULL,
+  `ph` float NOT NULL,
+  `data` datetime NOT NULL DEFAULT (now()),
   PRIMARY KEY (`id`),
-  KEY `ix_locais_id` (`id`)
+  KEY `local_id` (`local_id`),
+  KEY `ix_ph_niveis_id` (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `locais`
+-- Dumping data for table `ph_niveis`
 --
 
-LOCK TABLES `locais` WRITE;
-/*!40000 ALTER TABLE `locais` DISABLE KEYS */;
-/*!40000 ALTER TABLE `locais` ENABLE KEYS */;
+LOCK TABLES `ph_niveis` WRITE;
+/*!40000 ALTER TABLE `ph_niveis` DISABLE KEYS */;
+/*!40000 ALTER TABLE `ph_niveis` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
