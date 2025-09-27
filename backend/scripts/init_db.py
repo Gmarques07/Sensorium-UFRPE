@@ -1,6 +1,6 @@
 import sys
 import os
-import time
+from sqlalchemy import text
 
 # Adiciona o diretório raiz ao path para que os módulos possam ser importados
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
@@ -10,24 +10,23 @@ from backend.app.db.base_class import Base
 # Importa os modelos para garantir que eles sejam registrados
 from backend.app import models
 
-def init_db(max_retries=10, retry_delay=2):
+def init_db():
     """
-    Initialize database with retry logic
+    Initialize database.
     """
-    for attempt in range(max_retries):
-        try:
-            # Cria todas as tabelas definidas nos modelos
-            Base.metadata.create_all(bind=engine)
-            print("Tabelas criadas com sucesso!")
-            return
-        except Exception as e:
-            if attempt < max_retries - 1:
-                print(f"Tentativa {attempt + 1} falhou: {e}")
-                print(f"Aguardando {retry_delay} segundos antes de tentar novamente...")
-                time.sleep(retry_delay)
-            else:
-                print(f"Todas as {max_retries} tentativas falharam.")
-                raise e
+    try:
+        with engine.connect() as connection:
+            with connection.begin():
+                # Desabilitar checagem de chave estrangeira
+                connection.execute(text("SET FOREIGN_KEY_CHECKS = 0"))
+                # Cria todas as tabelas definidas nos modelos
+                Base.metadata.create_all(bind=connection)
+                # Reabilitar checagem de chave estrangeira
+                connection.execute(text("SET FOREIGN_KEY_CHECKS = 1"))
+        print("Tabelas criadas com sucesso!")
+    except Exception as e:
+        print(f"Erro ao inicializar o banco de dados: {e}")
+        raise e
 
 if __name__ == "__main__":
     init_db()

@@ -27,7 +27,7 @@ CREATE TABLE `notificacoes` (
   `mensagem` text NOT NULL,
   `data_criacao` datetime NOT NULL,
   `local_id` int DEFAULT NULL,
-  `cpf_usuario` varchar(11) DEFAULT NULL,
+  `email_usuario` varchar(100) DEFAULT NULL,
   `tipo` varchar(50) NOT NULL,
   `lida` tinyint(1) DEFAULT NULL,
   `data_leitura` datetime DEFAULT NULL,
