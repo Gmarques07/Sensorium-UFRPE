@@ -9,7 +9,7 @@
         --secondary-blue: #4FC3F7;
         --dark-blue: #003366;
         --light-bg: #f8faff;
-        --accent-color: #00E676;
+        --accent-color: #00FF8B; /* Verde Neon */
     }
 
     body {
@@ -147,20 +147,20 @@
     .feature-icon {
         width: 80px;
         height: 80px;
-        background: var(--light-bg);
+        background: var(--primary-blue);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 1.5rem;
-        color: var(--primary-blue);
+        color: white;
         font-size: 2rem;
         transition: all 0.3s ease;
     }
 
     .feature-card:hover .feature-icon {
-        background: var(--primary-blue);
-        color: white;
+        background: white;
+        color: var(--accent-color);
         transform: rotate(360deg);
     }
 
@@ -211,6 +211,61 @@
             font-size: 1rem;
         }
     }
+
+    /* Dark Mode Overrides for Index Page */
+    body.dark-mode {
+        background-color: #101010; /* Fundo principal */
+        color: #F5F5F5; /* Texto primário */
+    }
+
+    body.dark-mode .navbar {
+        background-color: #121212 !important; /* Navbar */
+    }
+
+    body.dark-mode .hero-section {
+        background: #101010; /* Seção Hero */
+    }
+
+    body.dark-mode .section-title {
+        color: #F5F5F5;
+    }
+
+    body.dark-mode .feature-card {
+        background: #181818; /* Cards de Recursos */
+        border-color: #232323; /* Bordas */
+        box-shadow: 0 2px 8px rgba(0,0,0,0.75);
+    }
+
+    body.dark-mode .feature-card h4 {
+        color: #F5F5F5;
+    }
+
+    body.dark-mode .feature-card p {
+        color: #BDBDBD; /* Texto secundário */
+    }
+
+    body.dark-mode .feature-icon {
+        background: #101010;
+        color: #0066cc; /* Novo azul */  
+    }
+
+    body.dark-mode .feature-card:hover .feature-icon {
+        background: #0066cc;
+        color: #101010;
+    }
+
+    body.dark-mode footer {
+        background: #090909; /* Rodapé */
+    }
+
+    body.dark-mode .footer-links a {
+        color: rgba(245, 245, 245, 0.8);
+    }
+
+    body.dark-mode .footer-links a:hover {
+        color: var(--accent-color);
+    }
+
 </style>
 {% endblock %}
 
