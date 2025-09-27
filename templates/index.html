@@ -112,47 +112,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        position: relative; /* Essencial para o divisor funcionar */
-    }
-
-    /* Formas de fundo animadas para a seção Hero */
-    .hero-section::before, .hero-section::after {
-        content: '';
-        position: absolute;
-        border-radius: 50%;
-        filter: blur(60px);
-        opacity: 0.5; /* Aumentado para maior visibilidade no modo claro */
-        z-index: 0;
-    }
-
-    .hero-section::before {
-        width: 300px;
-        height: 300px;
-        background-color: var(--secondary-blue);
-        top: 10%;
-        left: 15%;
-        animation: float 10s infinite alternate;
-    }
-
-    .hero-section::after {
-        width: 250px;
-        height: 250px;
-        background-color: var(--accent-color);
-        bottom: 10%;
-        right: 15%;
-        animation: float 12s infinite alternate;
-    }
-
-    .hero-content {
-        position: relative; /* Garante que o conteúdo fique sobre as formas */
-        z-index: 1;
-    }
-
-    @keyframes float {
-        0% { transform: translateY(0px) translateX(0px); }
-        100% { transform: translateY(30px) translateX(-20px); }
-    }
-
+    }    
+    
     .hero-title {
         font-size: 3rem;
         font-weight: 700;
