@@ -5,22 +5,38 @@
 {% block styles %}
 <style>
     :root {
-        --primary-blue: #0066cc;
-        --secondary-blue: #4FC3F7;
-        --dark-blue: #003366;
-        --light-bg: #f8faff;
-        --accent-color: #00FF8B; /* Verde Neon */
+    --primary-blue: #0066cc;
+    --secondary-blue: #4FC3F7;
+    --dark-blue: #003366;
+    --light-bg: #f8faff;
+    --text-color: #333;
+    --accent-color: #00E0C6; /* Ciano vibrante - mais moderno */
+    --white: #ffffff;
+    --dark-bg: #121212; /* Fundo principal do Dark Mode */
+    --dark-surface: #1E1E1E; /* Cor de superfície (cards) do Dark Mode */
     }
 
     body {
         font-family: 'Poppins', sans-serif;
         background-color: var(--light-bg);
+        color: var(--text-color); /* Cor padrão do texto */
+        line-height: 1.6; /* Melhora a legibilidade */
     }
 
     .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1030;
+        background-color: transparent !important;
+        transition: background-color 0.4s ease, padding 0.4s ease;
+    }
+
+    .navbar.navbar-scrolled {
         background-color: rgba(0, 51, 102, 0.95) !important;
         backdrop-filter: blur(10px);
-        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
 
     .navbar-brand {
@@ -92,6 +108,49 @@
         position: relative;
         overflow: hidden;
         text-align: center;
+        min-height: 100vh; /* Ocupa a tela inteira */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative; /* Essencial para o divisor funcionar */
+    }
+
+    /* Formas de fundo animadas para a seção Hero */
+    .hero-section::before, .hero-section::after {
+        content: '';
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(60px);
+        opacity: 0.5; /* Aumentado para maior visibilidade no modo claro */
+        z-index: 0;
+    }
+
+    .hero-section::before {
+        width: 300px;
+        height: 300px;
+        background-color: var(--secondary-blue);
+        top: 10%;
+        left: 15%;
+        animation: float 10s infinite alternate;
+    }
+
+    .hero-section::after {
+        width: 250px;
+        height: 250px;
+        background-color: var(--accent-color);
+        bottom: 10%;
+        right: 15%;
+        animation: float 12s infinite alternate;
+    }
+
+    .hero-content {
+        position: relative; /* Garante que o conteúdo fique sobre as formas */
+        z-index: 1;
+    }
+
+    @keyframes float {
+        0% { transform: translateY(0px) translateX(0px); }
+        100% { transform: translateY(30px) translateX(-20px); }
     }
 
     .hero-title {
@@ -106,6 +165,61 @@
         font-weight: 300;
         margin-bottom: 2rem;
         opacity: 0.9;
+    }
+
+    .btn-primary {
+        background-color: var(--primary-blue);
+        border-color: var(--primary-blue);
+        color: white;
+        padding: 12px 30px;
+        font-weight: 600;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--accent-color);
+        border-color: var(--accent-color);
+        color: #003366;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-outline-light {
+        padding: 12px 30px;
+        font-weight: 600;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+        border-width: 2px;
+    }
+
+    .btn-outline-light:hover {
+        background-color: white;
+        color: var(--primary-blue);
+    }
+
+    .hero-buttons a {
+        margin: 0 10px;
+    }
+
+    .shape-divider {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        overflow: hidden;
+        line-height: 0;
+    }
+
+    .shape-divider svg {
+        position: relative;
+        display: block;
+        width: calc(100% + 1.3px);
+        height: 80px;
+    }
+
+    .shape-divider .shape-fill {
+        fill: var(--light-bg);
     }
 
     .section-title {
@@ -130,18 +244,18 @@
     }
 
     .feature-card {
-        background: white;
+        background-color: #ffffff;
+        border: 1px solid #e9ecef;
+        transition: all 0.4s ease-in-out;
         border-radius: 20px;
         padding: 2.5rem;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-        transition: all 0.3s ease;
         height: 100%;
-        border: 1px solid rgba(0,0,0,0.05);
     }
 
     .feature-card:hover {
         transform: translateY(-10px);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        border-color: var(--accent-color);
+        box-shadow: 0 20px 40px rgba(0, 51, 102, 0.1), 0 0 30px rgba(0, 224, 198, 0.3);
     }
 
     .feature-icon {
@@ -159,15 +273,15 @@
     }
 
     .feature-card:hover .feature-icon {
-        background: white;
-        color: var(--accent-color);
-        transform: rotate(360deg);
+        transform: scale(1.1);
+        background-color: var(--accent-color);
+        color: var(--dark-blue);
     }
 
     footer {
         background: var(--dark-blue);
-        color: white;
-        padding: 4rem 0 2rem;
+        color: rgba(255, 255, 255, 0.8);
+        padding: 5rem 0 2rem;
     }
 
     .footer-content {
@@ -178,9 +292,11 @@
     }
 
     .footer-section h5 {
+        color: var(--accent-color);
         font-weight: 600;
         margin-bottom: 1.5rem;
-        color: var(--accent-color);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
     .footer-links {
@@ -192,15 +308,50 @@
         margin-bottom: 0.8rem;
     }
 
-    .footer-links a {
-        color: rgba(255,255,255,0.8);
+    .footer-links li a {
+        color: rgba(255, 255, 255, 0.8);
         text-decoration: none;
-        transition: all 0.3s ease;
+        position: relative;
+        padding-bottom: 5px;
+        transition: color 0.3s ease;
     }
 
-    .footer-links a:hover {
+    .footer-links li a::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background-color: var(--accent-color);
+        transition: width 0.4s ease;
+    }
+
+    .footer-links li a:hover {
+        color: #ffffff;
+    }
+
+    .footer-links li a:hover::after {
+        width: 100%;
+    }
+
+    .contact-info a {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .contact-info a:hover {
         color: var(--accent-color);
-        padding-left: 5px;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+        padding-top: 2rem;
+        margin-top: 3rem;
+        text-align: center;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.6);
     }
 
     @media (max-width: 768px) {
@@ -218,12 +369,20 @@
         color: #F5F5F5; /* Texto primário */
     }
 
-    body.dark-mode .navbar {
-        background-color: #121212 !important; /* Navbar */
+    body.dark-mode .navbar.navbar-scrolled {
+        background-color: rgba(18, 18, 18, 0.9) !important;
     }
 
     body.dark-mode .hero-section {
         background: #101010; /* Seção Hero */
+    }
+
+    body.dark-mode #recursos {
+        background-color: #181818;
+    }
+
+    body.dark-mode .shape-divider .shape-fill {
+        fill: #181818;
     }
 
     body.dark-mode .section-title {
@@ -278,6 +437,15 @@
         <div class="container hero-content" data-aos="fade-up">
             <h1 class="hero-title">Sensorium</h1>
             <p class="hero-subtitle">Plataforma inovadora para monitoramento inteligente através sensores.</p>
+            <div class="hero-buttons mt-4">
+                <a href="sobre.html" class="btn btn-primary btn-lg">Saiba Mais</a>
+                <a href="cadastro.html" class="btn btn-outline-light btn-lg">Comece Agora</a>
+            </div>
+        </div>
+        <div class="shape-divider">
+            <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M0,100 Q600,0 1200,100 L1200,120 L0,120 Z" class="shape-fill"></path>
+            </svg>
         </div>
     </section>
 
@@ -318,7 +486,14 @@
 {% block scripts %}
 <script>
     window.addEventListener('scroll', function() {
-        document.querySelector('.navbar').style.padding = window.scrollY > 50 ? '0.5rem 0' : '1rem 0';
+        const navbar = document.querySelector('.navbar');
+        if (window.scrollY > 50) {
+            navbar.classList.add('navbar-scrolled');
+            navbar.style.padding = '0.5rem 0';
+        } else {
+            navbar.classList.remove('navbar-scrolled');
+            navbar.style.padding = '1rem 0';
+        }
     });
 
     // Funcionalidade de login para o index.html
