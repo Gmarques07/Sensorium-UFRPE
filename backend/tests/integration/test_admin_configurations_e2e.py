@@ -1,148 +1,85 @@
-import os
-import requests
 import pytest
-from typing import Dict, Any
+from fastapi.testclient import TestClient
+from typing import Dict, Generator
 import uuid
 
-def _base_url() -> str:
-    return os.getenv("API_BASE_URL", "http://localhost:8001")
-
-def _get_admin_token(email: str = "admin@example.com", password: str = "admin_password") -> str:
+@pytest.fixture(scope="function")
+def test_config(client: TestClient, admin_auth_headers: Dict[str, str]) -> Generator[Dict, None, None]:
     """
-    Helper function to get an admin token.
-    Note: This assumes there's already an admin user in the database.
-    For a complete test, you might want to create the admin user first.
+    Fixture para criar uma configuração de teste e limpá-la após o uso.
     """
-    base = _base_url()
-    r = requests.post(
-        f"{base}/api/v1/admin/login",
-        data={"username": email, "password": password},
-        timeout=10,
-    )
-    if r.status_code == 200:
-        return r.json()["access_token"]
-    return None
+    test_key = f"test_key_{uuid.uuid4().hex[:8]}"
+    config_data = {
+        "chave": test_key,
+        "valor": "initial_value",
+        "descricao": "A test configuration"
+    }
+    
+    # Criar a configuração
+    r = client.post("/api/v1/admin/configuracoes", headers=admin_auth_headers, json=config_data)
+    assert r.status_code in [200, 201]
+    
+    created_config = r.json()
+    yield created_config  # Fornece a configuração criada para o teste
+    
+    # Limpeza: Deleta a configuração após a conclusão do teste
+    client.delete(f"/api/v1/admin/configuracoes/{test_key}", headers=admin_auth_headers)
 
-def _auth_admin_headers(token: str) -> Dict[str, str]:
-    """Helper function to create authorization headers for admin requests"""
-    return {"Authorization": f"Bearer {token}"} if token else {}
 
 @pytest.mark.integration
-def test_admin_configurations_crud():
-    """Test admin configuration endpoints (CRUD operations)"""
-    base = _base_url()
+def test_list_configurations(client: TestClient, admin_auth_headers: Dict[str, str], test_config: Dict):
+    """
+    Testa a listagem de configurações de administrador.
+    """
+    r = client.get("/api/v1/admin/configuracoes", headers=admin_auth_headers)
+    assert r.status_code == 200
     
-    # First, try to get an admin token
-    token = _get_admin_token()
+    response_data = r.json()
+    assert isinstance(response_data, list)
     
-    if token:
-        headers = _auth_admin_headers(token)
-        
-        # Generate a unique key for testing
-        test_key = f"test_config_key_{uuid.uuid4().hex[:8]}"
-        
-        # Test list configurations
-        r = requests.get(
-            f"{base}/api/v1/admin/configuracoes",
-            headers=headers,
-            timeout=10,
-        )
-        assert r.status_code == 200
-        
-        # Test create configuration
-        config_data = {
-            "chave": test_key,
-            "valor": "test_config_value",
-            "descricao": "Test configuration for integration tests"
-        }
-        
-        r = requests.post(
-            f"{base}/api/v1/admin/configuracoes",
-            headers=headers,
-            json=config_data,
-            timeout=10,
-        )
-        # Should be 200 (created) or 409 (already exists)
-        assert r.status_code in [200, 409]
-        
-        # If created successfully, test update and delete
-        if r.status_code == 200:
-            created_config = r.json()
-            assert created_config["chave"] == test_key
-            
-            # Test update configuration
-            update_data = {
-                "valor": "updated_test_config_value",
-                "descricao": "Updated test configuration"
-            }
-            
-            r = requests.put(
-                f"{base}/api/v1/admin/configuracoes/{test_key}",
-                headers=headers,
-                json=update_data,
-                timeout=10,
-            )
-            # Should be 200 (updated) or 404 (not found)
-            assert r.status_code in [200, 404]
-            
-            if r.status_code == 200:
-                updated_config = r.json()
-                assert updated_config["valor"] == "updated_test_config_value"
-                assert updated_config["descricao"] == "Updated test configuration"
-            
-            # Test delete configuration
-            r = requests.delete(
-                f"{base}/api/v1/admin/configuracoes/{test_key}",
-                headers=headers,
-                timeout=10,
-            )
-            # Should be 204 (deleted) or 404 (not found)
-            assert r.status_code in [204, 404]
-    else:
-        # If we can't get a token, just test that the endpoints exist
-        # Test list configurations endpoint
-        r = requests.get(
-            f"{base}/api/v1/admin/configuracoes",
-            timeout=10,
-        )
-        assert r.status_code in [200, 401, 403, 500]
-        
-        # Test create configuration endpoint
-        r = requests.post(
-            f"{base}/api/v1/admin/configuracoes",
-            timeout=10,
-        )
-        assert r.status_code in [422, 401, 403, 500]  # 422 for validation error
+    # Verifica se a configuração de teste está na lista
+    assert any(c["chave"] == test_config["chave"] for c in response_data)
+
 
 @pytest.mark.integration
-def test_admin_configurations_endpoints_exist():
-    """Test that admin configuration endpoints exist and respond"""
-    base = _base_url()
+def test_update_configuration(client: TestClient, admin_auth_headers: Dict[str, str], test_config: Dict):
+    """
+    Testa a atualização de uma configuração de administrador.
+    """
+    update_data = {
+        "valor": "updated_value",
+        "descricao": "Updated description"
+    }
     
-    # Test list configurations endpoint
-    r = requests.get(
-        f"{base}/api/v1/admin/configuracoes",
-        timeout=10,
+    r = client.put(
+        f"/api/v1/admin/configuracoes/{test_config['chave']}",
+        headers=admin_auth_headers,
+        json=update_data
     )
-    assert r.status_code in [200, 401, 403, 500]
+    assert r.status_code == 200
     
-    # Test create configuration endpoint
-    r = requests.post(
-        f"{base}/api/v1/admin/configuracoes",
-        timeout=10,
-    )
-    assert r.status_code in [422, 401, 403, 500]  # 422 for validation error
+    updated_config = r.json()
+    assert updated_config["valor"] == update_data["valor"]
+    assert updated_config["descricao"] == update_data["descricao"]
+
+
+@pytest.mark.integration
+def test_delete_configuration(client: TestClient, admin_auth_headers: Dict[str, str]):
+    """
+    Testa a exclusão de uma configuração de administrador.
+    """
+    # Cria uma configuração específica para ser deletada neste teste
+    test_key = f"delete_test_key_{uuid.uuid4().hex[:8]}"
+    config_data = {"chave": test_key, "valor": "to_be_deleted", "descricao": "Test delete"}
     
-    # Test update configuration endpoint (with a non-existent key)
-    r = requests.put(
-        f"{base}/api/v1/admin/configuracoes/non_existent_key",
-        timeout=10,
-    )
-    assert r.status_code in [422, 401, 403, 500]  # 422 for validation error
+    r_create = client.post("/api/v1/admin/configuracoes", headers=admin_auth_headers, json=config_data)
+    assert r_create.status_code in [200, 201]
     
-    # Test delete configuration endpoint (with a non-existent key)
-    r = requests.delete(
-        f"{base}/api/v1/admin/configuracoes/non_existent_key",
-        timeout=10,
-    )
-    assert r.status_code in [204, 401, 403, 500]  # 204 for successful deletion (even if not found)
+    # Deleta a configuração
+    r_delete = client.delete(f"/api/v1/admin/configuracoes/{test_key}", headers=admin_auth_headers)
+    assert r_delete.status_code == 204  # No Content
+    
+    # Verifica se o item foi realmente removido
+    r_list = client.get("/api/v1/admin/configuracoes", headers=admin_auth_headers)
+    assert r_list.status_code == 200
+    assert not any(c["chave"] == test_key for c in r_list.json())

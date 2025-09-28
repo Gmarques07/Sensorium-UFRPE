@@ -1,87 +1,50 @@
-import os
-import requests
 import pytest
-
-def _base_url() -> str:
-    return os.getenv("API_BASE_URL", "http://localhost:8001")
-
-def _register_and_login(email: str = None) -> str:
-    base = _base_url()
-    # Generate a unique email for each test run to avoid UNIQUE constraint issues
-    if email is None:
-        import uuid
-        email = f"int_user_{uuid.uuid4().hex[:8]}@example.com"
-    
-    # Try to register (may fail if user already exists, which is fine)
-    requests.post(
-        f"{base}/api/v1/auth/registro",
-        json={
-            "nome": "User Int",
-            "email": email,
-            "endereco": "Rua Int, 123",
-            "senha": "senha_int_123",
-        },
-        timeout=10,
-    )
-    
-    # Try to login
-    r = requests.post(
-        f"{base}/api/v1/auth/login",
-        json={"email": email, "senha": "senha_int_123"},
-        timeout=10,
-    )
-    # Handle rate limiting by returning None if we get 429
-    if r.status_code == 429:
-        return None
-    r.raise_for_status()
-    return r.json()["access_token"]
+from fastapi.testclient import TestClient
+from typing import Dict
+from backend.app.models.usuario import Usuario
 
 @pytest.mark.integration
-def test_usuario_perfil_edicao_validacao_exclusao():
-    base = _base_url()
-    token = _register_and_login()
-    
-    # If we got rate limited, skip the test
-    if token is None:
-        pytest.skip("Rate limited - skipping test")
-        return
-        
-    headers = {"Authorization": f"Bearer {token}"}
-
-    # Perfil
-    r = requests.get(f"{base}/api/v1/usuarios/perfil", headers=headers, timeout=10)
+def test_get_user_profile(client: TestClient, user_auth_headers: Dict[str, str], test_user: Usuario):
+    """Testa a obtenção do perfil do usuário logado."""
+    r = client.get("/api/v1/usuarios/perfil", headers=user_auth_headers)
     assert r.status_code == 200
-    perfil = r.json()
-    # We can't assert the exact email since it's generated uniquely each time
+    profile_data = r.json()
+    assert profile_data["email"] == test_user.email
+    assert profile_data["nome"] == test_user.nome
 
-    # Editar perfil
-    r = requests.put(
-        f"{base}/api/v1/usuarios/editar-perfil",
-        headers=headers,
-        json={"nome": "User Int Editado", "endereco": "Rua Nova, 456"},
-        timeout=10,
-    )
+@pytest.mark.integration
+def test_edit_user_profile(client: TestClient, user_auth_headers: Dict[str, str]):
+    """Testa a edição do perfil do usuário."""
+    update_data = {"nome": "Nome Editado", "endereco": "Endereco Editado"}
+    r = client.put("/api/v1/usuarios/editar-perfil", headers=user_auth_headers, json=update_data)
     assert r.status_code == 200
-    perfil_edit = r.json()
-    assert perfil_edit["nome"] == "User Int Editado"
-    assert perfil_edit["endereco"] == "Rua Nova, 456"
+    updated_profile = r.json()
+    assert updated_profile["nome"] == update_data["nome"]
+    assert updated_profile["endereco"] == update_data["endereco"]
 
-    # Validar senha correta
-    r = requests.post(
-        f"{base}/api/v1/usuarios/validar-senha",
-        headers=headers,
-        params={"senha": "senha_int_123"},
-        timeout=10,
-    )
+@pytest.mark.integration
+def test_validate_correct_password(client: TestClient, user_auth_headers: Dict[str, str]):
+    """Testa a validação de uma senha correta."""
+    r = client.post("/api/v1/usuarios/validar-senha", headers=user_auth_headers, params={"senha": "testpassword"})
     assert r.status_code == 200
-    assert r.json().get("valid") is True
+    assert r.json()["valid"] is True
 
-    # Excluir conta (soft delete)
-    r = requests.delete(
-        f"{base}/api/v1/usuarios/excluir-conta",
-        headers=headers,
-        params={"senha": "senha_int_123"},
-        timeout=10,
-    )
+@pytest.mark.integration
+def test_validate_incorrect_password(client: TestClient, user_auth_headers: Dict[str, str]):
+    """Testa a validação de uma senha incorreta."""
+    r = client.post("/api/v1/usuarios/validar-senha", headers=user_auth_headers, params={"senha": "wrongpassword"})
+    assert r.status_code == 400
+    assert r.json()["detail"] == "Senha incorreta"
+
+@pytest.mark.integration
+def test_delete_account(client: TestClient, user_auth_headers: Dict[str, str], test_user: Usuario):
+    """Testa a exclusão (soft delete) da conta do usuário."""
+    # Este teste deleta o usuário criado pela fixture `test_user`.
+    # Como o banco de dados é limpo a cada teste, esta operação é segura.
+    r = client.delete("/api/v1/usuarios/excluir-conta", headers=user_auth_headers, params={"senha": "testpassword"})
     assert r.status_code == 204
 
+    # Verifica que o usuário não consegue mais fazer login
+    login_data = {"email": test_user.email, "senha": "testpassword"}
+    r_login = client.post("/api/v1/auth/login", json=login_data)
+    assert r_login.status_code == 401  # Unauthorized
