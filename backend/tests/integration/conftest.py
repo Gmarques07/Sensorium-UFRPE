@@ -15,12 +15,11 @@ from backend.app.models.admin import Admin
 from backend.app.core.security import get_password_hash
 from backend.app.core.config import settings
 
-# Banco SQLite em memória compartilhado entre conexões para testes de integração
-SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
+# Banco MySQL real para testes de integração E2E
+SQLALCHEMY_DATABASE_URL = "mysql+mysqlconnector://root:rootpassword@mysql:3306/sensorium_test_db"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False},
     poolclass=StaticPool,
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

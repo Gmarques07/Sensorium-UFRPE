@@ -7,11 +7,11 @@ def test_criar_token(client: TestClient, usuario_normal):
     assert token is not None
     assert len(token) > 0
 
-def test_login_sucesso(client: TestClient):
+def test_login_sucesso(client: TestClient, usuario_normal):
     response = client.post(
         f"{settings.API_V1_STR}/auth/login",
         json={
-            "email": "teste@example.com",
+            "email": usuario_normal["email"],
             "senha": "senha123"
         }
     )
@@ -19,11 +19,11 @@ def test_login_sucesso(client: TestClient):
     token = response.json()["access_token"]
     assert token is not None
 
-def test_login_invalido(client: TestClient):
+def test_login_invalido(client: TestClient, usuario_normal):
     response = client.post(
         f"{settings.API_V1_STR}/auth/login",
         json={
-            "email": "teste@example.com",
+            "email": usuario_normal["email"],
             "senha": "senha_errada"
         }
     )

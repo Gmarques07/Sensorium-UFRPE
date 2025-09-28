@@ -34,19 +34,25 @@ def test_notificacoes_fluxo_completo(client: TestClient, db: Session):
     assert response.status_code == 200
     assert response.json() == []
 
-    # 4. Inserir manualmente uma notificação no banco de dados para este usuário
+    # 4. Criar um local primeiro
+    from backend.app.models.local import Local
+    local = Local(nome="Cisterna Teste", tipo="CISTERNA", descricao="Local para teste de notificações")
+    db.add(local)
+    db.flush()  # Flush para obter o ID sem commit
+    
+    # 5. Inserir manualmente uma notificação no banco de dados para este usuário
     nova_notificacao = Notificacao(
         mensagem="Alerta de teste: O pH da sua cisterna está muito baixo!",
         email_usuario=user_email,
         tipo="PH_ALTERADO",
-        local_id=1  # Assumindo que um local com id=1 existe ou é criado em outro lugar
+        local_id=local.id
     )
     db.add(nova_notificacao)
     db.commit()
     db.refresh(nova_notificacao)
     notificacao_id = nova_notificacao.id
 
-    # 5. Listar notificações e verificar se a nova notificação está lá
+    # 6. Listar notificações e verificar se a nova notificação está lá
     response = client.get("/api/v1/notificacoes/", headers=headers)
     assert response.status_code == 200
     data = response.json()
@@ -55,19 +61,19 @@ def test_notificacoes_fluxo_completo(client: TestClient, db: Session):
     assert data[0]["mensagem"] == "Alerta de teste: O pH da sua cisterna está muito baixo!"
     assert not data[0]["lida"]
 
-    # 6. Verificar se a notificação aparece como não lida
+    # 7. Verificar se a notificação aparece como não lida
     response = client.get("/api/v1/notificacoes/nao-lidas", headers=headers)
     assert response.status_code == 200
     data_nao_lida = response.json()
     assert len(data_nao_lida) == 1
     assert data_nao_lida[0]["id"] == notificacao_id
 
-    # 7. Marcar a notificação como lida
+    # 8. Marcar a notificação como lida
     response = client.post(f"/api/v1/notificacoes/{notificacao_id}/marcar-como-lida", headers=headers)
     assert response.status_code == 200
     assert response.json()["lida"]
 
-    # 8. Verificar se a notificação não está mais na lista de não lidas
+    # 9. Verificar se a notificação não está mais na lista de não lidas
     response = client.get("/api/v1/notificacoes/nao-lidas", headers=headers)
     assert response.status_code == 200
     assert response.json() == []

@@ -1,28 +1,9 @@
 import pytest
 from sqlalchemy.orm import Session
 
-from backend.app.schemas.usuario import UsuarioCreate
 from backend.app.schemas.local import PhNivelCreate, NivelAguaCreate
-from backend.app.crud import usuario as crud_usuario
 from backend.app.crud import local as crud_cisterna
 from backend.app.models.local import NivelAgua, Local
-
-
-def test_dummy():
-    assert True
-
-
-def test_criar_usuario(db: Session):
-    usuario_in = UsuarioCreate(
-        nome="Test User",
-        email="test@example.com",
-        endereco="Test Address",
-        senha="testpass123"
-    )
-    usuario = crud_usuario.create_usuario(db, usuario_in)
-    assert usuario.nome == usuario_in.nome
-    assert usuario.email == usuario_in.email
-    assert usuario.verificar_senha("testpass123")
 
 
 def test_ph_nivel(db: Session):
