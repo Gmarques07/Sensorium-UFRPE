@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 8.0.42, for Win64 (x86_64)
 --
--- Host: 127.0.0.1    Database: banco_de_dados
+-- Host: 127.0.0.1    Database: sensorium_db
 -- ------------------------------------------------------
 -- Server version	9.1.0
 
@@ -16,31 +16,31 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `niveis_agua`
+-- Table structure for table `configuracoes`
 --
 
-DROP TABLE IF EXISTS `niveis_agua`;
+DROP TABLE IF EXISTS `configuracoes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `niveis_agua` (
+CREATE TABLE `configuracoes` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `local_id` int NOT NULL,
-  `boia` int NOT NULL,
-  `status` varchar(10) NOT NULL,
-  `data` datetime NOT NULL DEFAULT (now()),
+  `chave` varchar(50) NOT NULL,
+  `valor` text NOT NULL,
+  `descricao` text,
+  `data_atualizacao` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `local_id` (`local_id`),
-  KEY `ix_niveis_agua_id` (`id`)
+  UNIQUE KEY `ix_configuracoes_chave` (`chave`),
+  KEY `ix_configuracoes_id` (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `niveis_agua`
+-- Dumping data for table `configuracoes`
 --
 
-LOCK TABLES `niveis_agua` WRITE;
-/*!40000 ALTER TABLE `niveis_agua` DISABLE KEYS */;
-/*!40000 ALTER TABLE `niveis_agua` ENABLE KEYS */;
+LOCK TABLES `configuracoes` WRITE;
+/*!40000 ALTER TABLE `configuracoes` DISABLE KEYS */;
+/*!40000 ALTER TABLE `configuracoes` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

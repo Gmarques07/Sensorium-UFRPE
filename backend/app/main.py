@@ -23,8 +23,15 @@ app = FastAPI(
 
 # Health check endpoint
 @app.get("/health")
-async def health():
-    return {"status": "ok"}
+async def health(db: Session = Depends(get_db)):
+    try:
+        # Testa conexão com banco
+        from sqlalchemy import text
+        db.execute(text("SELECT 1"))
+        return {"status": "ok", "database": "connected"}
+    except Exception as e:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=503, detail="Database not available")
 
 print("Health endpoint registered")
 

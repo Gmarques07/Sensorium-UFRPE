@@ -28,26 +28,12 @@ services:
       - "8001:8001"
     command: >
       sh -c "
-        echo 'Inicializando banco de dados...' &&
-        python backend/scripts/init_db.py &&
-        echo 'Rodando testes de unidade e integração com banco de dados isolado...' &&
-        ENVIRONMENT=test pytest backend/tests/ --ignore-glob='backend/tests/integration/test_*_e2e.py' -v &&
-        echo 'Iniciando aplicação para os testes E2E...' &&
-        timeout 180s uvicorn backend.app.main:app --host 0.0.0.0 --port 8003 --log-level info &
-        APP_PID=$! &&
-        sleep 15 &&
-        echo 'Aguardando a aplicação ficar pronta...' &&
-        until curl -f http://localhost:8003/health > /dev/null 2>&1; do echo 'Aguardando o backend...'; sleep 5; done &&
-        echo 'Aguardando mais 10 segundos para garantir que o servidor esteja completamente inicializado...' &&
-        sleep 10 &&
-        echo 'Rodando testes E2E (end-to-end)...' &&
-        ENVIRONMENT=test API_BASE_URL=http://localhost:8003 pytest backend/tests/integration/test_*_e2e.py &&
-        echo 'Rodando testes de cobertura...' &&
-        ENVIRONMENT=test pytest --cov=backend/app --cov-report=term-missing backend/tests/ &&
-        echo 'Parando a aplicação após os testes E2E...' &&
-        kill -TERM $APP_PID 2>/dev/null || true &&
-        sleep 2 &&
-        echo 'Todos os testes passaram. Iniciando aplicação...' &&
+        set -e
+        echo 'Inicializando banco de dados...'
+        python backend/scripts/init_db.py
+        echo 'Rodando todos os testes...'
+        ENVIRONMENT=test pytest backend/tests/ -v --tb=short --cov=backend/app --cov-report=term-missing
+        echo 'Testes concluídos com sucesso. Iniciando aplicação...'
         uvicorn backend.app.main:app --host 0.0.0.0 --port 8001
       "
 
@@ -59,6 +45,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: sensorium_db
+      MYSQL_DATABASE_TEST: sensorium_test_db
     ports:
       - "3306:3306"
     volumes:

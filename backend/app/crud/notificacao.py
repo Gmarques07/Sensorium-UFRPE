@@ -1,6 +1,6 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
-from datetime import datetime
+from datetime import datetime, timezone
 from ..models.notificacao import Notificacao, NotificacaoAdmin
 from ..schemas.notificacao import NotificacaoCreate, NotificacaoUpdate
 
@@ -44,11 +44,11 @@ def update_notificacao(db: Session, notificacao_id: int, notificacao: Notificaca
     if db_notificacao is None:
         return None
     
-    update_data = notificacao.dict(exclude_unset=True)
+    update_data = notificacao.model_dump(exclude_unset=True)
     
     # Se estiver marcando como lida, adiciona a data de leitura
     if update_data.get("lida"):
-        update_data["data_leitura"] = datetime.utcnow()
+        update_data["data_leitura"] = datetime.now(timezone.utc)
     
     for key, value in update_data.items():
         setattr(db_notificacao, key, value)
@@ -94,7 +94,7 @@ def marcar_notificacao_admin_como_lida(db: Session, notificacao_id: int) -> Opti
         return None
     
     db_notificacao.lida = True
-    db_notificacao.data_leitura = datetime.utcnow()
+    db_notificacao.data_leitura = datetime.now(timezone.utc)
     db.commit()
     db.refresh(db_notificacao)
     return db_notificacao

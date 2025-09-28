@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 8.0.42, for Win64 (x86_64)
 --
--- Host: 127.0.0.1    Database: banco_de_dados
+-- Host: 127.0.0.1    Database: sensorium_db
 -- ------------------------------------------------------
 -- Server version	9.1.0
 

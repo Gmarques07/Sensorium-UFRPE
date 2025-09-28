@@ -51,21 +51,21 @@ def client() -> Generator:
 
 @pytest.fixture(scope="function")
 def usuario_normal(db) -> Dict[str, str]:
-    # Evita violação de UNIQUE ao reutilizar email em múltiplos testes
-    existing = db.query(Usuario).filter(Usuario.email == "teste@example.com").first()
-    if existing is None:
-        usuario = Usuario(
-            nome="Usuario Teste",
-            email="teste@example.com",
-            endereco="Rua de Teste, 123",
-            ativo=True,
-        )
-        usuario.set_senha("senha123")
-        db.add(usuario)
-        db.commit()
-        db.refresh(usuario)
-    else:
-        usuario = existing
+    # Cria um usuário único para cada teste usando timestamp
+    import time
+    timestamp = int(time.time() * 1000)
+    email = f"teste{timestamp}@example.com"
+    
+    usuario = Usuario(
+        nome="Usuario Teste",
+        email=email,
+        endereco="Rua de Teste, 123",
+        ativo=True,
+    )
+    usuario.set_senha("senha123")
+    db.add(usuario)
+    db.commit()
+    db.refresh(usuario)
 
     token = create_access_token({"sub": usuario.email})
     return {

@@ -1,13 +1,13 @@
--- MySQL dump 10.13  Distrib 8.0.11, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.42, for Win64 (x86_64)
 --
--- Host: 127.0.0.1    Database: banco_de_dados
+-- Host: 127.0.0.1    Database: sensorium_db
 -- ------------------------------------------------------
--- Server version	8.0.41
+-- Server version	9.1.0
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
- SET NAMES utf8 ;
+/*!50503 SET NAMES utf8 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -16,35 +16,31 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `admins`
+-- Table structure for table `niveis_agua`
 --
 
-DROP TABLE IF EXISTS `admins`;
+DROP TABLE IF EXISTS `niveis_agua`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
- SET character_set_client = utf8mb4 ;
-CREATE TABLE `admins` (
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `niveis_agua` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `cpf` varchar(11) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `nome` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `senha_hash` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `created_at` datetime DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL,
+  `local_id` int NOT NULL,
+  `boia` int NOT NULL,
+  `status` varchar(10) NOT NULL,
+  `data` datetime NOT NULL DEFAULT (now()),
   PRIMARY KEY (`id`),
-  UNIQUE KEY `ix_admins_cpf` (`cpf`),
-  UNIQUE KEY `ix_admins_email` (`email`),
-  KEY `ix_admins_id` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `local_id` (`local_id`),
+  KEY `ix_niveis_agua_id` (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `admins`
+-- Dumping data for table `niveis_agua`
 --
 
-LOCK TABLES `admins` WRITE;
-/*!40000 ALTER TABLE `admins` DISABLE KEYS */;
-INSERT INTO `admins` VALUES (1,'12345678901','admin','admin@hotmail.com','$2b$12$gn4KFXjBs29L6QwK1UXDpu/jcbKGUBsfDrpn4IA.G7vtfZhBqLTOq','2025-09-05 20:35:34','2025-09-05 20:35:34');
-/*!40000 ALTER TABLE `admins` ENABLE KEYS */;
+LOCK TABLES `niveis_agua` WRITE;
+/*!40000 ALTER TABLE `niveis_agua` DISABLE KEYS */;
+/*!40000 ALTER TABLE `niveis_agua` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -56,4 +52,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-09-05 17:57:38
+-- Dump completed on 2025-09-05 13:01:15
