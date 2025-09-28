@@ -56,7 +56,7 @@ def update_usuario(
     usuario: Usuario,
     usuario_in: UsuarioUpdate
 ) -> Usuario:
-    update_data = usuario_in.dict(exclude_unset=True)
+    update_data = usuario_in.model_dump(exclude_unset=True)
     
     if "senha" in update_data:
         usuario.set_senha(update_data["senha"])

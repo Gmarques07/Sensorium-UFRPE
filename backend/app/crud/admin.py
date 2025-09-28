@@ -14,7 +14,7 @@ def get_all_configuracoes(db: Session, skip: int = 0, limit: int = 100) -> List[
     return db.query(Configuracao).offset(skip).limit(limit).all()
 
 def create_configuracao(db: Session, config: ConfiguracaoCreate) -> Configuracao:
-    db_config = Configuracao(**config.dict())
+    db_config = Configuracao(**config.model_dump())
     db.add(db_config)
     db.commit()
     db.refresh(db_config)
@@ -29,7 +29,7 @@ def update_configuracao(
     if not db_config:
         return None
     
-    update_data = config_in.dict(exclude_unset=True)
+    update_data = config_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_config, field, value)
     
