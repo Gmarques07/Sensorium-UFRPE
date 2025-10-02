@@ -1,7 +1,4 @@
--- Script de limpeza de tabelas legadas (execute com cautela!)
--- Recomenda-se revisar e fazer backup antes de rodar em produção.
 
--- Backups condicionais (cria tabelas de backup se existirem)
 CREATE TABLE IF NOT EXISTS backup_cisternas SELECT * FROM cisternas WHERE 1=0;
 INSERT INTO backup_cisternas SELECT * FROM cisternas;
 
@@ -32,7 +29,7 @@ INSERT INTO backup_niveis_agua_cisterna SELECT * FROM niveis_agua_cisterna;
 CREATE TABLE IF NOT EXISTS backup_ph_niveis_cisterna SELECT * FROM ph_niveis_cisterna WHERE 1=0;
 INSERT INTO backup_ph_niveis_cisterna SELECT * FROM ph_niveis_cisterna;
 
--- Drops (apenas se existirem)
+
 DROP TABLE IF EXISTS cisternas;
 DROP TABLE IF EXISTS comunicados_gerais;
 DROP TABLE IF EXISTS comunicado_pedido;
@@ -46,5 +43,5 @@ DROP TABLE IF EXISTS ph_niveis_cisterna;
 
 -- Observação: tabelas em uso atual (não dropar):
 -- usuarios, admins, configuracoes, locais, ph_niveis, niveis_agua, notificacoes, notificacoes_admin
-
-
+-- leituras, umidade_niveis, boia_niveis, estados_luz
+-- sensores, sensores_locais, sensores_tipos    

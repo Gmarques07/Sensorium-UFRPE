@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 from backend.app.db.base_class import Base
 from backend.app.main import app
 from backend.app.api.deps import get_db as app_get_db
-from backend.app.models import Usuario, PhNivel, NivelAgua, Local, Notificacao, UsuarioSensor
+from backend.app.models import Usuario, Local, Leitura, PhNivel, BoiaNivel, Notificacao, UsuarioSensor
 from backend.app.models.admin import Admin
 from backend.app.core.security import get_password_hash
 from backend.app.core.config import settings

@@ -9,7 +9,7 @@ from backend.app.db.base_class import Base
 from backend.app.main import app
 from backend.app.api.deps import get_db as app_get_db
 from backend.app.core.security import create_access_token
-from backend.app.models import Usuario, PhNivel, NivelAgua, Local
+from backend.app.models import Usuario, Local, Leitura, PhNivel, BoiaNivel
 
 # Banco SQLite em memória compartilhado entre conexões
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
@@ -85,12 +85,24 @@ def dados_cisterna(db) -> Dict[str, int]:
     db.commit()
     db.refresh(local)
 
-    ph = PhNivel(local_id=local.id, ph=7.0)
-    nivel = NivelAgua(local_id=local.id, boia=80, status=NivelAgua.calcular_status(80))
+    leitura_ph = Leitura(local_id=local.id, sensor_tipo='PH')
+    db.add(leitura_ph)
+    db.commit()
+    db.refresh(leitura_ph)
+
+    ph = PhNivel(leitura_id=leitura_ph.id, ph=7.0)
     db.add(ph)
-    db.add(nivel)
     db.commit()
     db.refresh(ph)
+
+    leitura_boia = Leitura(local_id=local.id, sensor_tipo='BOIA')
+    db.add(leitura_boia)
+    db.commit()
+    db.refresh(leitura_boia)
+
+    nivel = BoiaNivel(leitura_id=leitura_boia.id, valor=80, status='ALTO')
+    db.add(nivel)
+    db.commit()
     db.refresh(nivel)
 
-    return {"local_id": local.id, "ph_id": ph.id, "nivel_id": nivel.id}
+    return {"local_id": local.id, "ph_leitura_id": leitura_ph.id, "boia_leitura_id": leitura_boia.id}

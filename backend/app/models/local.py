@@ -12,10 +12,9 @@ class Local(Base):
     data_criacao = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     
     # Relacionamentos
-    leituras_ph = relationship("PhNivel", back_populates="local")
-    leituras_nivel = relationship("NivelAgua", back_populates="local")
     notificacoes = relationship("Notificacao", foreign_keys="[Notificacao.local_id]")
     usuarios_atribuidos = relationship("UsuarioSensor", back_populates="sensor")
+    leituras = relationship("Leitura", back_populates="local")
     
     def to_dict(self):
         return {
@@ -25,54 +24,3 @@ class Local(Base):
             "descricao": self.descricao,
             "data_criacao": self.data_criacao
         }
-
-class PhNivel(Base):
-    __tablename__ = "ph_niveis"
-
-    id = Column(Integer, primary_key=True, index=True)
-    local_id = Column(Integer, ForeignKey("locais.id"), nullable=False)
-    ph = Column(Float, nullable=False)
-    data = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    
-    # Relacionamento
-    local = relationship("Local", back_populates="leituras_ph")
-    
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "local_id": self.local_id,
-            "ph": self.ph,
-            "data": self.data
-        }
-
-class NivelAgua(Base):
-    __tablename__ = "niveis_agua"
-
-    id = Column(Integer, primary_key=True, index=True)
-    local_id = Column(Integer, ForeignKey("locais.id"), nullable=False)
-    boia = Column(Integer, nullable=False)  # Valor em porcentagem (0-100)
-    status = Column(String(10), nullable=False)  # NORMAL, BAIXO, CRITICO
-    data = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    
-    # Relacionamento
-    local = relationship("Local", back_populates="leituras_nivel")
-    
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "local_id": self.local_id,
-            "boia": self.boia,
-            "status": self.status,
-            "data": self.data
-        }
-    
-    @staticmethod
-    def calcular_status(boia: int) -> str:
-        if boia >= 75:
-            return "ALTO"
-        elif boia >= 50:
-            return "NORMAL"
-        elif boia >= 25:
-            return "BAIXO"
-        else:
-            return "CRITICO"

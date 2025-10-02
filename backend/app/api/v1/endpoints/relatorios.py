@@ -4,8 +4,7 @@ from typing import Optional, Dict, List, Tuple
 from datetime import datetime, date
 from collections import defaultdict
 from backend.app.api.deps import get_db, get_current_user
-from backend.app.models.usuario import Usuario
-from backend.app.models.local import Local, PhNivel, NivelAgua
+from backend.app.models import Usuario, Local, Leitura, PhNivel, BoiaNivel
 # from app.utils.email import send_relatorio_por_email
 from backend.app.utils.email_yagmail import send_relatorio_por_email_yagmail as send_relatorio_por_email
 from backend.app.core.config import settings
@@ -40,7 +39,7 @@ def calcular_estatisticas_diarias_ph(dados_ph: List[PhNivel]) -> Dict[str, Dict[
     
     # Agrupar dados por data
     for item in dados_ph:
-        data_str = item.data.strftime("%Y-%m-%d")
+        data_str = item.leitura.data.strftime("%Y-%m-%d")
         estatisticas[data_str].append(item.ph)
     
     # Calcular estatísticas para cada dia
@@ -54,7 +53,7 @@ def calcular_estatisticas_diarias_ph(dados_ph: List[PhNivel]) -> Dict[str, Dict[
     
     return resultado
 
-def calcular_estatisticas_diarias_nivel(dados_nivel: List[NivelAgua]) -> Dict[str, Dict[str, float]]:
+def calcular_estatisticas_diarias_nivel(dados_nivel: List[BoiaNivel]) -> Dict[str, Dict[str, float]]:
     """
     Calcula média, máximo e mínimo diários para dados de nível.
     """
@@ -62,8 +61,8 @@ def calcular_estatisticas_diarias_nivel(dados_nivel: List[NivelAgua]) -> Dict[st
     
     # Agrupar dados por data
     for item in dados_nivel:
-        data_str = item.data.strftime("%Y-%m-%d")
-        estatisticas[data_str].append(item.boia)
+        data_str = item.leitura.data.strftime("%Y-%m-%d")
+        estatisticas[data_str].append(item.valor)
     
     # Calcular estatísticas para cada dia
     resultado = {}
@@ -89,15 +88,15 @@ def obter_dados_relatorio(db: Session, inicio: date, fim: date, dispositivo: Opt
     fim_dt = datetime.combine(fim, datetime.max.time())
     
     # Query base para PhNivel
-    query_ph = db.query(PhNivel).join(Local).filter(
-        PhNivel.data >= inicio_dt,
-        PhNivel.data <= fim_dt
+    query_ph = db.query(PhNivel).join(Leitura).join(Local).filter(
+        Leitura.data >= inicio_dt,
+        Leitura.data <= fim_dt
     )
     
-    # Query base para NivelAgua
-    query_nivel = db.query(NivelAgua).join(Local).filter(
-        NivelAgua.data >= inicio_dt,
-        NivelAgua.data <= fim_dt
+    # Query base para BoiaNivel
+    query_nivel = db.query(BoiaNivel).join(Leitura).join(Local).filter(
+        Leitura.data >= inicio_dt,
+        Leitura.data <= fim_dt
     )
     
     # Filtrar por dispositivo, se especificado
@@ -105,16 +104,16 @@ def obter_dados_relatorio(db: Session, inicio: date, fim: date, dispositivo: Opt
         local = db.query(Local).filter(Local.nome == dispositivo).first()
         if not local:
             raise HTTPException(status_code=404, detail="Dispositivo não encontrado")
-        query_ph = query_ph.filter(PhNivel.local_id == local.id)
-        query_nivel = query_nivel.filter(NivelAgua.local_id == local.id)
+        query_ph = query_ph.filter(Leitura.local_id == local.id)
+        query_nivel = query_nivel.filter(Leitura.local_id == local.id)
     
     # Executar queries
-    dados_ph = query_ph.order_by(PhNivel.data).all()
-    dados_nivel = query_nivel.order_by(NivelAgua.data).all()
+    dados_ph = query_ph.order_by(Leitura.data).all()
+    dados_nivel = query_nivel.order_by(Leitura.data).all()
     
     return dados_ph, dados_nivel
 
-def gerar_relatorio_pdf(inicio: date, fim: date, dispositivo: Optional[str], dados_ph: List[PhNivel], dados_nivel: List[NivelAgua]):
+def gerar_relatorio_pdf(inicio: date, fim: date, dispositivo: Optional[str], dados_ph: List[PhNivel], dados_nivel: List[BoiaNivel]):
     """
     Gera o conteúdo do relatório PDF.
     """
@@ -293,8 +292,8 @@ def gerar_relatorio_pdf(inicio: date, fim: date, dispositivo: Optional[str], dad
         ph_data = [["Data/Hora", "Dispositivo", "pH"]]
         for item in dados_ph:
             ph_data.append([
-                item.data.strftime("%d/%m/%Y %H:%M:%S"),
-                item.local.nome,
+                item.leitura.data.strftime("%d/%m/%Y %H:%M:%S"),
+                item.leitura.local.nome,
                 str(item.ph)
             ])
         
@@ -320,10 +319,10 @@ def gerar_relatorio_pdf(inicio: date, fim: date, dispositivo: Optional[str], dad
         nivel_data = [["Data/Hora", "Dispositivo", "Status", "Boia (%)"]]
         for item in dados_nivel:
             nivel_data.append([
-                item.data.strftime("%d/%m/%Y %H:%M:%S"),
-                item.local.nome,
+                item.leitura.data.strftime("%d/%m/%Y %H:%M:%S"),
+                item.leitura.local.nome,
                 item.status,
-                str(item.boia) if item.boia is not None else "N/A"
+                str(item.valor) if item.valor is not None else "N/A"
             ])
         
         nivel_table = Table(nivel_data, colWidths=[120, 150, 80, 80])
@@ -381,8 +380,8 @@ def exportar_relatorio_csv(
     for item in dados_ph:
         writer.writerow([
             "pH",
-            item.local.nome,
-            item.data.strftime("%Y-%m-%d %H:%M:%S"),
+            item.leitura.local.nome,
+            item.leitura.data.strftime("%Y-%m-%d %H:%M:%S"),
             item.ph,
             ""
         ])
@@ -391,10 +390,10 @@ def exportar_relatorio_csv(
     for item in dados_nivel:
         writer.writerow([
             "Nível",
-            item.local.nome,
-            item.data.strftime("%Y-%m-%d %H:%M:%S"),
+            item.leitura.local.nome,
+            item.leitura.data.strftime("%Y-%m-%d %H:%M:%S"),
             "",
-            f"{item.status} ({item.boia}%)" if item.boia is not None else item.status
+            f"{item.status} ({item.valor}%)" if item.valor is not None else item.status
         ])
     
     # Obter o conteúdo CSV
@@ -417,7 +416,7 @@ def exportar_relatorio_pdf_endpoint(
     current_user: Usuario = Depends(get_current_user)
 ):
     """
-    Exporta os dados do relatório no formato PDF.
+    Exporta os dados do relat฀rio no formato PDF.
     """
     dados_ph, dados_nivel = obter_dados_relatorio(db, inicio, fim, dispositivo)
     
