@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 from backend.app.models.notificacao import Notificacao
+from backend.app.models import Local
 
 # Este teste agora é um teste de integração que usa o TestClient e o banco de dados em memória
 # Isso permite um controle mais refinado sobre o estado do banco de dados para testar o fluxo de notificações
@@ -35,7 +36,6 @@ def test_notificacoes_fluxo_completo(client: TestClient, db: Session):
     assert response.json() == []
 
     # 4. Criar um local primeiro
-    from backend.app.models.local import Local
     local = Local(nome="Cisterna Teste", tipo="CISTERNA", descricao="Local para teste de notificações")
     db.add(local)
     db.flush()  # Flush para obter o ID sem commit

@@ -12,7 +12,7 @@ class Settings(BaseSettings):
 
     # Credenciais do primeiro superusuário (admin)
     FIRST_SUPERUSER: str = os.getenv("FIRST_SUPERUSER", "admin@sensorium.com")
-    FIRST_SUPERUSER_PASSWORD: str = os.getenv("FIRST_SUPERUSER_PASSWORD", "admin_password_123")
+    FIRST_SUPERUSER_PASSWORD: str = os.getenv("FIRST_SUPERUSER_PASSWORD", "admin")
 
     # Configuração de CORS
     BACKEND_CORS_ORIGINS: List[str] = ["*"]  # Permitir todas as origens para desenvolvimento

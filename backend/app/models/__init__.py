@@ -1,10 +1,12 @@
 from .usuario import Usuario
 from .admin import Admin
-from .local import Local, PhNivel, NivelAgua
+from .local import Local
 from .notificacao import Notificacao, NotificacaoAdmin
 from .usuario_sensor import UsuarioSensor
+from .leitura import Leitura, PhNivel, UmidadeNivel, BoiaNivel, EstadoLuz
 
 __all__ = [
-    "Usuario", "Admin", "Local", "PhNivel", "NivelAgua",
-    "Notificacao", "NotificacaoAdmin", "UsuarioSensor"
+    "Usuario", "Admin", "Local",
+    "Notificacao", "NotificacaoAdmin", "UsuarioSensor",
+    "Leitura", "PhNivel", "UmidadeNivel", "BoiaNivel", "EstadoLuz"
 ]
