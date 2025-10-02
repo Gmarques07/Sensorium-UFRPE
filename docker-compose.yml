@@ -30,7 +30,7 @@ services:
       sh -c "
         set -e
         echo 'Aguardando banco de dados...'
-        sleep 30
+        sleep 10
         echo 'Inicializando banco de dados...'
         python backend/scripts/init_db.py
         echo 'Rodando todos os testes...'
