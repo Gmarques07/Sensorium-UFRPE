@@ -7,6 +7,7 @@ from ....api.deps import get_db, get_current_user
 from ....core.security import get_password_hash, verify_password
 from ....models.usuario import Usuario
 from ....core.limiter import rate_limit
+from zoneinfo import ZoneInfo
 
 router = APIRouter()
 
@@ -210,17 +211,17 @@ def obter_dados_dashboard(
     nivel_por_dispositivo = {}
     
     for local in locais_atribuidos:
-        ph_atual, historico_ph, nivel_atual, historico_nivel = crud_local.obter_dados_cisterna(db)
+        ph_atual, historico_ph, nivel_atual, historico_nivel = crud_local.obter_dados_cisterna(db, local_id=local.id)
         
         ph_por_dispositivo[local.nome] = {
             "atual": {
                 "ph": ph_atual.ph if ph_atual else 7.0,
-                "data": ph_atual.data.strftime("%Y-%m-%d %H:%M:%S") if ph_atual else "N/A"
+                "data": ph_atual.leitura.data.astimezone(ZoneInfo("America/Sao_Paulo")).strftime("%Y-%m-%d %H:%M:%S") if ph_atual else "N/A"
             } if ph_atual else None,
             "historico": [
                 {
                     "ph": item.ph,
-                    "data": item.data.strftime("%Y-%m-%d %H:%M:%S")
+                    "data": item.leitura.data.astimezone(ZoneInfo("America/Sao_Paulo")).strftime("%Y-%m-%d %H:%M:%S")
                 } for item in historico_ph
             ]
         }
@@ -228,13 +229,13 @@ def obter_dados_dashboard(
         nivel_por_dispositivo[local.nome] = {
             "atual": {
                 "status": nivel_atual.status if nivel_atual else "NORMAL",
-                "boia": nivel_atual.boia if nivel_atual else 0,
-                "data": nivel_atual.data.strftime("%Y-%m-%d %H:%M:%S") if nivel_atual else "N/A"
+                "valor": nivel_atual.valor if nivel_atual else 0,
+                "data": nivel_atual.leitura.data.astimezone(ZoneInfo("America/Sao_Paulo")).strftime("%Y-%m-%d %H:%M:%S") if nivel_atual else "N/A"
             } if nivel_atual else None,
             "historico": [
                 {
                     "status": item.status,
-                    "data": item.data.strftime("%Y-%m-%d %H:%M:%S")
+                    "data": item.leitura.data.astimezone(ZoneInfo("America/Sao_Paulo")).strftime("%Y-%m-%d %H:%M:%S")
                 } for item in historico_nivel
             ]
         }
