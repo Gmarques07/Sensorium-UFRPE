@@ -11,19 +11,14 @@ from backend.app.api.deps import get_db as app_get_db
 from backend.app.core.security import create_access_token
 from backend.app.models import Usuario, Local, Leitura, PhNivel, BoiaNivel
 
-import os
+# Banco SQLite em memória compartilhado entre conexões
+SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 
-# Usa o banco de dados de teste MySQL fornecido pelo ambiente Docker
-MYSQL_USER = os.getenv("MYSQL_USER", "root")
-MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "rootpassword")
-MYSQL_HOST = os.getenv("MYSQL_HOST", "mysql")
-MYSQL_PORT = os.getenv("MYSQL_PORT", "3306")
-# Importante: Usar o banco de dados de teste, que é definido no docker-compose para o serviço mysql
-MYSQL_DATABASE = os.getenv("MYSQL_DATABASE_TEST", "sensorium_test_db") 
-
-SQLALCHEMY_DATABASE_URL = f"mysql+mysqlconnector://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}?charset=utf8mb4"
-
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 @pytest.fixture(scope="function")
