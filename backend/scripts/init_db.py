@@ -62,6 +62,24 @@ def init_db():
             print("Local padrão criado com sucesso!")
         else:
             print("Pelo menos um local já existe.")
+
+        from backend.app.models.usuario import Usuario
+
+        # Verifica se o usuário padrão existe
+        user = db.query(Usuario).filter(Usuario.email == "teste@hotmail.com").first()
+        if not user:
+            default_user = Usuario(
+                nome="Usuario Teste",
+                email="teste@hotmail.com",
+                endereco="Endereço Padrão",
+                ativo=True,
+            )
+            default_user.set_senha("teste123")
+            db.add(default_user)
+            db.commit()
+            print("Usuário padrão 'teste@hotmail.com' criado com sucesso!")
+        else:
+            print("Usuário padrão 'teste@hotmail.com' já existe.")
             
         db.close()
 
