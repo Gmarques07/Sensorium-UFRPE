@@ -20,6 +20,14 @@ services:
       PYTHONPATH: "/app"
       DISABLE_RATE_LIMITING: "true"
       API_BASE_URL: "http://localhost:8003"
+      
+      # Configurações de Email
+      SMTP_HOST: "smtp.gmail.com"
+      SMTP_PORT: "587"
+      SMTP_USER: "equipesensorium@gmail.com"
+      SMTP_PASSWORD: "hbpl kcxg ndho zwra"
+      EMAILS_FROM_EMAIL: "equipesensorium@gmail.com"
+      EMAILS_FROM_NAME: "Sensorium UFRPE"
     volumes:
       - .:/app
       - ./templates:/app/templates
