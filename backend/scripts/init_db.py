@@ -19,6 +19,11 @@ def init_db():
     Initialize database.
     """
     try:
+        # Criar banco de teste se não existir
+        with engine.connect() as connection:
+            connection.execute(text("CREATE DATABASE IF NOT EXISTS sensorium_test_db"))
+            print("Banco de teste criado/verificado com sucesso!")
+        
         with engine.connect() as connection:
             with connection.begin():
                 # Desabilitar checagem de chave estrangeira
