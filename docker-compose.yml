@@ -20,8 +20,6 @@ services:
       PYTHONPATH: "/app"
       DISABLE_RATE_LIMITING: "true"
       API_BASE_URL: "http://localhost:8003"
-      
-      # Configurações de Email
       SMTP_HOST: "smtp.gmail.com"
       SMTP_PORT: "587"
       SMTP_USER: "equipesensorium@gmail.com"
