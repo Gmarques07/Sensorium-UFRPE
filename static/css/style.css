@@ -49,6 +49,19 @@ body {
     font-size: 1rem;
 }
 
+/* Estilos da navbar */
+nav.navbar .navbar-brand,
+nav.navbar .navbar-brand i.bi-cpu {
+    color: var(--white);
+    transition: color 0.3s ease;
+    text-decoration: none;
+}
+
+nav.navbar .navbar-brand:hover,
+nav.navbar .navbar-brand:hover i.bi-cpu {
+    color: var(--accent-color);
+}
+
 .form-control:focus {
     border-color: var(--accent-color); 
     box-shadow: 0 0 0 4px rgba(0, 224, 198, 0.2); 
@@ -224,4 +237,15 @@ body.dark-mode .alert-danger {
 body.dark-mode .alert-success {
     background-color: rgba(0, 255, 65, 0.1);
     color: #00FF41;
+}
+
+/* Estilos do tema escuro para a navbar */
+body.dark-mode nav.navbar .navbar-brand,
+body.dark-mode nav.navbar .navbar-brand i.bi-cpu {
+    color: var(--white);
+}
+
+body.dark-mode nav.navbar .navbar-brand:hover,
+body.dark-mode nav.navbar .navbar-brand:hover i.bi-cpu {
+    color: var(--accent-color);
 }
