@@ -74,7 +74,7 @@
                                     <th>Nome</th><th>Email</th><th>Endereço</th><th>Ações</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="usuarios-tbody">
                                 {% for usuario in usuarios %}
                                 <tr>
                                     <td><i class="bi bi-person-circle text-primary me-2"></i>{{ usuario.nome }}</td>
@@ -222,6 +222,16 @@
       
       return originalFetch(input, init);
     };
+            // Helper para chamadas à API que injeta o Authorization header
+            function apiFetch(input, init = {}) {
+                init = init || {};
+                init.headers = init.headers || {};
+                // se for Headers ou Request, let fetch normalize; aqui usamos header simples
+                if (accessToken) {
+                    init.headers['Authorization'] = `Bearer ${accessToken}`;
+                }
+                return fetch(input, init);
+            }
     
     // Adicionar funcionalidade de logout
     const logoutButton = document.getElementById('logout-button');
@@ -234,6 +244,212 @@
         window.location.href = '/login_admin.html';
       });
     }
+
+        // Ações: visualizar e excluir usuário
+        // Visualizar usuário: busca detalhes e exibe modal
+        document.querySelectorAll('.btn-visualizar-usuario').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const id = btn.dataset.id;
+                if (!id) return;
+                try {
+                        const res = await apiFetch(`/api/v1/admin/usuarios/${id}`);
+                    if (!res.ok) {
+                        const err = await res.json().catch(()=>({detail:'Erro desconhecido'}));
+                        throw new Error(err.detail || 'Falha ao buscar usuário');
+                    }
+                    const usuario = await res.json();
+
+                    // Criar modal se não existir
+                    if (!document.getElementById('usuarioModal')) {
+                        const modalHtml = `
+                        <div class="modal fade" id="usuarioModal" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="usuarioModalTitle">Usuário</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body" id="usuarioModalBody"></div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                        const wrapper = document.createElement('div');
+                        wrapper.innerHTML = modalHtml;
+                        document.body.appendChild(wrapper.firstElementChild);
+                    }
+
+                    // Preencher modal
+                    document.getElementById('usuarioModalTitle').textContent = usuario.nome || 'Usuário';
+                    const body = document.getElementById('usuarioModalBody');
+                    body.innerHTML = `
+                        <p><strong>Nome:</strong> ${usuario.nome || '-'}</p>
+                        <p><strong>Email:</strong> ${usuario.email || '-'}</p>
+                        <p><strong>Endereço:</strong> ${usuario.endereco || '-'}</p>
+                        <p><strong>Telefone:</strong> ${usuario.telefone || '-'}</p>
+                        <p><strong>Cadastro:</strong> ${usuario.data_criacao || '-'}</p>
+                    `;
+
+                    // Mostrar modal
+                    const bsModal = new bootstrap.Modal(document.getElementById('usuarioModal'));
+                    bsModal.show();
+
+                } catch (error) {
+                    console.error(error);
+                    alert(error.message || 'Erro ao buscar usuário');
+                }
+            });
+        });
+
+            // Funções relacionadas à listagem de usuários e ações (visualizar/excluir)
+        const usuariosTbody = document.getElementById('usuarios-tbody');
+        let usuariosCache = [];
+
+            async function loadUsuarios() {
+                try {
+                    const res = await apiFetch('/api/v1/admin/usuarios');
+                    if (!res.ok) throw new Error('Falha ao carregar usuários');
+                    const list = await res.json();
+                    usuariosCache = list;
+                    // preencher tabela
+                    usuariosTbody.innerHTML = list.map(u => `
+                        <tr>
+                            <td><i class="bi bi-person-circle text-primary me-2"></i>${u.nome || ''}</td>
+                            <td>${u.email || ''}</td>
+                            <td>${u.endereco || ''}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary btn-visualizar-usuario" data-id="${u.id}"><i class="bi bi-eye"></i></button>
+                                <a href="/gerenciar_sensores/${u.id}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
+                                <button class="btn btn-sm btn-danger btn-excluir-usuario" data-id="${u.id}"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                    `).join('');
+                    attachUserHandlers();
+                    // atualizar contagem
+                    const totalElem = document.querySelector('[data-stat="total-usuarios"]');
+                    if (totalElem) totalElem.textContent = list.length;
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
+            function attachUserHandlers() {
+                // visualizar
+                document.querySelectorAll('.btn-visualizar-usuario').forEach(btn => {
+                    btn.removeEventListener('click', () => {});
+                    btn.addEventListener('click', async (e) => {
+                        const id = btn.dataset.id;
+                        if (!id) return;
+                        try {
+                            const res = await apiFetch(`/api/v1/admin/usuarios/${id}`);
+                            let usuario;
+                            if (res.ok) {
+                                usuario = await res.json();
+                            } else if (res.status === 404) {
+                                // fallback: usar dados já carregados na listagem
+                                console.warn('GET /usuarios/{id} retornou 404 — usando cache de listagem');
+                                usuario = usuariosCache.find(u => String(u.id) === String(id));
+                                if (!usuario) throw new Error('Detalhes do usuário não encontrados (404)');
+                            } else {
+                                const err = await res.json().catch(()=>({detail:'Erro desconhecido'}));
+                                throw new Error(err.detail || 'Falha ao buscar usuário');
+                            }
+
+                            // Criar modal se não existir
+                            if (!document.getElementById('usuarioModal')) {
+                                const modalHtml = `
+                                <div class="modal fade" id="usuarioModal" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="usuarioModalTitle">Usuário</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body" id="usuarioModalBody"></div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>`;
+                                const wrapper = document.createElement('div');
+                                wrapper.innerHTML = modalHtml;
+                                document.body.appendChild(wrapper.firstElementChild);
+                            }
+
+                            // Preencher modal
+                            document.getElementById('usuarioModalTitle').textContent = usuario.nome || 'Usuário';
+                            const body = document.getElementById('usuarioModalBody');
+                            body.innerHTML = `
+                                <p><strong>Nome:</strong> ${usuario.nome || '-'}</p>
+                                <p><strong>Email:</strong> ${usuario.email || '-'}</p>
+                                <p><strong>Endereço:</strong> ${usuario.endereco || '-'}</p>
+                                <p><strong>Telefone:</strong> ${usuario.telefone || '-'}</p>
+                                <p><strong>Cadastro:</strong> ${usuario.data_criacao || '-'}</p>
+                            `;
+
+                            // Mostrar modal
+                            const bsModal = new bootstrap.Modal(document.getElementById('usuarioModal'));
+                            bsModal.show();
+
+                        } catch (error) {
+                            console.error(error);
+                            alert(error.message || 'Erro ao buscar usuário');
+                        }
+                    });
+                });
+
+                // excluir
+                document.querySelectorAll('.btn-excluir-usuario').forEach(btn => {
+                    btn.removeEventListener('click', () => {});
+                    btn.addEventListener('click', async (e) => {
+                        const id = btn.dataset.id;
+                        if (!id) return;
+                        if (!confirm('Tem certeza que deseja excluir este usuário? Esta ação é irreversível.')) return;
+                        try {
+                            const res = await apiFetch(`/api/v1/admin/usuarios/${id}`, { method: 'DELETE' });
+                            if (!res.ok) {
+                                const json = await res.json().catch(()=>({detail:'Erro desconhecido'}));
+                                throw new Error(json.detail || 'Falha ao excluir usuário');
+                            }
+                            // recarregar lista
+                            await loadUsuarios();
+                        } catch (error) {
+                            console.error(error);
+                            alert(error.message || 'Erro ao excluir usuário');
+                        }
+                    });
+                });
+            }
+
+            // iniciar carregamento dinâmico de usuários
+            // substituir renderização server-side para garantir consistência
+            if (usuariosTbody) {
+                loadUsuarios();
+            }
+        // Excluir usuário: confirmação e chamada DELETE
+        document.querySelectorAll('.btn-excluir-usuario').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const id = btn.dataset.id;
+                if (!id) return;
+                if (!confirm('Tem certeza que deseja excluir este usuário? Esta ação é irreversível.')) return;
+                try {
+                    const res = await fetch(`/api/v1/admin/usuarios/${id}`, { method: 'DELETE' });
+                    if (!res.ok) {
+                        const json = await res.json().catch(()=>({detail:'Erro desconhecido'}));
+                        throw new Error(json.detail || 'Falha ao excluir usuário');
+                    }
+                    // Remover linha da tabela
+                    const row = btn.closest('tr');
+                    if (row) row.remove();
+                } catch (error) {
+                    console.error(error);
+                    alert(error.message || 'Erro ao excluir usuário');
+                }
+            });
+        });
   });
 </script>
 {% endblock %}
