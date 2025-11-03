@@ -225,17 +225,23 @@ body {
 
 /* --- Dark Mode Styles --- */
 body.dark-mode {
-    --light-bg: #101010;   /* Preto profundo (Hero) */
-    --card-bg: #181818;    /* Card */
-    --dark-text: #F5F5F5;  /* Texto primário */
-    --primary-blue: #0066cc; /* Azul Aprovado */
-    --dark-blue: #121212;   /* Fundo da Sidebar (Navbar) */
-    --border-color: #232323; /* Bordas */
-    --shadow-color: rgba(0, 0, 0, 0.75); /* Sombra */
+    --light-bg: #121212;    /* Fundo principal e containers */
+    --card-bg: #181818;     /* Cards internos */
+    --dark-blue: #121212;   /* Fundo da sidebar */
+    --dark-text: #F5F5F5;
+    --primary-blue: #0066cc;
+    --border-color: #232323;
+    --shadow-color: rgba(0, 0, 0, 0.75);
 }
 
 body.dark-mode .sidebar {
-    background: var(--dark-blue);
+    background: var(--dark-blue) !important;
+}
+
+body.dark-mode .container-fluid,
+body.dark-mode .row.g-0,
+body.dark-mode {
+    background-color: var(--light-bg);
 }
 
 body.dark-mode .text-primary {
@@ -243,13 +249,13 @@ body.dark-mode .text-primary {
 }
 
 body.dark-mode .text-muted {
-    color: #BDBDBD !important; /* Texto secundário */
+    color: #BDBDBD !important;
 }
 
 body.dark-mode .form-control,
 body.dark-mode .form-select {
     box-shadow: none;
-    background-color: #101010; /* Fundo para inputs */
+    background-color: #101010;
     color: var(--dark-text) !important;
     border-color: var(--border-color);
 }
@@ -287,6 +293,11 @@ body.dark-mode .list-group-item {
 
 /* Estilos para Tabelas e Seletores em Dark Mode */
 body.dark-mode .table {
+    color: var(--dark-text);
+}
+
+body.dark-mode .table td,
+body.dark-mode .table th {
     color: var(--dark-text);
 }
 
