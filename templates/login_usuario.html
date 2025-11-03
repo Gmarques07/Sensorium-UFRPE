@@ -47,6 +47,8 @@
         max-width: 450px;
         transition: all 0.3s ease;
         border: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative; /* ensure stacking context */
+        z-index: 1040; /* appear above the navbar */
     }
 
     /* Match index card appearance in dark mode */

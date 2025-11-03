@@ -5,10 +5,9 @@
 {% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
 <style>
-    /* Adicionado para CORRIGIR O MODO CLARO */
+    /* Page baseline */
     body {
         font-family: 'Poppins', sans-serif;
-        /* Este é o fundo azul que estava faltando */
         background: linear-gradient(135deg, var(--primary-blue, #0066cc) 0%, var(--dark-blue, #003366) 100%);
         min-height: 100vh;
         display: flex;
@@ -18,102 +17,61 @@
         transition: all 0.3s ease;
     }
 
-    /* Define o card como branco no modo claro */
+    /* Card (match login style) */
     .signup-card {
         background: rgba(255, 255, 255, 0.98);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        max-width: 680px; 
-        margin: 6rem auto; 
-        padding: 2.5rem; 
-        border-radius: 18px;
+        border-radius: 20px;
+        padding: 3rem;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        width: 100%;
+        max-width: 450px;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255,255,255,0.1);
+        position: relative; /* ensure stacking context */
+        z-index: 1040; /* appear above the navbar (navbar z-index ~1030) */
     }
-    /* Fim da adição do modo claro */
 
     .password-strength { height: 8px; border-radius: 6px; display: block; margin-top: 0.5rem; }
 
-    /* Dark Mode Overrides (Corrigido) */
+    /* Dark mode (single consolidated block) */
     body.dark-mode {
-        background: #101010; /* Fundo preto/cinza do index */
-        color: rgba(255, 255, 255, 0.9);
+        background: #101010; /* same as index */
+        color: rgba(245,245,245,0.95);
     }
 
     body.dark-mode .signup-card {
-        background: #181818; /* Cor do card do index */
-        border: 1px solid #232323; /* Cor da borda do index */
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
-    }
-    
-        /* Dark Mode Overrides (match index palette) */
-        body.dark-mode {
-            background: #101010; /* same as index */
-            color: #e6eef8;
-        }
-
-        body.dark-mode .signup-card {
-            background: #181818; /* same as index feature-card */
-            border: 1px solid #232323;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.6);
-        }
-
-        body.dark-mode .input-group-text { background: rgba(18,18,18,0.85); color: var(--accent-color); border:1px solid rgba(255,255,255,0.04); }
-        body.dark-mode .form-control { background: rgba(18,18,18,0.85); color:#e6eef8; border:1px solid rgba(255,255,255,0.06); }
-        /* Keep primary button blue in dark mode like index */
-        body.dark-mode .btn-primary { background: var(--primary-blue); border:none; }
-        body.dark-mode .link-secondary { color: rgba(255,255,255,0.85); }
-        body.dark-mode .alert { background:#10202b; color:#e6eef8; border:1px solid rgba(255,255,255,0.03); }
-
-        /* Ensure input placeholders are readable in dark mode */
-        body.dark-mode .form-control::placeholder { color: rgba(255,255,255,0.55) !important; opacity: 1; }
-        body.dark-mode .form-control::-webkit-input-placeholder { color: rgba(255,255,255,0.55) !important; }
-        body.dark-mode .form-control::-moz-placeholder { color: rgba(255,255,255,0.55) !important; }
-        body.dark-mode .form-control:-ms-input-placeholder { color: rgba(255,255,255,0.55) !important; }
-        body.dark-mode .form-control::-ms-input-placeholder { color: rgba(255,255,255,0.55) !important; }
-
-    body.dark-mode .form-label {
-        color: rgba(255, 255, 255, 0.9);
+        background: #181818;
+        border: 1px solid #232323;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.6);
     }
 
-    body.dark-mode .form-control {
-        background-color: rgba(18, 18, 18, 0.8); /* Fundo do input */
-        border-color: rgba(255, 255, 255, 0.1);
-        color: rgba(255, 255, 255, 0.9);
-    }
+    body.dark-mode .form-label { color: rgba(255,255,255,0.9); }
+    body.dark-mode .form-control { background: rgba(18,18,18,0.85); color: rgba(255,255,255,0.9); border:1px solid rgba(255,255,255,0.06); }
+    body.dark-mode .input-group-text { background: rgba(18,18,18,0.85); border:1px solid rgba(255,255,255,0.04); color: var(--accent-color, #00E0C6); }
+    body.dark-mode .btn-primary { background: var(--primary-blue); border:none; }
+    body.dark-mode .link-secondary { color: rgba(255,255,255,0.85); }
+    body.dark-mode .logo-icon { color: var(--accent-color, #00E0C6); }
+    body.dark-mode .text-muted { color: rgba(255,255,255,0.6) !important; }
 
-    body.dark-mode .input-group-text {
-        background-color: rgba(18, 18, 18, 0.8);
-        border-color: rgba(255, 255, 255, 0.1);
-        color: var(--accent-color, #00E0C6); /* Cor de destaque ciano */
-    }
+    /* placeholders */
+    body.dark-mode .form-control::placeholder { color: rgba(255,255,255,0.55) !important; opacity:1; }
+    body.dark-mode .form-control::-webkit-input-placeholder { color: rgba(255,255,255,0.55) !important; }
+    body.dark-mode .form-control::-moz-placeholder { color: rgba(255,255,255,0.55) !important; }
+    body.dark-mode .form-control:-ms-input-placeholder { color: rgba(255,255,255,0.55) !important; }
+    body.dark-mode .form-control::-ms-input-placeholder { color: rgba(255,255,255,0.55) !important; }
 
-    /* Botão principal no dark mode (azul, para combinar com index) */
-    body.dark-mode .btn-primary {
-        background: var(--primary-blue, #0066cc);
-        border: none;
-    }
+    /* prevent anchor inside card from forcing accent color on headings */
+    body.dark-mode .signup-card a,
+    body.dark-mode .signup-card a * { color: inherit; }
+    body.dark-mode .signup-card h2 { color: rgba(245,245,245,0.95); }
 
-    body.dark-mode .link-secondary {
-        color: var(--accent-color, #00E0C6);
-    }
-    
-    body.dark-mode .logo-icon {
-        color: var(--accent-color, #00E0C6);
-    }
-
-    body.dark-mode .text-muted {
-        color: rgba(255, 255, 255, 0.6) !important;
-    }
-
-    body.dark-mode .alert {
-        background: #10202b; /* Um fundo de alerta escuro genérico */
-        color: #e6eef8;
-        border: 1px solid rgba(255,255,255,0.03);
-    }
-    /* Fim dos Dark Mode Overrides Corrigidos */
+    @media (max-width: 576px) { .signup-card { padding: 2rem; } }
 </style>
 {% endblock %}
 
 {% block content %}
+<!-- Navbar -->
+{% include 'partials/navbar.html' %}
     <div class="signup-card" data-aos="fade-up">
         <div class="text-center mb-4">
             <a href="{{ url_for('homepage') }}" class="text-decoration-none">
@@ -365,4 +323,4 @@
         icon.classList.toggle("bi-eye-slash");
     }
 </script>
-{% end  block %}
+{% endblock %}
