@@ -8,7 +8,7 @@ class Leitura(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     local_id = Column(Integer, ForeignKey('locais.id'), nullable=False)
     sensor_tipo = Column(Enum('PH', 'UMIDADE', 'BOIA'), nullable=False)
-    data = Column(DateTime, nullable=False, default=func.now())
+    data = Column(DateTime(timezone=True), nullable=False, default=func.now())
     local = relationship("Local", back_populates="leituras")
 
 class PhNivel(Base):

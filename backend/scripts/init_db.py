@@ -19,6 +19,11 @@ def init_db():
     Initialize database.
     """
     try:
+        # Criar banco de teste se não existir
+        with engine.connect() as connection:
+            connection.execute(text("CREATE DATABASE IF NOT EXISTS sensorium_test_db"))
+            print("Banco de teste criado/verificado com sucesso!")
+        
         with engine.connect() as connection:
             with connection.begin():
                 # Desabilitar checagem de chave estrangeira
@@ -46,6 +51,22 @@ def init_db():
             print("Usuário administrador criado com sucesso!")
         else:
             print("Usuário administrador já existe.")
+
+        from backend.app.models.local import Local
+        
+        # Check if a default local exists
+        local = db.query(Local).first()
+        if not local:
+            default_local = Local(
+                nome="Cisterna Principal",
+                tipo="CISTERNA",
+                descricao="Cisterna principal para coleta de água da chuva."
+            )
+            db.add(default_local)
+            db.commit()
+            print("Local padrão criado com sucesso!")
+        else:
+            print("Pelo menos um local já existe.")
             
         db.close()
 

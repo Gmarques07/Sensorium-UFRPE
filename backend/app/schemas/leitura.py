@@ -70,3 +70,9 @@ class DadosCisternaResponse(BaseModel):
     historico_nivel: List[BoiaNivel]
 
     model_config = ConfigDict(from_attributes=True)
+
+class LeituraPayload(BaseModel):
+    ph: float
+    boia: int
+    status_boia: str
+    dispositivo_id: int

@@ -1,0 +1,31 @@
+.git
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.env.*
+.env.local
+.vscode/
+.idea/
+dist/
+build/
+venv/
+pytest_cache/
+.coverage
+htmlcov/
+.DS_Store
+
+# Node/Frontend caches (se existirem)
+node_modules/
+
+# Docker e CI
+docker/mysql/*
+docker/mysql/init/*
+.github/
+
+# Artefatos grandes opcionais
+static/
+templates/
+
+
