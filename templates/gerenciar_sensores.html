@@ -23,6 +23,119 @@
             font-family: 'Poppins', sans-serif;
             background: var(--light-bg);
             color: var(--dark-text);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Modo Dark */
+        body.dark-mode {
+            background-color: #101010;
+            color: #ffffff;
+        }
+
+        body.dark-mode .dashboard-card {
+            background: #181818;
+            border: 1px solid #232323;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        body.dark-mode .text-primary {
+            color: var(--accent-color) !important;
+        }
+
+        body.dark-mode .table {
+            color: #ffffff;
+        }
+
+        /* Ensure table header/cell text is white in dark mode (override Bootstrap) */
+        body.dark-mode table.table thead th,
+        body.dark-mode table.table tbody td,
+        body.dark-mode table.table tfoot td,
+        body.dark-mode table.table tfoot th {
+            color: #ffffff !important;
+        }
+
+        body.dark-mode .table>:not(caption)>*>* {
+            background-color: transparent;
+            border-bottom-color: #232323;
+        }
+
+        body.dark-mode .modal-content {
+            background-color: #181818;
+            border: 1px solid #232323;
+        }
+
+        body.dark-mode .modal-header {
+            border-bottom: 1px solid #232323;
+        }
+
+        body.dark-mode .modal-footer {
+            border-top: 1px solid #232323;
+        }
+
+        body.dark-mode .form-control,
+        body.dark-mode .form-select {
+            background-color: #202020;
+            border: 1px solid #303030;
+            color: #ffffff;
+        }
+
+        body.dark-mode .form-control:focus,
+        body.dark-mode .form-select:focus {
+            background-color: #202020;
+            border-color: var(--accent-color);
+            color: #ffffff;
+        }
+
+        body.dark-mode .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+
+        body.dark-mode .text-muted {
+            color: rgba(255, 255, 255, 0.6) !important;
+        }
+
+        body.dark-mode .btn-outline-primary {
+            color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        body.dark-mode .btn-outline-primary:hover {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            color: #000;
+        }
+
+        /* Sidebar - Dark mode overrides to match admin dashboard colors */
+        body.dark-mode .sidebar {
+            background: #121212 !important; /* same as admin dashboard dark background */
+            color: rgba(255,255,255,0.95);
+            box-shadow: 4px 0 24px rgba(0,0,0,0.75);
+        }
+
+        body.dark-mode .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.9);
+            background: transparent;
+        }
+
+        body.dark-mode .sidebar .nav-link:hover,
+        body.dark-mode .sidebar .nav-link.active {
+            color: #ffffff !important;
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.10);
+            border-left-color: var(--accent-color);
+        }
+
+        body.dark-mode .sidebar .logo-icon {
+            color: var(--accent-color);
+        }
+
+        body.dark-mode .logout-link {
+            color: rgba(255,255,255,0.95);
+        }
+
+        body.dark-mode .logout-link:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
         }
 
         /* Sidebar */
@@ -189,9 +302,15 @@
                     <h2 class="mb-0 text-primary">
                         <i class="bi bi-tools me-2"></i> Gerenciar Sensores do Usuário
                     </h2>
-                    <button class="btn btn-outline-primary" onclick="window.location.href='/admin_dashboard.html#usuarios'">
-                        <i class="bi bi-arrow-left me-2"></i> Voltar
-                    </button>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary" id="theme-toggle">
+                            <i class="bi bi-sun-fill"></i>
+                            <i class="bi bi-moon-fill d-none"></i>
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="window.location.href='/admin_dashboard.html#usuarios'">
+                            <i class="bi bi-arrow-left me-2"></i> Voltar
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Informações do Usuário -->
@@ -431,6 +550,33 @@
             localStorage.removeItem('adminAccessToken');
             window.location.href = '/login_admin.html';
         });
+
+            // Tema escuro
+            document.addEventListener('DOMContentLoaded', () => {
+                const themeToggle = document.getElementById('theme-toggle');
+                const sunIcon = themeToggle.querySelector('.bi-sun-fill');
+                const moonIcon = themeToggle.querySelector('.bi-moon-fill');
+            
+                // Verificar tema salvo
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    sunIcon.classList.remove('d-none');
+                    moonIcon.classList.add('d-none');
+                }
+
+                // Alternar tema
+                themeToggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    document.body.classList.toggle('dark-mode');
+                    sunIcon.classList.toggle('d-none');
+                    moonIcon.classList.toggle('d-none');
+                
+                    // Salvar preferência
+                    const isDark = document.body.classList.contains('dark-mode');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                });
+            });
     </script>
 </body>
 </html>
