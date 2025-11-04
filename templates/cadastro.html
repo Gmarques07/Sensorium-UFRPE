@@ -1,19 +1,77 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro de Usuário - Sensorium</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+{% extends "partials/base.html" %}
 
-    <!-- CSS externo -->
-    <link rel="stylesheet" href="/static/css/style.css">
-</head>
-<body>
+{% block title %}Cadastro de Usuário - Sensorium{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+<style>
+    /* Page baseline */
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, var(--primary-blue, #0066cc) 0%, var(--dark-blue, #003366) 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 5rem 2rem 2rem;
+        transition: all 0.3s ease;
+    }
+
+    /* Card (match login style) */
+    .signup-card {
+        background: rgba(255, 255, 255, 0.98);
+        border-radius: 20px;
+        padding: 3rem;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        width: 100%;
+        max-width: 450px;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255,255,255,0.1);
+        position: relative; /* ensure stacking context */
+        z-index: 1040; /* appear above the navbar (navbar z-index ~1030) */
+    }
+
+    .password-strength { height: 8px; border-radius: 6px; display: block; margin-top: 0.5rem; }
+
+    /* Dark mode (single consolidated block) */
+    body.dark-mode {
+        background: #101010; /* same as index */
+        color: rgba(245,245,245,0.95);
+    }
+
+    body.dark-mode .signup-card {
+        background: #181818;
+        border: 1px solid #232323;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    }
+
+    body.dark-mode .form-label { color: rgba(255,255,255,0.9); }
+    body.dark-mode .form-control { background: rgba(18,18,18,0.85); color: rgba(255,255,255,0.9); border:1px solid rgba(255,255,255,0.06); }
+    body.dark-mode .input-group-text { background: rgba(18,18,18,0.85); border:1px solid rgba(255,255,255,0.04); color: var(--accent-color, #00E0C6); }
+    body.dark-mode .btn-primary { background: var(--primary-blue); border:none; }
+    body.dark-mode .link-secondary { color: rgba(255,255,255,0.85); }
+    body.dark-mode .logo-icon { color: var(--accent-color, #00E0C6); }
+    body.dark-mode .text-muted { color: rgba(255,255,255,0.6) !important; }
+
+    /* placeholders */
+    body.dark-mode .form-control::placeholder { color: rgba(255,255,255,0.55) !important; opacity:1; }
+    body.dark-mode .form-control::-webkit-input-placeholder { color: rgba(255,255,255,0.55) !important; }
+    body.dark-mode .form-control::-moz-placeholder { color: rgba(255,255,255,0.55) !important; }
+    body.dark-mode .form-control:-ms-input-placeholder { color: rgba(255,255,255,0.55) !important; }
+    body.dark-mode .form-control::-ms-input-placeholder { color: rgba(255,255,255,0.55) !important; }
+
+    /* prevent anchor inside card from forcing accent color on headings */
+    body.dark-mode .signup-card a,
+    body.dark-mode .signup-card a * { color: inherit; }
+    body.dark-mode .signup-card h2 { color: rgba(245,245,245,0.95); }
+
+    @media (max-width: 576px) { .signup-card { padding: 2rem; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Navbar -->
+{% include 'partials/navbar.html' %}
     <div class="signup-card" data-aos="fade-up">
         <div class="text-center mb-4">
             <a href="{{ url_for('homepage') }}" class="text-decoration-none">
@@ -99,118 +157,101 @@
         </form>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+{% endblock %}
 
-    <script>
-        AOS.init({ duration: 800, once: true });
+{% block scripts %}
+<script>
+    // AOS já é inicializado no base, mas garantimos configuração local caso necessário
+    AOS.init({ duration: 800, once: true });
 
-        document.addEventListener('DOMContentLoaded', function() {
-            const senhaInput = document.getElementById('senha');
-            const confirmSenhaInput = document.getElementById('confirmacao_senha');
-            const passwordMatch = document.getElementById('passwordMatch');
-            const strengthBar = document.getElementById('passwordStrength');
-            const form = document.getElementById('cadastroForm');
-            const camposObrigatorios = form.querySelectorAll('input[required], textarea[required], select[required]');
-            const btnCriarConta = document.getElementById('btnCriarConta');
+    document.addEventListener('DOMContentLoaded', function() {
+        const senhaInput = document.getElementById('senha');
+        const confirmSenhaInput = document.getElementById('confirmacao_senha');
+        const passwordMatch = document.getElementById('passwordMatch');
+        const strengthBar = document.getElementById('passwordStrength');
+        const form = document.getElementById('cadastroForm');
+        const camposObrigatorios = form.querySelectorAll('input[required], textarea[required], select[required]');
+        const btnCriarConta = document.getElementById('btnCriarConta');
 
-            function checkFormValidity() {
-                let allRequiredFieldsFilled = true;
-                let passwordsMatchResult = false;
-
-                camposObrigatorios.forEach(campo => {
-                    let isFieldFilled = true;
-                    if (campo.type === 'checkbox') {
-                        if (!campo.checked) isFieldFilled = false;
-                    } else if (campo.value.trim() === '') {
-                        isFieldFilled = false;
-                    }
-                    if (!isFieldFilled) allRequiredFieldsFilled = false;
-                });
-
-                const password = senhaInput.value;
-                const confirmPassword = confirmSenhaInput.value;
-
-                if (password && confirmPassword) passwordsMatchResult = password === confirmPassword;
-
-                checkPassword();
-
-                if (allRequiredFieldsFilled && passwordsMatchResult) {
-                    btnCriarConta.disabled = false;
-                    btnCriarConta.classList.remove('btn-disabled');
-                } else {
-                    btnCriarConta.disabled = true;
-                    btnCriarConta.classList.add('btn-disabled');
-                }
-            }
-
-            function checkPassword() {
-                const password = senhaInput.value;
-                const confirmPassword = confirmSenhaInput.value;
-
-                if (password && confirmPassword) {
-                    if (password === confirmPassword) {
-                        passwordMatch.textContent = 'Senhas conferem';
-                        passwordMatch.className = 'text-success small mt-1';
-                    } else {
-                        passwordMatch.textContent = 'Senhas não conferem';
-                        passwordMatch.className = 'text-danger small mt-1';
-                    }
-                } else passwordMatch.textContent = '';
-            }
-
-            function checkPasswordStrength(password) {
-                let strength = 0;
-                if (password.length >= 8) strength++;
-                if (password.match(/[a-z]+/)) strength++;
-                if (password.match(/[A-Z]+/)) strength++;
-                if (password.match(/[0-9]+/)) strength++;
-                if (password.match(/[!@#$%^&*(),.?":{}|<>]+/)) strength++;
-
-                const colors = ['#ff4444', '#ffbb33', '#00C851', '#33b5e5', '#2BBBAD'];
-                strengthBar.style.width = ((strength / 5) * 100) + '%';
-                strengthBar.style.backgroundColor = colors[strength - 1] || '';
-                strengthBar.style.display = password ? 'block' : 'none';
-            }
-
-            senhaInput.addEventListener('input', function() {
-                checkPasswordStrength(this.value);
-                checkPassword();
-                checkFormValidity();
-            });
-
-            confirmSenhaInput.addEventListener('input', function() {
-                checkPassword();
-                checkFormValidity();
-            });
+        function checkFormValidity() {
+            let allRequiredFieldsFilled = true;
+            let passwordsMatchResult = false;
 
             camposObrigatorios.forEach(campo => {
-                campo.addEventListener('input', checkFormValidity);
-                campo.addEventListener('change', checkFormValidity);
+                let isFieldFilled = true;
+                if (campo.type === 'checkbox') {
+                    if (!campo.checked) isFieldFilled = false;
+                } else if (campo.value.trim() === '') {
+                    isFieldFilled = false;
+                }
+                if (!isFieldFilled) allRequiredFieldsFilled = false;
             });
 
+            const password = senhaInput.value;
+            const confirmPassword = confirmSenhaInput.value;
+
+            if (password && confirmPassword) passwordsMatchResult = password === confirmPassword;
+
+            checkPassword();
+
+            if (allRequiredFieldsFilled && passwordsMatchResult) {
+                btnCriarConta.disabled = false;
+                btnCriarConta.classList.remove('btn-disabled');
+            } else {
+                btnCriarConta.disabled = true;
+                btnCriarConta.classList.add('btn-disabled');
+            }
+        }
+
+        function checkPassword() {
+            const password = senhaInput.value;
+            const confirmPassword = confirmSenhaInput.value;
+
+            if (password && confirmPassword) {
+                if (password === confirmPassword) {
+                    passwordMatch.textContent = 'Senhas conferem';
+                    passwordMatch.className = 'text-success small mt-1';
+                } else {
+                    passwordMatch.textContent = 'Senhas não conferem';
+                    passwordMatch.className = 'text-danger small mt-1';
+                }
+            } else passwordMatch.textContent = '';
+        }
+
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (password.match(/[a-z]+/)) strength++;
+            if (password.match(/[A-Z]+/)) strength++;
+            if (password.match(/[0-9]+/)) strength++;
+            if (password.match(/[!@#$%^&*(),.?":{}|<>]+/)) strength++;
+
+            const colors = ['#ff4444', '#ffbb33', '#00C851', '#33b5e5', '#2BBBAD'];
+            strengthBar.style.width = ((strength / 5) * 100) + '%';
+            strengthBar.style.backgroundColor = colors[strength - 1] || '';
+            strengthBar.style.display = password ? 'block' : 'none';
+        }
+
+        senhaInput.addEventListener('input', function() {
+            checkPasswordStrength(this.value);
+            checkPassword();
             checkFormValidity();
         });
 
-        function togglePasswordVisibility() {
-            const senha = document.getElementById("senha");
-            const icon = document.getElementById("toggleSenhaIcon");
-            const tipo = senha.type === "password" ? "text" : "password";
-            senha.type = tipo;
-            icon.classList.toggle("bi-eye");
-            icon.classList.toggle("bi-eye-slash");
-        }
+        confirmSenhaInput.addEventListener('input', function() {
+            checkPassword();
+            checkFormValidity();
+        });
 
-        function toggleConfirmPasswordVisibility() {
-            const confirmacao = document.getElementById("confirmacao_senha");
-            const icon = document.getElementById("toggleConfirmSenhaIcon");
-            const tipo = confirmacao.type === "password" ? "text" : "password";
-            confirmacao.type = tipo;
-            icon.classList.toggle("bi-eye");
-            icon.classList.toggle("bi-eye-slash");
-        }
+        camposObrigatorios.forEach(campo => {
+            campo.addEventListener('input', checkFormValidity);
+            campo.addEventListener('change', checkFormValidity);
+        });
 
-        document.getElementById('cadastroForm').addEventListener('submit', async function(event) {
+        checkFormValidity();
+
+        // Submit handler
+        form.addEventListener('submit', async function(event) {
             event.preventDefault();
             const btn = document.getElementById('btnCriarConta');
             btn.disabled = true;
@@ -242,7 +283,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>`;
                     localStorage.setItem('accessToken', result.access_token);
-                    setTimeout(() => { window.location.href = 'login_usuario.html'; }, 3000);
+                    setTimeout(() => { window.location.href = '{{ url_for("login_usuario") }}'; }, 2000);
                 } else {
                     const errorMessage = result.detail || 'Ocorreu um erro ao tentar cadastrar.';
                     alertContainer.innerHTML = `
@@ -262,6 +303,24 @@
                 btn.innerHTML = '<i class="bi bi-person-plus me-2"></i>Criar Conta';
             }
         });
-    </script>
-</body>
-</html>
+    });
+
+    function togglePasswordVisibility() {
+        const senha = document.getElementById("senha");
+        const icon = document.getElementById("toggleSenhaIcon");
+        const tipo = senha.type === "password" ? "text" : "password";
+        senha.type = tipo;
+        icon.classList.toggle("bi-eye");
+        icon.classList.toggle("bi-eye-slash");
+    }
+
+    function toggleConfirmPasswordVisibility() {
+        const confirmacao = document.getElementById("confirmacao_senha");
+        const icon = document.getElementById("toggleConfirmSenhaIcon");
+        const tipo = confirmacao.type === "password" ? "text" : "password";
+        confirmacao.type = tipo;
+        icon.classList.toggle("bi-eye");
+        icon.classList.toggle("bi-eye-slash");
+    }
+</script>
+{% endblock %}

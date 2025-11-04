@@ -3,12 +3,15 @@
     --secondary-blue: #4FC3F7;
     --dark-blue: #003366;
     --light-bg: #f8faff;
-    --accent-color: #00E676;
+    --accent-color: #00E0C6; 
+    --white: #ffffff;
+    --border-color: #e9ecef;
 }
 
 body {
     font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
+    background-color: var(--light-bg);
+    background-image: radial-gradient(circle at top right, rgba(79, 195, 247, 0.1), transparent 30%); 
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -17,19 +20,19 @@ body {
 }
 
 .signup-card {
-    background: rgba(255, 255, 255, 0.98);
+    background: var(--white); 
     border-radius: 20px;
     padding: 3rem;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 15px 35px rgba(0, 51, 102, 0.1); 
     width: 100%;
     max-width: 550px;
     transition: all 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
 }
 
 .signup-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+    transform: translateY(-8px);
+    box-shadow: 0 25px 50px rgba(0, 51, 102, 0.15);
 }
 
 .form-label {
@@ -41,19 +44,32 @@ body {
 .form-control {
     border-radius: 15px;
     padding: 0.75rem 1.25rem;
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--border-color);
     transition: all 0.3s ease;
     font-size: 1rem;
 }
 
+/* Estilos da navbar */
+nav.navbar .navbar-brand,
+nav.navbar .navbar-brand i.bi-cpu {
+    color: var(--white);
+    transition: color 0.3s ease;
+    text-decoration: none;
+}
+
+nav.navbar .navbar-brand:hover,
+nav.navbar .navbar-brand:hover i.bi-cpu {
+    color: var(--accent-color);
+}
+
 .form-control:focus {
-    border-color: var(--primary-blue);
-    box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.1);
+    border-color: var(--accent-color); 
+    box-shadow: 0 0 0 4px rgba(0, 224, 198, 0.2); 
 }
 
 .input-group-text {
     border-radius: 15px 0 0 15px;
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--border-color);
     border-right: none;
     background-color: white;
     color: var(--primary-blue);
@@ -65,38 +81,26 @@ body {
 }
 
 .btn-primary {
-    background: var(--primary-blue);
+    background-image: linear-gradient(45deg, var(--primary-blue), var(--secondary-blue)); 
     color: white !important;
     padding: 1rem 2rem;
     border-radius: 50px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
-    transition: all 0.3s ease;
+    transition: all 0.3s ease-in-out;
     border: none;
-    position: relative;
-    overflow: hidden;
+    box-shadow: 0 8px 15px rgba(0, 102, 204, 0.25); 
 }
-
 .btn-primary::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
-    transition: all 0.5s ease;
+    display: none;
 }
 
 .btn-primary:hover {
-    background: var(--dark-blue);
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-}
-
-.btn-primary:hover::before {
-    left: 100%;
+    background-color: var(--dark-blue); 
+    background-image: none;
+    transform: translateY(-4px) scale(1.02); 
+    box-shadow: 0 12px 25px rgba(0, 51, 102, 0.35);
 }
 
 .link-secondary {
@@ -108,7 +112,6 @@ body {
 
 .link-secondary:hover {
     color: var(--primary-blue);
-    transform: translateX(5px);
 }
 
 .back-link {
@@ -150,14 +153,11 @@ body {
 
 .btn-disabled {
     background: #cccccc !important;
+    background-image: none !important;
     cursor: not-allowed !important;
     opacity: 0.7;
     box-shadow: none !important;
     transform: none !important;
-}
-
-.btn-disabled::before {
-    display: none;
 }
 
 .btn-senha {
@@ -168,4 +168,84 @@ body {
     .signup-card {
         padding: 2rem;
     }
+}
+
+/* --- Dark Mode Styles --- */
+body.dark-mode {
+    --primary-blue: #00BFFF; /* Acento Ciano */
+    --dark-blue: #101010;
+    background: #101010; /* Fundo Principal */
+}
+
+body.dark-mode .signup-card {
+    background: #181818; /* Card */
+    border-color: #232323; /* Borda */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.75);
+}
+
+body.dark-mode .form-label {
+    color: #F5F5F5; /* Texto Primário */
+}
+
+body.dark-mode .form-control {
+    background-color: #101010;
+    color: #F5F5F5;
+    border-color: #232323;
+}
+
+body.dark-mode .form-control:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 4px rgba(0, 191, 255, 0.2);
+}
+
+body.dark-mode .input-group-text {
+    background-color: #101010;
+    color: var(--primary-blue);
+    border-color: #232323;
+}
+
+body.dark-mode .btn-primary {
+    background: #FF4081; /* Botão Primário Rosa */
+    color: #F5F5F5 !important;
+}
+
+body.dark-mode .btn-primary:hover {
+    background: #00FF8B; /* Botão Secundário Verde no hover */
+}
+
+body.dark-mode .link-secondary {
+    color: #F5F5F5;
+}
+
+body.dark-mode .link-secondary:hover {
+    color: var(--primary-blue);
+}
+
+body.dark-mode .logo-icon {
+    color: var(--primary-blue);
+}
+
+body.dark-mode .logo-icon:hover {
+    color: #00FF8B;
+}
+
+body.dark-mode .alert-danger {
+    background-color: rgba(255, 23, 68, 0.1);
+    color: #FF1744;
+}
+
+body.dark-mode .alert-success {
+    background-color: rgba(0, 255, 65, 0.1);
+    color: #00FF41;
+}
+
+/* Estilos do tema escuro para a navbar */
+body.dark-mode nav.navbar .navbar-brand,
+body.dark-mode nav.navbar .navbar-brand i.bi-cpu {
+    color: var(--white);
+}
+
+body.dark-mode nav.navbar .navbar-brand:hover,
+body.dark-mode nav.navbar .navbar-brand:hover i.bi-cpu {
+    color: var(--accent-color);
 }

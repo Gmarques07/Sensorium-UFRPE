@@ -4,10 +4,13 @@
     --dark-blue: #003366;
     --light-bg: #f8faff;
     --card-bg: #ffffff;
-    --accent-color: #00E676;
-    --error-red: #ff3b30;
-    --success-green: #34c759;
-    --warning-yellow: #ffcc00;
+    
+    /* Acentos e feedbacks atualizados */
+    --accent-color: #00FF8B; /* Verde Neon */
+    --error-red: #FF1744;
+    --success-green: #00FF41;
+    --warning-yellow: #FFC400;
+
     --dark-text: #2c3e50;
     --light-text: #ffffff;
     --border-radius: 15px;
@@ -222,17 +225,23 @@ body {
 
 /* --- Dark Mode Styles --- */
 body.dark-mode {
-    --light-bg: #202124;
-    --card-bg: #303134;
-    --dark-text: #e8eaed;
-    --primary-blue: #8ab4f8;
-    --dark-blue: #303134;
-    --border-color: rgba(255, 255, 255, 0.15);
-    --shadow-color: rgba(0, 0, 0, 0.3);
+    --light-bg: #121212;    /* Fundo principal e containers */
+    --card-bg: #181818;     /* Cards internos */
+    --dark-blue: #121212;   /* Fundo da sidebar */
+    --dark-text: #F5F5F5;
+    --primary-blue: #0066cc;
+    --border-color: #232323;
+    --shadow-color: rgba(0, 0, 0, 0.75);
 }
 
 body.dark-mode .sidebar {
-    background: linear-gradient(135deg, #2a2c2f 0%, #202124 100%);
+    background: var(--dark-blue) !important;
+}
+
+body.dark-mode .container-fluid,
+body.dark-mode .row.g-0,
+body.dark-mode {
+    background-color: var(--light-bg);
 }
 
 body.dark-mode .text-primary {
@@ -240,24 +249,26 @@ body.dark-mode .text-primary {
 }
 
 body.dark-mode .text-muted {
-    color: #9aa0a6 !important;
+    color: #BDBDBD !important;
 }
 
 body.dark-mode .form-control,
 body.dark-mode .form-select {
     box-shadow: none;
-    background-color: #202124;
+    background-color: #101010;
     color: var(--dark-text) !important;
+    border-color: var(--border-color);
 }
 
 body.dark-mode .form-control:focus,
 body.dark-mode .form-select:focus {
-    box-shadow: 0 0 0 4px rgba(138, 180, 248, 0.2);
+    box-shadow: 0 0 0 4px rgba(68, 138, 255, 0.2);
     border-color: var(--primary-blue);
 }
 
 body.dark-mode .card, body.dark-mode .dashboard-card {
     border-top-color: var(--primary-blue);
+    box-shadow: 0 2px 8px var(--shadow-color);
 }
 
 body.dark-mode .card:hover, body.dark-mode .dashboard-card:hover {
@@ -272,7 +283,7 @@ body.dark-mode .btn-outline-primary {
 
 body.dark-mode .btn-outline-primary:hover {
     background-color: var(--primary-blue);
-    color: #202124;
+    color: #101010;
 }
 
 body.dark-mode .list-group-item {
@@ -285,6 +296,11 @@ body.dark-mode .table {
     color: var(--dark-text);
 }
 
+body.dark-mode .table td,
+body.dark-mode .table th {
+    color: var(--dark-text);
+}
+
 body.dark-mode .table > :not(caption) > * > * {
     background-color: transparent;
     border-color: var(--border-color);
@@ -292,11 +308,11 @@ body.dark-mode .table > :not(caption) > * > * {
 
 body.dark-mode .table-hover > tbody > tr:hover > * {
     color: var(--dark-text);
-    background-color: rgba(138, 180, 248, 0.07);
+    background-color: rgba(68, 138, 255, 0.07);
 }
 
 body.dark-mode .form-select {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23e8eaed' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23F5F5F5' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
 }
 
 /* Ajustes Finais Dark Mode */
@@ -321,10 +337,10 @@ body.dark-mode .modal-header .btn-close {
 }
 
 body.dark-mode .form-control::placeholder {
-    color: #9aa0a6;
+    color: #BDBDBD;
     opacity: 1;
 }
 
 body.dark-mode .form-text {
-    color: #9aa0a6;
+    color: #BDBDBD;
 }
