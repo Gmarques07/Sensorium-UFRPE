@@ -42,6 +42,12 @@ from .notificacao import (
     Notificacao,
     NotificacaoAdmin,
 )
+from .regra_alerta import (
+    RegraAlertaBase,
+    RegraAlertaCreate,
+    RegraAlertaUpdate,
+    RegraAlerta,
+)
 from .usuario import (
     UsuarioBase,
     UsuarioCreate,
@@ -96,6 +102,10 @@ __all__ = [
     "NotificacaoUpdate",
     "Notificacao",
     "NotificacaoAdmin",
+    "RegraAlertaBase",
+    "RegraAlertaCreate",
+    "RegraAlertaUpdate",
+    "RegraAlerta",
     "UsuarioBase",
     "UsuarioCreate",
     "UsuarioUpdate",
