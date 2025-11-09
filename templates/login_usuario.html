@@ -9,7 +9,10 @@
         --secondary-blue: #4FC3F7;
         --dark-blue: #003366;
         --light-bg: #f8faff;
-        --accent-color: #00E676;
+        --text-color: #333;
+        --accent-color: #00E0C6;
+        --dark-bg: #121212;
+        --dark-surface: #1E1E1E;
     }
 
     body {
@@ -19,7 +22,20 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 2rem;
+        padding: 5rem 2rem 2rem;  /* Aumentado padding-top para a navbar */
+        transition: all 0.3s ease;
+    }
+
+    /* Dark mode: use the exact same base as index.html */
+    body.dark-mode {
+        background: #101010; /* same as index.html */
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Navbar in dark mode */
+    body.dark-mode .navbar {
+        background-color: rgba(18, 18, 18, 0.95) !important;
+        backdrop-filter: blur(8px);
     }
 
     .login-card {
@@ -31,6 +47,15 @@
         max-width: 450px;
         transition: all 0.3s ease;
         border: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative; /* ensure stacking context */
+        z-index: 1040; /* appear above the navbar */
+    }
+
+    /* Match index card appearance in dark mode */
+    body.dark-mode .login-card {
+        background: #181818; /* same as index feature-card */
+        border: 1px solid #232323;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
     }
 
     .login-card:hover {
@@ -38,10 +63,19 @@
         box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
     }
 
+    body.dark-mode .login-card:hover {
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+    }
+
     .form-label {
         font-weight: 500;
         color: var(--dark-blue);
         margin-bottom: 0.5rem;
+        transition: color 0.3s ease;
+    }
+
+    body.dark-mode .form-label {
+        color: rgba(255, 255, 255, 0.9);
     }
 
     .form-control {
@@ -50,11 +84,35 @@
         border: 2px solid #e9ecef;
         transition: all 0.3s ease;
         font-size: 1rem;
+        background-color: white;
+        color: var(--text-color);
     }
+
+    body.dark-mode .form-control {
+        background-color: rgba(18, 18, 18, 0.8);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Placeholders should be visible in dark mode */
+    body.dark-mode .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.55) !important;
+        opacity: 1; /* some browsers reduce opacity */
+    }
+    body.dark-mode .form-control::-webkit-input-placeholder { color: rgba(255,255,255,0.55) !important; }
+    body.dark-mode .form-control::-moz-placeholder { color: rgba(255,255,255,0.55) !important; }
+    body.dark-mode .form-control:-ms-input-placeholder { color: rgba(255,255,255,0.55) !important; }
+    body.dark-mode .form-control::-ms-input-placeholder { color: rgba(255,255,255,0.55) !important; }
 
     .form-control:focus {
         border-color: var(--primary-blue);
         box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.1);
+    }
+
+    body.dark-mode .form-control:focus {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 4px rgba(0, 224, 198, 0.15);
+        background-color: rgba(18, 18, 18, 0.95);
     }
 
     .input-group-text {
@@ -64,6 +122,18 @@
         background-color: white;
         color: var(--primary-blue);
         padding: 0.75rem 1.25rem;
+        transition: all 0.3s ease;
+    }
+
+    body.dark-mode .input-group-text {
+        background-color: rgba(18, 18, 18, 0.8);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: var(--accent-color);
+    }
+
+    body.dark-mode .input-group-text,
+    body.dark-mode .form-control {
+        backdrop-filter: blur(5px);
     }
 
     .input-group .form-control {
@@ -93,6 +163,29 @@
         height: 100%;
         background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
         transition: all 0.5s ease;
+    }
+
+    .btn-primary:hover::before {
+        left: 100%;
+    }
+
+    /* Links e textos */
+    body.dark-mode a:not(.btn) {
+        color: var(--accent-color);
+    }
+
+    body.dark-mode .text-muted {
+        color: rgba(255, 255, 255, 0.6) !important;
+    }
+
+    /* Make sure the login card title stays readable (not forced to accent color) */
+    body.dark-mode .login-card a,
+    body.dark-mode .login-card a * {
+        color: inherit; /* prevent anchor from forcing accent color on headings */
+    }
+
+    body.dark-mode .login-card h2 {
+        color: rgba(245,245,245,0.95);
     }
 
     .btn-primary:hover {
@@ -152,10 +245,15 @@
             padding: 2rem;
         }
     }
+
 </style>
 {% endblock %}
 
 {% block content %}
+<!-- Navbar -->
+{% include 'partials/navbar.html' %}
+
+<!-- Container Principal -->
 <div class="login-card" data-aos="fade-up">
     <div class="text-center mb-4">
         <a href="{{ url_for('homepage') }}" class="text-decoration-none">

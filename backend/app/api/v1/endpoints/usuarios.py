@@ -190,54 +190,62 @@ def obter_dados_dashboard(
     from ....models.local import Local
     from ....models.usuario_sensor import UsuarioSensor
     
-    # Buscar apenas os locais atribuídos ao usuário
-    locais_atribuidos = db.query(Local).join(UsuarioSensor).filter(
+    # Buscar apenas os IDs dos locais atribuídos ao usuário primeiro
+    local_ids = db.query(UsuarioSensor.sensor_id).filter(
         UsuarioSensor.usuario_id == current_user.id
     ).all()
     
+    # Depois, buscar os detalhes completos desses locais individualmente
+    dispositivos = []
+    ph_por_dispositivo = {}
+    nivel_por_dispositivo = {}
+    
+    for local_id_tuple in local_ids:
+        local_id = local_id_tuple[0]
+        local = db.query(Local).filter(Local.id == local_id).first()
+        if local:  # Verificar se o local existe
+            dispositivos.append({
+                "nome": local.nome,
+                "id": local.id,
+                "tipo": local.tipo
+            })
+            
+            # Carregar dados de pH e nível para este local específico
+            ph_atual, historico_ph, nivel_atual, historico_nivel = crud_local.obter_dados_cisterna(db, local_id=local.id)
+            
+            ph_por_dispositivo[local.nome if local.nome else f"Local {local.id}"] = {
+                "atual": {
+                    "ph": ph_atual.ph if ph_atual and hasattr(ph_atual, 'ph') else 7.0,
+                    "data": ph_atual.leitura.data.astimezone(ZoneInfo("America/Sao_Paulo")).strftime("%Y-%m-%d %H:%M:%S") if ph_atual and hasattr(ph_atual, 'leitura') and ph_atual.leitura and hasattr(ph_atual.leitura, 'data') else "N/A"
+                } if ph_atual else None,
+                "historico": [
+                    {
+                        "ph": item.ph,
+                        "data": item.leitura.data.astimezone(ZoneInfo("America/Sao_Paulo")).strftime("%Y-%m-%d %H:%M:%S")
+                    } for item in historico_ph
+                ]
+            }
+            
+            nivel_por_dispositivo[local.nome if local.nome else f"Local {local.id}"] = {
+                "atual": {
+                    "status": nivel_atual.status if nivel_atual and hasattr(nivel_atual, 'status') else "NORMAL",
+                    "valor": nivel_atual.valor if nivel_atual and hasattr(nivel_atual, 'valor') else 0,
+                    "data": nivel_atual.leitura.data.astimezone(ZoneInfo("America/Sao_Paulo")).strftime("%Y-%m-%d %H:%M:%S") if nivel_atual and hasattr(nivel_atual, 'leitura') and nivel_atual.leitura and hasattr(nivel_atual.leitura, 'data') else "N/A"
+                } if nivel_atual else None,
+                "historico": [
+                    {
+                        "status": item.status,
+                        "data": item.leitura.data.astimezone(ZoneInfo("America/Sao_Paulo")).strftime("%Y-%m-%d %H:%M:%S")
+                    } for item in historico_nivel
+                ]
+            }
+
     # Se não há locais atribuídos, retornar dados vazios
-    if not locais_atribuidos:
+    if not dispositivos:
         return {
             "dispositivos": [],
             "ph_por_dispositivo": {},
             "nivel_por_dispositivo": {}
-        }
-    
-    # Usar dados reais do banco apenas para os locais atribuídos
-    dispositivos = [{"dispositivo": local.nome, "id": local.id} for local in locais_atribuidos]
-    
-    # Carregar dados reais de pH e nível apenas para os locais atribuídos
-    ph_por_dispositivo = {}
-    nivel_por_dispositivo = {}
-    
-    for local in locais_atribuidos:
-        ph_atual, historico_ph, nivel_atual, historico_nivel = crud_local.obter_dados_cisterna(db, local_id=local.id)
-        
-        ph_por_dispositivo[local.nome] = {
-            "atual": {
-                "ph": ph_atual.ph if ph_atual else 7.0,
-                "data": ph_atual.leitura.data.astimezone(ZoneInfo("America/Sao_Paulo")).strftime("%Y-%m-%d %H:%M:%S") if ph_atual else "N/A"
-            } if ph_atual else None,
-            "historico": [
-                {
-                    "ph": item.ph,
-                    "data": item.leitura.data.astimezone(ZoneInfo("America/Sao_Paulo")).strftime("%Y-%m-%d %H:%M:%S")
-                } for item in historico_ph
-            ]
-        }
-        
-        nivel_por_dispositivo[local.nome] = {
-            "atual": {
-                "status": nivel_atual.status if nivel_atual else "NORMAL",
-                "valor": nivel_atual.valor if nivel_atual else 0,
-                "data": nivel_atual.leitura.data.astimezone(ZoneInfo("America/Sao_Paulo")).strftime("%Y-%m-%d %H:%M:%S") if nivel_atual else "N/A"
-            } if nivel_atual else None,
-            "historico": [
-                {
-                    "status": item.status,
-                    "data": item.leitura.data.astimezone(ZoneInfo("America/Sao_Paulo")).strftime("%Y-%m-%d %H:%M:%S")
-                } for item in historico_nivel
-            ]
         }
     
     return {

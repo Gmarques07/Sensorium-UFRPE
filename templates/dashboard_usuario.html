@@ -33,6 +33,12 @@
             <span>Sensores</span>
           </a>
 
+          <!-- NOVO: Alertas -->
+          <a class="nav-link" href="#alertas" onclick="showSection(event, 'alertas')" role="button" data-aos="fade-right" data-aos-delay="400">
+            <i class="bi bi-bell"></i>
+            <span>Alertas</span>
+          </a>
+
           <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#modalEditarPerfil" role="button" data-aos="fade-right" data-aos-delay="600">
             <i class="bi bi-pencil"></i>
             <span>Editar Perfil</span>
@@ -165,6 +171,103 @@
                 <span class="visually-hidden">Carregando...</span>
               </div>
               <p class="mt-2 text-muted">Carregando dados dos sensores...</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- NOVO: Alertas Section -->
+        <section id="alertas" class="section-panel">
+          <div class="d-flex align-items-center mb-4" data-aos="fade-up">
+            <i class="bi bi-bell fs-2 text-primary me-3"></i>
+            <div>
+              <h2 class="h4 mb-1">Alertas Configuráveis</h2>
+              <p class="text-muted mb-0">Configure alertas personalizados para seus sensores</p>
+            </div>
+          </div>
+
+          <div class="card border-0 shadow-sm mb-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="card-body">
+              <form id="formCriarAlerta">
+                <div class="row g-3">
+                  <div class="col-md-3">
+                    <label for="sensorAlerta" class="form-label fw-semibold">
+                      <i class="bi bi-cpu me-2"></i>Sensor
+                    </label>
+                    <select id="sensorAlerta" name="local_id" class="form-select" required>
+                      <option value="">Selecione um sensor</option>
+                    </select>
+                  </div>
+                  <div class="col-md-2">
+                    <label for="tipoSensorAlerta" class="form-label fw-semibold">
+                      <i class="bi bi-gear me-2"></i>Tipo de Sensor
+                    </label>
+                    <select id="tipoSensorAlerta" name="sensor_tipo" class="form-select" required>
+                      <option value="">Tipo</option>
+                      <option value="PH">pH</option>
+                      <option value="BOIA">Nível (Boia)</option>
+                      <option value="UMIDADE">Umidade</option>
+                    </select>
+                  </div>
+                  <div class="col-md-2">
+                    <label for="campoAlerta" class="form-label fw-semibold">
+                      <i class="bi bi-braces me-2"></i>Campo
+                    </label>
+                    <select id="campoAlerta" name="campo_sensor" class="form-select" required>
+                      <option value="">Campo</option>
+                    </select>
+                  </div>
+                  <div class="col-md-2">
+                    <label for="operadorAlerta" class="form-label fw-semibold">
+                      <i class="bi bi-plus-circle me-2"></i>Operador
+                    </label>
+                    <select id="operadorAlerta" name="operador" class="form-select" required>
+                      <option value="">Operador</option>
+                      <option value=">">&gt; (maior que)</option>
+                      <option value=">=">&gt;= (maior ou igual)</option>
+                      <option value="<">&lt; (menor que)</option>
+                      <option value="<=">&lt;= (menor ou igual)</option>
+                      <option value="==">== (igual)</option>
+                      <option value="!=">!= (diferente)</option>
+                    </select>
+                  </div>
+                  <div class="col-md-2">
+                    <label for="valorLimite" class="form-label fw-semibold">
+                      <i class="bi bi-hash me-2"></i>Valor Limite
+                    </label>
+                    <input type="number" step="any" id="valorLimite" name="valor_limite" class="form-control" placeholder="Valor" required>
+                  </div>
+                  <div class="col-md-12">
+                    <label for="mensagemAlerta" class="form-label fw-semibold">
+                      <i class="bi bi-chat me-2"></i>Mensagem de Alerta
+                    </label>
+                    <input type="text" id="mensagemAlerta" name="mensagem_alerta" class="form-control" placeholder="Mensagem personalizada para o alerta (opcional)">
+                  </div>
+                </div>
+                <div class="mt-3 text-end">
+                  <button type="button" class="btn btn-outline-secondary me-2" onclick="limparFormularioAlerta()">
+                    <i class="bi bi-eraser me-2"></i>Limpar
+                  </button>
+                  <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-2"></i>Adicionar Alerta
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="card border-0 shadow-sm" data-aos="fade-up" data-aos-delay="200">
+            <div class="card-header bg-primary text-white">
+              <i class="bi bi-list-check me-2"></i>Meus Alertas Configurados
+            </div>
+            <div class="card-body">
+              <div id="alertas-container">
+                <div class="text-center py-4">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Carregando...</span>
+                  </div>
+                  <p class="mt-2 text-muted">Carregando alertas configurados...</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>

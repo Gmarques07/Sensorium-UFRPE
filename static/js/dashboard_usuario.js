@@ -8,6 +8,14 @@ function showSection(event, sectionId) {
   const section = document.getElementById(sectionId);
   if (section) section.classList.add('active');
 
+  // Se a seção de alertas for selecionada e os sensores ainda não foram carregados, carregar agora
+  if (sectionId === 'alertas') {
+    const sensorSelect = document.getElementById('sensorAlerta');
+    if (sensorSelect && sensorSelect.options.length <= 1) { // Se só tem a opção padrão
+      carregarSensoresParaAlertas();
+    }
+  }
+
   history.pushState({}, '', `#${sectionId}`);
 }
 
@@ -67,11 +75,14 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .then(user => {
       console.log('Usuário autenticado:', user);
+      localStorage.setItem('user', JSON.stringify(user)); // Armazenar dados do usuário
       const welcomeMessage = document.getElementById('welcome-message');
       if (welcomeMessage && user.nome) {
         welcomeMessage.textContent = `Bem-vindo(a), ${user.nome}!`;
       }
       carregarDadosSensores();
+      //carregarSensoresParaAlertas(); // Carregar sensores para o formulário de alertas (agora carregado sob demanda)
+      carregarAlertasConfigurados(); // Carregar alertas configurados
     })
     .catch(error => {
       console.error('Erro na autenticação inicial:', error);
@@ -155,6 +166,78 @@ document.addEventListener('DOMContentLoaded', function() {
         submitButton.disabled = false;
         submitButton.innerHTML = originalButtonHtml;
     });
+  });
+
+  // Evento para formulário de alertas
+  document.getElementById('formCriarAlerta').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const form = this;
+    const formData = new FormData(form);
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalButtonHtml = submitButton.innerHTML;
+
+    submitButton.disabled = true;
+    submitButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...`;
+
+    // Preparar os dados
+    const payload = {};
+    for (const [key, value] of formData.entries()) {
+      if (key !== 'local_id') {
+        payload[key] = value;
+      } else {
+        // Converter para número
+        payload[key] = parseInt(value);
+      }
+    }
+
+    // Adicionar email do usuário
+    payload.usuario_email = JSON.parse(localStorage.getItem('user')).email;
+
+    fetch('/api/v1/regras-alerta', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(async response => {
+      if (response.ok) {
+        // Limpar o formulário
+        form.reset();
+        // Recarregar os alertas
+        carregarAlertasConfigurados();
+        // Mostrar mensagem de sucesso
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-success alert-dismissible fade show';
+        alertDiv.role = 'alert';
+        alertDiv.innerHTML = `Alerta criado com sucesso!<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>`;
+        document.querySelector('main').insertBefore(alertDiv, document.querySelector('main').firstChild);
+        setTimeout(() => alertDiv.remove(), 3000);
+      } else {
+        const errorData = await response.json();
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+        alertDiv.role = 'alert';
+        alertDiv.innerHTML = `${errorData.detail || 'Erro ao criar alerta.'}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>`;
+        document.querySelector('#formCriarAlerta').prepend(alertDiv);
+        setTimeout(() => alertDiv.remove(), 5000);
+      }
+    })
+    .catch(() => {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+        alertDiv.role = 'alert';
+        alertDiv.innerHTML = `Erro de conexão. Tente novamente.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>`;
+        document.querySelector('#formCriarAlerta').prepend(alertDiv);
+        setTimeout(() => alertDiv.remove(), 5000);
+    })
+    .finally(() => {
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalButtonHtml;
+    });
+  });
+
+  // Evento para mudança de tipo de sensor, para atualizar campos disponíveis
+  document.getElementById('tipoSensorAlerta').addEventListener('change', function() {
+    atualizarCamposSensor(this.value);
   });
 
   document.getElementById('btnExportCSV').addEventListener('click', function() {
@@ -308,6 +391,9 @@ function carregarDadosSensores() {
     })
     .then(data => {
       console.log('Dados dos sensores:', data);
+      // Armazenar dados dos sensores para uso posterior
+      localStorage.setItem('sensores', JSON.stringify(data.dispositivos));
+      
       const totalDispositivos = document.getElementById('total-dispositivos');
       if (totalDispositivos) {
         totalDispositivos.textContent = data.dispositivos.length;
@@ -317,8 +403,8 @@ function carregarDadosSensores() {
         selectDispositivos.innerHTML = '<option value="">Todos</option>';
         data.dispositivos.forEach(disp => {
           const option = document.createElement('option');
-          option.value = disp.dispositivo;
-          option.textContent = disp.dispositivo;
+          option.value = disp.id;  // Usando ID do dispositivo
+          option.textContent = disp.nome;  // Usando nome do dispositivo
           selectDispositivos.appendChild(option);
         });
       }
@@ -342,14 +428,14 @@ function renderizarSensores(data) {
 
   let html = `<div class="mb-4"><label for="selectDispositivo" class="form-label fw-semibold">Selecione o Dispositivo:</label><select class="form-select w-auto d-inline-block" id="selectDispositivo" onchange="mostrarDispositivoSelecionado()">`;
   data.dispositivos.forEach((disp) => {
-    html += `<option value="${disp.dispositivo}">${disp.dispositivo}</option>`;
+    html += `<option value="${disp.nome}">${disp.nome}</option>`;
   });
   html += `</select></div>`;
 
   data.dispositivos.forEach((disp, index) => {
-    const dispositivoId = disp.dispositivo.replace(/\s/g, '_');
-    const phData = data.ph_por_dispositivo[disp.dispositivo];
-    const nivelData = data.nivel_por_dispositivo[disp.dispositivo];
+    const dispositivoId = disp.nome.replace(/\s/g, '_');
+    const phData = data.ph_por_dispositivo[disp.nome];
+    const nivelData = data.nivel_por_dispositivo[disp.nome];
     
     html += `
       <div class="dispositivo-panel" id="panel-${dispositivoId}" style="display: ${index === 0 ? 'block' : 'none'};">
@@ -524,9 +610,9 @@ function renderizarSensores(data) {
 
 function criarGraficos(data) {
   data.dispositivos.forEach(disp => {
-    const dispositivoId = disp.dispositivo.replace(/\s/g, '_');
-    const phData = data.ph_por_dispositivo[disp.dispositivo];
-    const nivelData = data.nivel_por_dispositivo[disp.dispositivo];
+    const dispositivoId = disp.nome.replace(/\s/g, '_');
+    const phData = data.ph_por_dispositivo[disp.nome];
+    const nivelData = data.nivel_por_dispositivo[disp.nome];
     
     const phCtx = document.getElementById(`phChart-${dispositivoId}`);
     if (phCtx && phData && phData.historico) {
@@ -602,4 +688,186 @@ function mostrarDispositivoSelecionado() {
   var painelAtivo = document.getElementById('panel-' + valor);
   if (painelAtivo) painelAtivo.style.display = 'block';
   localStorage.setItem('dispositivoSelecionado', select.value);
+}
+
+// Funções para carregar e gerenciar alertas
+
+function carregarSensoresParaAlertas() {
+  const select = document.getElementById('sensorAlerta');
+  select.innerHTML = '<option value="">Selecione um sensor</option>';
+  
+  fetch('/api/v1/usuarios/dashboard-dados')
+    .then(response => response.json())
+    .then(data => {
+      // Armazenar dados dos sensores para uso posterior
+      localStorage.setItem('sensores', JSON.stringify(data.dispositivos));
+      
+      data.dispositivos.forEach(disp => {
+        const option = document.createElement('option');
+        option.value = disp.id; // Usando ID do dispositivo
+        option.textContent = disp.nome; // Mostrando nome do dispositivo
+        select.appendChild(option);
+      });
+      
+      // Atualizar também o select de relatórios se existir
+      const selectRelatorios = document.getElementById('dispRel');
+      if (selectRelatorios) {
+        selectRelatorios.innerHTML = '<option value="">Todos</option>';
+        data.dispositivos.forEach(disp => {
+          const option = document.createElement('option');
+          option.value = disp.id;  // Usando ID do dispositivo
+          option.textContent = disp.nome;  // Usando nome do dispositivo
+          selectRelatorios.appendChild(option);
+        });
+      }
+    })
+    .catch(error => {
+      console.error('Erro ao carregar sensores para alertas:', error);
+      select.innerHTML = '<option value="">Erro ao carregar sensores</option>';
+    });
+}
+
+function atualizarCamposSensor(tipoSensor) {
+  const campoSelect = document.getElementById('campoAlerta');
+  campoSelect.innerHTML = '<option value="">Campo</option>';
+  
+  // Mapear campos disponíveis para cada tipo de sensor
+  const camposPorTipo = {
+    'PH': [
+      {value: 'ph', text: 'pH'},
+    ],
+    'BOIA': [
+      {value: 'valor', text: 'Valor (Boia)'},
+      {value: 'status', text: 'Status'},
+    ],
+    'UMIDADE': [
+      {value: 'umidade_percentual', text: 'Umidade (%)'},
+      {value: 'raw', text: 'Valor Raw'},
+      {value: 'status', text: 'Status'},
+    ]
+  };
+  
+  if (camposPorTipo[tipoSensor]) {
+    camposPorTipo[tipoSensor].forEach(campo => {
+      const option = document.createElement('option');
+      option.value = campo.value;
+      option.textContent = campo.text;
+      campoSelect.appendChild(option);
+    });
+  }
+}
+
+function carregarAlertasConfigurados() {
+  fetch('/api/v1/regras-alerta')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Erro ao carregar alertas');
+      }
+      return response.json();
+    })
+    .then(alertas => {
+      const container = document.getElementById('alertas-container');
+      if (!alertas || alertas.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-4">
+            <i class="bi bi-bell-slash text-muted fs-1 mb-3"></i>
+            <p class="text-muted mb-0">Nenhum alerta configurado.</p>
+            <p class="text-muted small">Configure seus primeiros alertas usando o formulário acima.</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '<div class="table-responsive"><table class="table table-hover">';
+      html += `
+        <thead>
+          <tr>
+            <th>Sensor</th>
+            <th>Regra</th>
+            <th>Mensagem</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+      `;
+
+      alertas.forEach(alerta => {
+        // Obter nome do sensor
+        const sensorNome = obterNomeSensor(alerta.local_id);
+        html += `
+          <tr>
+            <td>${sensorNome}</td>
+            <td>${alerta.campo_sensor} ${alerta.operador} ${alerta.valor_limite}</td>
+            <td>${alerta.mensagem_alerta || 'Alerta personalizado'}</td>
+            <td><span class="badge ${alerta.ativa ? 'bg-success' : 'bg-secondary'}">${alerta.ativa ? 'Ativo' : 'Inativo'}</span></td>
+            <td>
+              <button class="btn btn-outline-danger btn-sm" onclick="excluirAlerta(${alerta.id})" title="Excluir alerta">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+
+      html += '</tbody></table></div>';
+      container.innerHTML = html;
+    })
+    .catch(error => {
+      console.error('Erro ao carregar alertas configurados:', error);
+      const container = document.getElementById('alertas-container');
+      container.innerHTML = `<div class="text-center py-4"><i class="bi bi-exclamation-circle text-muted fs-1 mb-2 d-block"></i><p class="mb-0">Erro ao carregar alertas configurados.</p></div>`;
+    });
+}
+
+function obterNomeSensor(localId) {
+  try {
+    const sensores = JSON.parse(localStorage.getItem('sensores')) || [];
+    const sensor = sensores.find(s => s.id == localId);
+    return sensor ? sensor.nome : `Sensor ${localId}`;
+  } catch (e) {
+    console.error('Erro ao obter nome do sensor:', e);
+    return `Sensor ${localId}`;
+  }
+}
+
+function excluirAlerta(alertaId) {
+  if (!confirm('Tem certeza que deseja excluir este alerta?')) {
+    return;
+  }
+
+  fetch(`/api/v1/regras-alerta/${alertaId}`, {
+    method: 'DELETE'
+  })
+  .then(response => {
+    if (response.ok) {
+      // Recarregar a lista de alertas
+      carregarAlertasConfigurados();
+      // Mostrar mensagem de sucesso
+      const alertDiv = document.createElement('div');
+      alertDiv.className = 'alert alert-success alert-dismissible fade show';
+      alertDiv.role = 'alert';
+      alertDiv.innerHTML = `Alerta excluído com sucesso!<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>`;
+      document.querySelector('main').insertBefore(alertDiv, document.querySelector('main').firstChild);
+      setTimeout(() => alertDiv.remove(), 3000);
+    } else {
+      return response.json().then(data => {
+        throw new Error(data.detail || 'Erro ao excluir alerta');
+      });
+    }
+  })
+  .catch(error => {
+    console.error('Erro:', error);
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+    alertDiv.role = 'alert';
+    alertDiv.innerHTML = `${error.message || 'Erro ao excluir alerta.'}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>`;
+    document.querySelector('main').insertBefore(alertDiv, document.querySelector('main').firstChild);
+    setTimeout(() => alertDiv.remove(), 5000);
+  });
+}
+
+function limparFormularioAlerta() {
+  document.getElementById('formCriarAlerta').reset();
+  document.getElementById('campoAlerta').innerHTML = '<option value="">Campo</option>';
 }
