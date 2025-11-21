@@ -32,7 +32,7 @@ services:
       - ./templates:/app/templates
       - ./static:/app/static
     ports:
-      - "8001:8001"
+      - "80:8001"
     command: >
       sh -c "
         set -e

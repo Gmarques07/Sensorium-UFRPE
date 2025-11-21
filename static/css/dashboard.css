@@ -230,6 +230,7 @@ body.dark-mode {
     --dark-blue: #121212;   /* Fundo da sidebar */
     --dark-text: #F5F5F5;
     --primary-blue: #004183;
+    --accent-color: var(--primary-blue);
     --border-color: #232323;
     --shadow-color: rgba(0, 0, 0, 0.75);
 }
@@ -289,6 +290,7 @@ body.dark-mode .btn-outline-primary:hover {
 body.dark-mode .list-group-item {
     background-color: var(--card-bg);
     border-color: var(--border-color);
+    color: var(--dark-text);
 }
 
 /* Estilos para Tabelas e Seletores em Dark Mode */

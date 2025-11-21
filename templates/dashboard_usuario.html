@@ -3,7 +3,7 @@
 {% block title %}Dashboard do Usuário - Sensorium{% endblock %}
 
 {% block styles %}
-<link rel="stylesheet" href="{{ url_for('static', path='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', path='css/dashboard.css') }}?v=1.2">
 {% endblock %}
 
 {% block content %}
@@ -11,11 +11,10 @@
     <div class="row g-0">
       <!-- Sidebar -->
       <nav class="sidebar col-auto">
-        <a href="{{ url_for('homepage') }}" class="d-flex align-items-center text-decoration-none text-white mb-4" data-aos="fade-right">
-          <i class="bi bi-cpu logo-icon"></i>
-          <span class="brand-text fs-4 ms-2">Sensorium</span>
-        </a>
-        <div class="nav flex-column">
+              <div class="d-flex align-items-center text-decoration-none text-white mb-4" data-aos="fade-right">
+                  <i class="bi bi-cpu logo-icon"></i>
+                  <span class="brand-text fs-4 ms-2">Sensorium</span>
+              </div>        <div class="nav flex-column">
           <a class="nav-link active" href="#dashboard" onclick="showSection(event, 'dashboard')" role="button" data-aos="fade-right" data-aos-delay="100">
             <i class="bi bi-house-door"></i>
             <span>Dashboard</span>
