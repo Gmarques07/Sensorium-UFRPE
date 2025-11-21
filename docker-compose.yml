@@ -1,4 +1,19 @@
 services:
+  caddy:
+    image: caddy:latest
+    container_name: sensorium_caddy
+    restart: always
+    ports:
+      - "80:80"   
+      - "443:443" 
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+  # --- APLICAÇÃO ---
   app:
     build:
       context: .
@@ -21,7 +36,7 @@ services:
       PYTHONPATH: "/app"
       DISABLE_RATE_LIMITING: "true"
       API_BASE_URL: "http://localhost:8003"
-      BASE_URL: "http://sensoriumtech.online"
+      BASE_URL: "https://sensoriumtech.online" 
       SMTP_HOST: "smtp.gmail.com"
       SMTP_PORT: "587"
       SMTP_USER: "equipesensorium@gmail.com"
@@ -32,8 +47,7 @@ services:
       - .:/app
       - ./templates:/app/templates
       - ./static:/app/static
-    ports:
-      - "80:8001"
+
     command: >
       sh -c "
         set -e
@@ -47,6 +61,7 @@ services:
         uvicorn backend.app.main:app --host 0.0.0.0 --port 8001
       "
 
+  # --- BANCO DE DADOS ---
   mysql:
     image: mysql:8.0
     container_name: sensorium_mysql
@@ -67,3 +82,5 @@ services:
 
 volumes:
   mysql_data:
+  caddy_data:
+  caddy_config:
