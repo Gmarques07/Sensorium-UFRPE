@@ -24,8 +24,8 @@ from reportlab.pdfbase.ttfonts import TTFont
 router = APIRouter()
 
 # Cores da identidade visual do Sensorium
-PRIMARY_BLUE = colors.Color(0, 102/255, 204/255)  # #0066cc
-SECONDARY_BLUE = colors.Color(0, 51/255, 102/255)  # #003366
+PRIMARY_BLUE = colors.Color(0, 65/255, 131/255)  # #004183
+SECONDARY_BLUE = colors.Color(0, 65/255, 131/255)  # #004183 - using same blue for consistency
 ACCENT_GREEN = colors.Color(0, 230/255, 118/255)  # #00E676
 LIGHT_BG = colors.Color(245/255, 249/255, 255/255)  # #f5f9ff
 CARD_BG = colors.white

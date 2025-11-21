@@ -624,10 +624,10 @@ function criarGraficos(data) {
           datasets: [{
             label: 'Histórico de pH',
             data: historicoPh.map(item => item.ph),
-            borderColor: '#0066cc',
-            backgroundColor: 'rgba(0,102,204,0.1)',
+            borderColor: '#004183',
+            backgroundColor: 'rgba(0,65,131,0.1)',
             borderWidth: 3,
-            pointBackgroundColor: '#0066cc',
+            pointBackgroundColor: '#004183',
             pointBorderColor: '#fff',
             pointRadius: 6,
             pointHoverRadius: 8,

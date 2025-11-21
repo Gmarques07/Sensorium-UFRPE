@@ -16,9 +16,9 @@
 
     <style>
         :root {
-            --primary-blue: #0066cc;
+            --primary-blue: #004183;
             --secondary-blue: #4FC3F7;
-            --dark-blue: #003366;
+            --dark-blue: #004183;
             --light-bg: #f8faff;
             --accent-color: #00E0C6;
             --text-primary: #333;
@@ -138,18 +138,6 @@
             color: #e0e0e0;
         }
 
-        body.dark-mode .navbar {
-            background: rgba(30, 30, 30, 0.95) !important;
-        }
-
-        body.dark-mode .navbar-brand {
-            color: #f8f9fa !important;
-        }
-
-        body.dark-mode #theme-toggle {
-            color: #f8f9fa;
-        }
-
         body.dark-mode .section-title {
             color: #f5f5f5;
         }
@@ -191,11 +179,6 @@
 </head>
 <body>
     {% include 'partials/navbar.html' %}
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </nav>
 
     <main class="container my-5">
         <section class="py-5" data-aos="fade-up">

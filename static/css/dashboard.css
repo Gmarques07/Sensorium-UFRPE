@@ -1,7 +1,7 @@
 :root {
-    --primary-blue: #0066cc;
+    --primary-blue: #004183;
     --secondary-blue: #4FC3F7;
-    --dark-blue: #003366;
+    --dark-blue: #004183;
     --light-bg: #f8faff;
     --card-bg: #ffffff;
     
@@ -229,7 +229,7 @@ body.dark-mode {
     --card-bg: #181818;     /* Cards internos */
     --dark-blue: #121212;   /* Fundo da sidebar */
     --dark-text: #F5F5F5;
-    --primary-blue: #0066cc;
+    --primary-blue: #004183;
     --border-color: #232323;
     --shadow-color: rgba(0, 0, 0, 0.75);
 }
@@ -245,7 +245,7 @@ body.dark-mode {
 }
 
 body.dark-mode .text-primary {
-    color: var(--primary-blue) !important;
+    color: var(--accent-color) !important;
 }
 
 body.dark-mode .text-muted {
