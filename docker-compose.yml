@@ -4,8 +4,8 @@ services:
     container_name: sensorium_caddy
     restart: always
     ports:
-      - "80:80"   
-      - "443:443" 
+      - "80:80"
+      - "443:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
@@ -13,7 +13,7 @@ services:
     depends_on:
       - app
 
-  # --- APLICAÇÃO ---
+  # --- APLICAÇÃO (FASTAPI) ---
   app:
     build:
       context: .
@@ -23,6 +23,10 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 400M
     environment:
       MYSQL_HOST: mysql
       MYSQL_USER: root
@@ -36,7 +40,7 @@ services:
       PYTHONPATH: "/app"
       DISABLE_RATE_LIMITING: "true"
       API_BASE_URL: "http://localhost:8003"
-      BASE_URL: "https://sensoriumtech.online" 
+      BASE_URL: "https://sensoriumtech.online"
       SMTP_HOST: "smtp.gmail.com"
       SMTP_PORT: "587"
       SMTP_USER: "equipesensorium@gmail.com"
@@ -47,7 +51,7 @@ services:
       - .:/app
       - ./templates:/app/templates
       - ./static:/app/static
-
+    
     command: >
       sh -c "
         set -e
@@ -67,6 +71,10 @@ services:
     container_name: sensorium_mysql
     command: --default-authentication-plugin=mysql_native_password
     restart: "always"
+    deploy:
+      resources:
+        limits:
+          memory: 400M
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: sensorium_db
