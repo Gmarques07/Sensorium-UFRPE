@@ -147,10 +147,10 @@ async def google_callback(
         # Determinar para onde redirecionar
         if is_new_user:
             # Se for um novo usuário (cadastro), redirecionar para login
-            redirect_url = f"http://localhost:8002/login_usuario.html?token={access_token}"
+            redirect_url = f"{settings.BASE_URL}/login_usuario.html?token={access_token}"
         else:
             # Se for login de usuário existente, redirecionar para dashboard
-            redirect_url = f"http://localhost:8002/dashboard_usuario.html?token={access_token}"
+            redirect_url = f"{settings.BASE_URL}/dashboard_usuario.html?token={access_token}"
         
         # Retornar redirecionamento
         return RedirectResponse(url=redirect_url)

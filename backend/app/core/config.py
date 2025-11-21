@@ -41,7 +41,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))  # 24 horas
     
     # URL base
-    BASE_URL: str = os.getenv("BASE_URL", "http://localhost:8002")
+    # URL base para a aplicação (ex: http://meusite.com)
+    BASE_URL: str = os.getenv("BASE_URL")
     
     # Ambiente
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
@@ -57,7 +58,7 @@ class Settings(BaseSettings):
     # Configurações do Google OAuth
     GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "")
     GOOGLE_CLIENT_SECRET: str = os.getenv("GOOGLE_CLIENT_SECRET", "")
-    GOOGLE_REDIRECT_URI: str = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8002/api/v1/auth/google/callback")
+    GOOGLE_REDIRECT_URI: Optional[str] = os.getenv("GOOGLE_REDIRECT_URI", None)
     
     @property
     def emails_enabled(self) -> bool:

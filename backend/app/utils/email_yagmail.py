@@ -251,7 +251,7 @@ def send_confirmacao_cadastro_yagmail(
                 </div>
                 
                 <div style="text-align: center; margin: 30px 0;">
-                    <a href="http://localhost:8000/login_usuario.html" class="btn">
+                    <a href="{settings.BASE_URL}/login_usuario.html" class="btn">
                         🚀 Acessar o Sistema
                     </a>
                 </div>
