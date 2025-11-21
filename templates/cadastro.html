@@ -17,6 +17,15 @@
         transition: all 0.3s ease;
     }
 
+    /* Fix navbar in light mode for this page */
+    body:not(.dark-mode) .navbar.navbar-light {
+        background-color: transparent !important;
+    }
+    body:not(.dark-mode) .navbar.navbar-light .nav-link,
+    body:not(.dark-mode) .navbar.navbar-light .navbar-brand {
+        color: var(--white) !important;
+    }
+
     /* Card (match login style) */
     .signup-card {
         background: rgba(255, 255, 255, 0.98);
@@ -64,63 +73,6 @@
     body.dark-mode .signup-card a,
     body.dark-mode .signup-card a * { color: inherit; }
     body.dark-mode .signup-card h2 { color: rgba(245,245,245,0.95); }
-
-    /* Override conflicting CSS in style.css to match index navbar behavior */
-    body:not(.dark-mode) nav.navbar.navbar-dark {
-        background-color: transparent !important;
-        transition: background-color 0.4s ease, padding 0.4s ease;
-    }
-
-    body:not(.dark-mode) nav.navbar.navbar-dark.navbar-scrolled {
-        background-color: rgba(0, 51, 102, 0.95) !important; /* Blue when scrolled like index */
-        backdrop-filter: blur(10px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-
-    /* Ensure navbar text is white */
-    body:not(.dark-mode) nav.navbar.navbar-dark .navbar-brand,
-    body:not(.dark-mode) nav.navbar.navbar-dark .navbar-brand i.bi-cpu {
-        color: white !important;
-    }
-
-    body:not(.dark-mode) nav.navbar.navbar-dark .nav-link {
-        color: rgba(255, 255, 255, 0.85) !important;
-    }
-
-    body:not(.dark-mode) nav.navbar.navbar-dark .nav-link:hover {
-        color: var(--accent-color) !important;
-    }
-
-    body:not(.dark-mode) nav.navbar.navbar-dark #theme-toggle {
-        color: rgba(255, 255, 255, 0.85) !important;
-    }
-
-    /* Dark mode navbar - match index behavior */
-    body.dark-mode nav.navbar.navbar-dark {
-        background-color: transparent !important;
-        transition: background-color 0.4s ease;
-    }
-
-    body.dark-mode nav.navbar.navbar-dark.navbar-scrolled {
-        background-color: rgba(18, 18, 18, 0.9) !important;
-    }
-
-    body.dark-mode nav.navbar.navbar-dark .navbar-brand,
-    body.dark-mode nav.navbar.navbar-dark .navbar-brand i.bi-cpu {
-        color: white !important;
-    }
-
-    body.dark-mode nav.navbar.navbar-dark .nav-link {
-        color: rgba(255, 255, 255, 0.85) !important;
-    }
-
-    body.dark-mode nav.navbar.navbar-dark .nav-link:hover {
-        color: var(--accent-color) !important;
-    }
-
-    body.dark-mode nav.navbar.navbar-dark #theme-toggle {
-        color: rgba(255, 255, 255, 0.85) !important;
-    }
 
     @media (max-width: 576px) { .signup-card { padding: 2rem; } }
 </style>

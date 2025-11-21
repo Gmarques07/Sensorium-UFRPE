@@ -6,6 +6,7 @@
     --accent-color: #00E0C6; 
     --white: #ffffff;
     --border-color: #e9ecef;
+    --text-primary: #2c3e50;
 }
 
 body {
@@ -244,12 +245,6 @@ nav.navbar.navbar-light {
     background-color: rgba(255, 255, 255, 0.95) !important;
 }
 
-/* Ensure navbar-dark also has a light background by default to prevent visibility issues */
-/* This handles the case when navbar starts with navbar-dark but JavaScript hasn't run yet */
-nav.navbar.navbar-dark {
-    background-color: rgba(255, 255, 255, 0.95) !important;
-}
-
 nav.navbar.navbar-light .navbar-brand,
 nav.navbar.navbar-light .navbar-brand i.bi-cpu {
     color: var(--dark-blue) !important;
@@ -270,29 +265,6 @@ nav.navbar.navbar-light #theme-toggle {
 /* Estilos do tema escuro para a navbar */
 body.dark-mode nav.navbar.navbar-dark {
     background-color: rgba(30, 30, 30, 0.95) !important;
-}
-
-/* More specific rule for navbar-dark when body is NOT in dark mode */
-body:not(.dark-mode) nav.navbar.navbar-dark {
-    background-color: rgba(255, 255, 255, 0.95) !important;
-}
-
-/* Ensure navbar-dark has proper text colors for light background as default in light mode */
-body:not(.dark-mode) nav.navbar.navbar-dark .navbar-brand,
-body:not(.dark-mode) nav.navbar.navbar-dark .navbar-brand i.bi-cpu {
-    color: var(--dark-blue) !important;
-}
-
-body:not(.dark-mode) nav.navbar.navbar-dark .nav-link {
-    color: var(--text-primary) !important;
-}
-
-body:not(.dark-mode) nav.navbar.navbar-dark .nav-link:hover {
-    color: var(--primary-blue) !important;
-}
-
-body:not(.dark-mode) nav.navbar.navbar-dark #theme-toggle {
-    color: var(--text-primary);
 }
 
 body.dark-mode nav.navbar .navbar-brand,

@@ -38,6 +38,12 @@
         backdrop-filter: blur(8px);
     }
 
+    /* Fix navbar text color in light mode */
+    body:not(.dark-mode) .navbar.navbar-light .nav-link,
+    body:not(.dark-mode) .navbar.navbar-light .navbar-brand {
+        color: var(--white) !important;
+    }
+
     .login-card {
         background: rgba(255, 255, 255, 0.98);
         border-radius: 20px;

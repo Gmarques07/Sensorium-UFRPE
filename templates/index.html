@@ -23,6 +23,12 @@
         line-height: 1.6; /* Melhora a legibilidade */
     }
 
+    /* Fix navbar text color in light mode */
+    body:not(.dark-mode) .navbar.navbar-light .nav-link,
+    body:not(.dark-mode) .navbar.navbar-light .navbar-brand {
+        color: var(--white) !important;
+    }
+
     .navbar {
         position: fixed;
         top: 0;
