@@ -1,9 +1,8 @@
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: sensorium_app
+    build: .
+    container_name: sensorium_app_local
+    restart: always
     depends_on:
       mysql:
         condition: service_healthy
@@ -14,46 +13,54 @@ services:
       MYSQL_DATABASE: sensorium_db
       MYSQL_PORT: 3306
       DATABASE_URL: "mysql+mysqlconnector://root:rootpassword@mysql:3306/sensorium_db?charset=utf8mb4"
-      SECRET_KEY: "chave_secreta_muito_longa_e_segura_para_jwt_tokens_aqui"
+      SECRET_KEY: "chave_secreta_dev"
       ACCESS_TOKEN_EXPIRE_MINUTES: "1440"
       BACKEND_CORS_ORIGINS: '["*"]'
       PYTHONPATH: "/app"
       DISABLE_RATE_LIMITING: "true"
-      API_BASE_URL: "http://localhost:8003"
+      API_BASE_URL: "http://localhost:8001"
+      BASE_URL: "http://localhost:8001" 
+      SMTP_HOST: "smtp.gmail.com"
+      SMTP_PORT: "587"
+      SMTP_USER: "equipesensorium@gmail.com"
+      SMTP_PASSWORD: "hbpl kcxg ndho zwra"
+      EMAILS_FROM_EMAIL: "equipesensorium@gmail.com"
+      EMAILS_FROM_NAME: "Sensorium Local"
     volumes:
-      - .:/app
-      - ./templates:/app/templates
-      - ./static:/app/static
+      - .:/app 
     ports:
-      - "80:8001"
-    restart: unless-stopped
+      - "8001:8001"
+    
     command: >
       sh -c "
         set -e
-        echo 'Aguardando banco de dados...'
-        sleep 10
+        echo 'Aguardando banco de dados iniciar...'
+        sleep 5
         echo 'Inicializando banco de dados...'
         python backend/scripts/init_db.py
-        echo 'Iniciando aplicação (produção sem testes)...'
-        uvicorn backend.app.main:app --host 0.0.0.0 --port 8001
+        echo 'Rodando testes automatizados...'
+        ENVIRONMENT=test pytest backend/tests/ -v --tb=short
+        echo 'Testes passaram! Iniciando servidor de desenvolvimento com Hot-Reload...'
+        uvicorn backend.app.main:app --host 0.0.0.0 --port 8001 --reload
       "
 
   mysql:
     image: mysql:8.0
-    container_name: sensorium_mysql
+    container_name: sensorium_mysql_local
     command: --default-authentication-plugin=mysql_native_password
+    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: sensorium_db
-      MYSQL_DATABASE_TEST: sensorium_test_db
+    ports:
+      - "3307:3306" 
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mysql_data_local:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
       interval: 10s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
 
 volumes:
-  mysql_data:
+  mysql_data_local:
