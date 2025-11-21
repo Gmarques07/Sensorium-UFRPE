@@ -65,10 +65,15 @@
     body.dark-mode .signup-card a * { color: inherit; }
     body.dark-mode .signup-card h2 { color: rgba(245,245,245,0.95); }
 
-    /* Override conflicting CSS in style.css to ensure navbar-dark appears correctly */
+    /* Override conflicting CSS in style.css to match index navbar behavior */
     body:not(.dark-mode) nav.navbar.navbar-dark {
-        background-color: rgba(0, 65, 131, 0.95) !important; /* Solid dark blue to match login appearance */
-        backdrop-filter: blur(8px);
+        background-color: transparent !important;
+        transition: background-color 0.4s ease, padding 0.4s ease;
+    }
+
+    body:not(.dark-mode) nav.navbar.navbar-dark.navbar-scrolled {
+        background-color: rgba(0, 51, 102, 0.95) !important; /* Blue when scrolled like index */
+        backdrop-filter: blur(10px);
         box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
 
@@ -90,10 +95,14 @@
         color: rgba(255, 255, 255, 0.85) !important;
     }
 
-    /* Dark mode navbar */
+    /* Dark mode navbar - match index behavior */
     body.dark-mode nav.navbar.navbar-dark {
-        background-color: rgba(18, 18, 18, 0.95) !important;
-        backdrop-filter: blur(8px);
+        background-color: transparent !important;
+        transition: background-color 0.4s ease;
+    }
+
+    body.dark-mode nav.navbar.navbar-dark.navbar-scrolled {
+        background-color: rgba(18, 18, 18, 0.9) !important;
     }
 
     body.dark-mode nav.navbar.navbar-dark .navbar-brand,
@@ -211,6 +220,16 @@
 <script>
     // AOS já é inicializado no base, mas garantimos configuração local caso necessário
     AOS.init({ duration: 800, once: true });
+
+    // Navbar scroll effect - same as index page
+    window.addEventListener('scroll', function() {
+        const navbar = document.querySelector('.navbar');
+        if (window.scrollY > 50) {
+            navbar.classList.add('navbar-scrolled');
+        } else {
+            navbar.classList.remove('navbar-scrolled');
+        }
+    });
 
     document.addEventListener('DOMContentLoaded', function() {
         const senhaInput = document.getElementById('senha');
