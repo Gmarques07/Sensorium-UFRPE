@@ -58,7 +58,7 @@ services:
         echo 'Rodando todos os testes...'
         ENVIRONMENT=test pytest backend/tests/ -v --tb=short --cov=backend/app --cov-report=term-missing
         echo 'Testes concluídos com sucesso. Iniciando aplicação...'
-        uvicorn backend.app.main:app --host 0.0.0.0 --port 8001
+        uvicorn backend.app.main:app --host 0.0.0.0 --port 8001 --proxy-headers --forwarded-allow-ips '*'
       "
 
   # --- BANCO DE DADOS ---
