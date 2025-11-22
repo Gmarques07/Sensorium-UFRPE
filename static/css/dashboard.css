@@ -31,7 +31,7 @@ body {
     color: var(--light-text);
 }
 
-/* Link Normal (Reset forçado) */
+/* Link Normal */
 .sidebar-container .nav-link {
     color: rgba(255, 255, 255, 0.7) !important;
     margin-bottom: 0.5rem;
@@ -77,7 +77,7 @@ body {
 }
 
 
-/* --- 2. CARDS (ESPAÇAMENTO RESTAURADO) --- */
+/* --- 2. CARDS --- */
 .dashboard-card, .card {
     background: var(--card-bg);
     border-radius: 20px;
@@ -116,7 +116,7 @@ body {
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 
-/* --- 3. DARK MODE (CORREÇÃO DE TEXTOS E INPUTS) --- */
+/* --- 3. DARK MODE (COMPLETO) --- */
 body.dark-mode {
     --light-bg: #121212;
     --card-bg: #1e1e1e;
@@ -144,7 +144,8 @@ body.dark-mode .modal-content {
 body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, 
 body.dark-mode h4, body.dark-mode h5, body.dark-mode h6,
 body.dark-mode .form-label,
-body.dark-mode .modal-title {
+body.dark-mode .modal-title,
+body.dark-mode .fw-bold {
     color: #ffffff !important;
 }
 
@@ -172,25 +173,45 @@ body.dark-mode .form-select:focus {
 body.dark-mode .form-control::placeholder { color: #777; }
 body.dark-mode .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
 
-/* Tabelas e Listas */
-body.dark-mode .table { color: #e0e0e0; }
-body.dark-mode .table-hover > tbody > tr:hover > * {
-    color: #fff;
-    background-color: rgba(255,255,255,0.05);
+/* Tabelas (Fundo Transparente) */
+body.dark-mode .table {
+    --bs-table-bg: transparent;
+    --bs-table-color: #e0e0e0;
+    color: #e0e0e0 !important;
+    border-color: #333;
 }
 
+body.dark-mode .table thead,
+body.dark-mode .table thead th,
+body.dark-mode .bg-light {
+    background-color: #2d2d2d !important;
+    color: #ffffff !important;
+    border-bottom-color: #444;
+}
+
+body.dark-mode .table tbody td {
+    background-color: transparent !important;
+    color: #e0e0e0 !important;
+    border-bottom-color: #333;
+}
+
+body.dark-mode .table-hover > tbody > tr:hover > * {
+    color: #fff !important;
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Listas (Histórico) */
 body.dark-mode .list-group-item {
     background-color: transparent;
     border-color: #333;
     color: var(--dark-text);
 }
-body.dark-mode .list-group-item span,
-body.dark-mode .list-group-item i { color: #e0e0e0; }
+body.dark-mode .list-group-item span, body.dark-mode .list-group-item i { color: #e0e0e0; }
 body.dark-mode .list-group-item .badge { color: #fff; }
 body.dark-mode .list-group-item:hover { background-color: rgba(255, 255, 255, 0.05); }
 
 
-/* --- 4. RESPONSIVIDADE MOBILE --- */
+/* --- 4. RESPONSIVIDADE E HEADER PREMIUM --- */
 html, body { overflow-x: hidden; width: 100%; }
 
 @media (max-width: 767.98px) {
@@ -204,8 +225,6 @@ html, body { overflow-x: hidden; width: 100%; }
     .card-header { font-size: 0.9rem; }
 }
 
-
-/* --- 5. HEADER PREMIUM --- */
 .header-card {
     background-color: var(--card-bg);
     padding: 1.5rem;
@@ -242,3 +261,48 @@ html, body { overflow-x: hidden; width: 100%; }
 body.dark-mode .header-card { border-color: #333; }
 body.dark-mode .btn-icon-only { background-color: #2d2d2d; border-color: #444; color: #fff; }
 body.dark-mode .btn-icon-only:hover { background-color: var(--primary-blue); border-color: var(--primary-blue); }
+
+
+/* --- 5. ESTILOS ESPECÍFICOS (GERENCIAR SENSORES) --- */
+
+/* Action Card (Vincular Sensor) - Borda Sólida */
+.action-card {
+    border: 2px solid #e2e8f0; 
+    background-color: #f8faff;
+    transition: all 0.3s ease;
+}
+
+.action-card:hover {
+    border-color: var(--primary-blue);
+    background-color: #eef5ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 65, 131, 0.1);
+}
+
+/* Ajuste para DARK MODE */
+body.dark-mode .action-card {
+    border-color: #333;
+    background-color: #1a1a1a;
+}
+
+body.dark-mode .action-card:hover {
+    border-color: var(--accent-color);
+    background-color: rgba(0, 255, 139, 0.05);
+    box-shadow: 0 4px 12px rgba(0, 255, 139, 0.1);
+}
+
+/* Correção de Textos nos Modais (Dark Mode) */
+body.dark-mode .modal-body label,
+body.dark-mode .modal-body .form-text,
+body.dark-mode .modal-body p {
+    color: #e0e0e0 !important;
+}
+
+/* Correção do Select (Dark Mode) */
+body.dark-mode .form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+body.dark-mode .form-select option {
+    background-color: #2d2d2d;
+    color: #ffffff;
+}
