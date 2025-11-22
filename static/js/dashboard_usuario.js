@@ -75,6 +75,16 @@ document.addEventListener('DOMContentLoaded', function() {
       link.classList.remove('active');
       link.style.borderLeft = '';
   });
+
+  // Exibir data atual no header
+const dateElement = document.getElementById('current-date');
+if (dateElement) {
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    // Pt-BR para ficar em português
+    const today = new Date().toLocaleDateString('pt-BR', options);
+    // Deixa a primeira letra maiúscula
+    dateElement.textContent = today.charAt(0).toUpperCase() + today.slice(1);
+}
   
   // Ativa apenas o botão correto
   const activeLink = document.querySelector(`.nav-link[href="#${hash}"]`);

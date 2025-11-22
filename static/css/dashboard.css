@@ -31,8 +31,8 @@ body {
     color: var(--light-text);
 }
 
-/* Link Normal (Reset forçado para evitar borda verde em todos) */
-.nav-pills .nav-link {
+/* Link Normal (Reset forçado) */
+.sidebar-container .nav-link {
     color: rgba(255, 255, 255, 0.7) !important;
     margin-bottom: 0.5rem;
     padding: 0.8rem 1rem;
@@ -40,26 +40,27 @@ body {
     font-weight: 500;
     transition: var(--transition);
     border-left: 4px solid transparent !important;
-    background-color: transparent !important;
+    background: transparent !important;
+    box-shadow: none !important;
 }
 
 /* Link Hover */
-.nav-pills .nav-link:hover {
+.sidebar-container .nav-link:hover {
     color: #ffffff !important;
     background: rgba(255, 255, 255, 0.1) !important;
     transform: translateX(5px);
 }
 
-/* Link Ativo (Verde apenas aqui) */
-.nav-pills .nav-link.active {
+/* Link Ativo */
+.sidebar-container .nav-link.active {
     background: rgba(255, 255, 255, 0.2) !important;
     color: #ffffff !important;
-    border-left-color: var(--accent-color) !important;
+    border-left: 4px solid var(--accent-color) !important;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
 }
 
-.nav-pills .nav-link i { font-size: 1.2rem; }
+.sidebar-container .nav-link i { font-size: 1.2rem; }
 
 /* Responsividade Sidebar */
 @media (min-width: 992px) {
@@ -76,14 +77,12 @@ body {
 }
 
 
-/* --- 2. CARDS (RESTAURADOS DO ORIGINAL) --- */
+/* --- 2. CARDS (ESPAÇAMENTO RESTAURADO) --- */
 .dashboard-card, .card {
     background: var(--card-bg);
     border-radius: 20px;
-    /* Padding e Height restaurados */
     padding: 2rem; 
     height: 100%;
-    
     box-shadow: 0 10px 30px var(--shadow-color);
     transition: var(--transition);
     border: 1px solid var(--border-color);
@@ -117,14 +116,14 @@ body {
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 
-/* --- 3. DARK MODE (CORREÇÃO DE INPUTS, TEXTOS E LISTAS) --- */
+/* --- 3. DARK MODE (CORREÇÃO DE TEXTOS E INPUTS) --- */
 body.dark-mode {
     --light-bg: #121212;
     --card-bg: #1e1e1e;
     --dark-text: #e0e0e0;
     --border-color: #333;
     --shadow-color: rgba(0,0,0,0.5);
-    color-scheme: dark; /* Corrige calendário nativo */
+    color-scheme: dark;
 }
 
 body.dark-mode .sidebar-container {
@@ -141,7 +140,7 @@ body.dark-mode .modal-content {
     border-top-color: var(--primary-blue);
 }
 
-/* Títulos e Labels */
+/* Títulos e Textos */
 body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, 
 body.dark-mode h4, body.dark-mode h5, body.dark-mode h6,
 body.dark-mode .form-label,
@@ -170,63 +169,76 @@ body.dark-mode .form-select:focus {
     box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
 
-body.dark-mode .form-control::placeholder {
-    color: #777;
-}
+body.dark-mode .form-control::placeholder { color: #777; }
+body.dark-mode .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
 
-body.dark-mode .btn-close {
-    filter: invert(1) grayscale(100%) brightness(200%);
-}
-
-/* Tabelas */
+/* Tabelas e Listas */
 body.dark-mode .table { color: #e0e0e0; }
 body.dark-mode .table-hover > tbody > tr:hover > * {
     color: #fff;
     background-color: rgba(255,255,255,0.05);
 }
 
-/* Listas (Histórico) */
 body.dark-mode .list-group-item {
     background-color: transparent;
     border-color: #333;
     color: var(--dark-text);
 }
-
 body.dark-mode .list-group-item span,
-body.dark-mode .list-group-item i {
-    color: #e0e0e0;
-}
+body.dark-mode .list-group-item i { color: #e0e0e0; }
+body.dark-mode .list-group-item .badge { color: #fff; }
+body.dark-mode .list-group-item:hover { background-color: rgba(255, 255, 255, 0.05); }
 
-body.dark-mode .list-group-item .badge {
-    color: #fff;
-}
 
-body.dark-mode .list-group-item:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-}
-/* --- CORREÇÃO DE RESPONSIVIDADE MOBILE --- */
+/* --- 4. RESPONSIVIDADE MOBILE --- */
+html, body { overflow-x: hidden; width: 100%; }
 
-/* Impede que a página 'dance' para os lados */
-html, body {
-    overflow-x: hidden;
-    width: 100%;
-}
-
-/* Ajustes específicos para telas menores que 768px (Celulares) */
 @media (max-width: 767.98px) {
     .content-col {
-        /* Mais espaço no topo por causa da navbar fixa */
         padding-top: 80px !important; 
         padding-left: 15px !important;
         padding-right: 15px !important;
     }
-
-    /* Diminui o tamanho das fontes gigantes nos cards */
     .display-4 { font-size: 2.5rem; }
     .display-6 { font-size: 1.5rem; }
-    
-    /* Ajusta o cabeçalho dos cards */
-    .card-header {
-        font-size: 0.9rem;
-    }
+    .card-header { font-size: 0.9rem; }
 }
+
+
+/* --- 5. HEADER PREMIUM --- */
+.header-card {
+    background-color: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px var(--shadow-color);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.user-avatar {
+    width: 50px; height: 50px;
+    background: linear-gradient(135deg, var(--primary-blue) 0%, #4FC3F7 100%);
+    border-radius: 15px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 1.5rem; flex-shrink: 0;
+}
+
+.welcome-text { color: var(--dark-text); font-family: 'Poppins', sans-serif; }
+.separator { color: #ccc; }
+
+.btn-icon-only {
+    width: 42px; height: 42px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border-color);
+    background-color: var(--card-bg);
+    color: var(--primary-blue);
+    transition: all 0.3s ease;
+}
+.btn-icon-only:hover {
+    background-color: var(--primary-blue); color: white; transform: translateY(-2px);
+}
+
+/* Ajustes Dark Mode Header */
+body.dark-mode .header-card { border-color: #333; }
+body.dark-mode .btn-icon-only { background-color: #2d2d2d; border-color: #444; color: #fff; }
+body.dark-mode .btn-icon-only:hover { background-color: var(--primary-blue); border-color: var(--primary-blue); }
