@@ -442,7 +442,7 @@ function renderizarSensores(data) {
     return;
   }
 
-  let html = `<div class="mb-4"><label for="selectDispositivo" class="form-label fw-semibold">Selecione o Dispositivo:</label><select class="form-select w-auto d-inline-block" id="selectDispositivo" onchange="mostrarDispositivoSelecionado()">`;
+  let html = `<div class="mb-4"><label for="selectDispositivo" class="form-label fw-semibold">Selecione o Dispositivo:</label><select class="form-select w-auto d-inline-block ms-2" id="selectDispositivo" onchange="mostrarDispositivoSelecionado()">`;
   data.dispositivos.forEach((disp) => {
     html += `<option value="${disp.nome}">${disp.nome}</option>`;
   });
@@ -478,8 +478,8 @@ function renderizarSensores(data) {
             Última atualização: ${phData.atual.data}
           </p>
         </div>
-        <div class="mt-4">
-          <canvas id="phChart-${dispositivoId}" height="200"></canvas>
+        <div class="mt-4 position-relative" style="width: 100%; height: 200px;">
+          <canvas id="phChart-${dispositivoId}"></canvas>
         </div>
       `;
     } else {
@@ -529,8 +529,8 @@ function renderizarSensores(data) {
             Última atualização: ${nivelData.atual.data}
           </p>
         </div>
-        <div class="mt-4">
-          <canvas id="nivelChart-${dispositivoId}" height="200"></canvas>
+        <div class="mt-4 position-relative" style="width: 100%; height: 200px;">
+          <canvas id="nivelChart-${dispositivoId}"></canvas>
         </div>
       `;
     } else {
@@ -627,6 +627,29 @@ function criarGraficos(data) {
     const phData = data.ph_por_dispositivo[disp.nome];
     const nivelData = data.nivel_por_dispositivo[disp.nome];
     
+    // Configuração comum para responsividade
+    const configComum = {
+        responsive: true,
+        maintainAspectRatio: false, // CRÍTICO PARA MOBILE
+        plugins: { 
+            legend: { display: false },
+            tooltip: { 
+                backgroundColor: 'rgba(0, 0, 0, 0.8)', 
+                titleFont: { family: "'Poppins', sans-serif" }, 
+                bodyFont: { family: "'Poppins', sans-serif" }, 
+                padding: 12, 
+                cornerRadius: 8, 
+                displayColors: false 
+            } 
+        },
+        scales: { 
+            y: { beginAtZero: false, grid: { color: 'rgba(0, 0, 0, 0.05)' }, ticks: { font: { family: "'Poppins', sans-serif" } } }, 
+            x: { grid: { display: false }, ticks: { font: { family: "'Poppins', sans-serif" } } } 
+        },
+        animation: { duration: 2000, easing: 'easeOutQuart' },
+        interaction: { intersect: false, mode: 'index' }
+    };
+
     const phCtx = document.getElementById(`phChart-${dispositivoId}`);
     if (phCtx && phData && phData.historico) {
       const historicoPh = phData.historico.reverse();
@@ -648,14 +671,7 @@ function criarGraficos(data) {
             tension: 0.4
           }]
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(0, 0, 0, 0.8)', titleFont: { family: "'Poppins', sans-serif" }, bodyFont: { family: "'Poppins', sans-serif" }, padding: 12, cornerRadius: 8, displayColors: false } },
-          scales: { y: { beginAtZero: false, grid: { color: 'rgba(0, 0, 0, 0.05)' }, ticks: { font: { family: "'Poppins', sans-serif" } } }, x: { grid: { display: false }, ticks: { font: { family: "'Poppins', sans-serif" } } } },
-          animation: { duration: 2000, easing: 'easeOutQuart' },
-          interaction: { intersect: false, mode: 'index' }
-        }
+        options: configComum
       });
     }
     
@@ -681,12 +697,15 @@ function criarGraficos(data) {
           }]
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(0, 0, 0, 0.8)', titleFont: { family: "'Poppins', sans-serif" }, bodyFont: { family: "'Poppins', sans-serif" }, padding: 12, cornerRadius: 8, displayColors: false, callbacks: { label: function(context) { var v = context.parsed.y; if (v === 2) return 'ALTO'; if (v === 1) return 'BAIXO'; return 'Desconhecido'; } } } },
-          scales: { y: { beginAtZero: true, min: 0, max: 2, grid: { color: 'rgba(0, 0, 0, 0.05)' }, ticks: { font: { family: "'Poppins', sans-serif" }, callback: function(value) { if (value === 2) return 'ALTO'; if (value === 1) return 'BAIXO'; return ''; } } }, x: { grid: { display: false }, ticks: { font: { family: "'Poppins', sans-serif" } } } },
-          animation: { duration: 2000, easing: 'easeOutQuart' },
-          interaction: { intersect: false, mode: 'index' }
+            ...configComum,
+            scales: {
+                ...configComum.scales,
+                y: { 
+                    beginAtZero: true, min: 0, max: 2, 
+                    grid: { color: 'rgba(0, 0, 0, 0.05)' }, 
+                    ticks: { callback: function(value) { if (value === 2) return 'ALTO'; if (value === 1) return 'BAIXO'; return ''; } } 
+                }
+            }
         }
       });
     }

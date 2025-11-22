@@ -204,3 +204,29 @@ body.dark-mode .list-group-item .badge {
 body.dark-mode .list-group-item:hover {
     background-color: rgba(255, 255, 255, 0.05);
 }
+/* --- CORREÇÃO DE RESPONSIVIDADE MOBILE --- */
+
+/* Impede que a página 'dance' para os lados */
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+}
+
+/* Ajustes específicos para telas menores que 768px (Celulares) */
+@media (max-width: 767.98px) {
+    .content-col {
+        /* Mais espaço no topo por causa da navbar fixa */
+        padding-top: 80px !important; 
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+    }
+
+    /* Diminui o tamanho das fontes gigantes nos cards */
+    .display-4 { font-size: 2.5rem; }
+    .display-6 { font-size: 1.5rem; }
+    
+    /* Ajusta o cabeçalho dos cards */
+    .card-header {
+        font-size: 0.9rem;
+    }
+}
