@@ -1,47 +1,98 @@
 // Funções de utilidade geral
 function showSection(event, sectionId) {
-  event.preventDefault();
-  document.querySelectorAll('.sidebar .nav-link').forEach(link => link.classList.remove('active'));
-  event.currentTarget.classList.add('active');
+  if (event) event.preventDefault();
 
+  // --- CORREÇÃO FINAL: SELETOR ROBUSTO ---
+  // Busca todos os links dentro do container da sidebar (independente de ser nav-pills ou não)
+  const allLinks = document.querySelectorAll('.sidebar-container .nav-link');
+  
+  allLinks.forEach(link => {
+    link.classList.remove('active');
+    // Limpa qualquer estilo inline que possa estar travando a cor
+    link.style.borderLeft = ''; 
+    link.style.borderLeftColor = '';
+  });
+
+  // Ativa o botão clicado
+  if (event && event.currentTarget) {
+    event.currentTarget.classList.add('active');
+  } else {
+    // Se a função foi chamada via código (ex: ao carregar a página)
+    const targetLink = document.querySelector(`.nav-link[href="#${sectionId}"]`);
+    if (targetLink) targetLink.classList.add('active');
+  }
+
+  // Troca os painéis visíveis
   document.querySelectorAll('.section-panel').forEach(panel => panel.classList.remove('active'));
   const section = document.getElementById(sectionId);
   if (section) section.classList.add('active');
 
-  // Se a seção de alertas for selecionada e os sensores ainda não foram carregados, carregar agora
+  // Fecha o menu no mobile
+  const sidebarEl = document.getElementById('sidebarMenu');
+  if (sidebarEl && sidebarEl.classList.contains('show') && window.bootstrap) {
+    const bsOffcanvas = bootstrap.Offcanvas.getInstance(sidebarEl);
+    if (bsOffcanvas) bsOffcanvas.hide();
+  }
+
+  // Lógica de Alertas (carregar sensores se necessário)
   if (sectionId === 'alertas') {
     const sensorSelect = document.getElementById('sensorAlerta');
-    if (sensorSelect && sensorSelect.options.length <= 1) { // Se só tem a opção padrão
+    if (sensorSelect && sensorSelect.options.length <= 1) {
       carregarSensoresParaAlertas();
     }
   }
 
+  // Atualiza a URL
   history.pushState({}, '', `#${sectionId}`);
 }
 
 function handleHashChange() {
-  const hash = window.location.hash.slice(1) || 'dashboard';
-  const navLink = document.querySelector(`.nav-link[href="#${hash}"]`);
-  if (navLink) navLink.click();
+    const hash = window.location.hash.slice(1) || 'dashboard';
+    // Chama showSection passando null como evento
+    showSection(null, hash);
 }
 
 function montarQueryRelatorio(form) {
-  const params = new URLSearchParams();
-  const inicio = form.inicio.value;
-  const fim = form.fim.value;
-  const dispositivo = form.dispositivo.value;
-  if (inicio) params.append('inicio', inicio);
-  if (fim) params.append('fim', fim);
-  if (dispositivo) params.append('dispositivo', dispositivo);
-  return params.toString();
+    const params = new URLSearchParams();
+    const inicio = form.inicio.value;
+    const fim = form.fim.value;
+    const dispositivo = form.dispositivo.value;
+    if (inicio) params.append('inicio', inicio);
+    if (fim) params.append('fim', fim);
+    if (dispositivo) params.append('dispositivo', dispositivo);
+    return params.toString();
 }
 
 
 // Bloco principal de execução quando o DOM está pronto
 document.addEventListener('DOMContentLoaded', function() {
+  const hash = window.location.hash.slice(1) || 'dashboard';
+  
+  // --- 1. LIMPEZA INICIAL DA SIDEBAR ---
+  // Garante que nenhum botão comece verde errado ao carregar
+  const allLinks = document.querySelectorAll('.sidebar-container .nav-link');
+  allLinks.forEach(link => {
+      link.classList.remove('active');
+      link.style.borderLeft = '';
+  });
+  
+  // Ativa apenas o botão correto
+  const activeLink = document.querySelector(`.nav-link[href="#${hash}"]`);
+  if (activeLink) activeLink.classList.add('active');
+
+  // --- 2. MOSTRA O CONTEÚDO CORRETO ---
+  document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
+  const activePanel = document.getElementById(hash);
+  if (activePanel) {
+      activePanel.classList.add('active');
+  } else {
+      const dash = document.getElementById('dashboard');
+      if(dash) dash.classList.add('active');
+  }
+
+  // --- 3. AUTENTICAÇÃO ---
   const accessToken = localStorage.getItem('accessToken');
   
-  // 1. VERIFICAÇÃO DE AUTENTICAÇÃO
   if (!accessToken) {
     window.location.href = '/login_usuario.html';
     return;
@@ -63,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
     return originalFetch(newRequest);
   };
 
-  // 2. VERIFICAÇÃO DE VALIDADE DO TOKEN E CARGA INICIAL DE DADOS
+  // 4. CARGA DE DADOS DO PERFIL E SISTEMA
   fetch('/api/v1/usuarios/perfil')
     .then(response => {
       if (!response.ok) {
@@ -75,20 +126,19 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .then(user => {
       console.log('Usuário autenticado:', user);
-      localStorage.setItem('user', JSON.stringify(user)); // Armazenar dados do usuário
+      localStorage.setItem('user', JSON.stringify(user)); 
       const welcomeMessage = document.getElementById('welcome-message');
       if (welcomeMessage && user.nome) {
         welcomeMessage.textContent = `Bem-vindo(a), ${user.nome}!`;
       }
       carregarDadosSensores();
-      //carregarSensoresParaAlertas(); // Carregar sensores para o formulário de alertas (agora carregado sob demanda)
-      carregarAlertasConfigurados(); // Carregar alertas configurados
+      carregarAlertasConfigurados();
     })
     .catch(error => {
       console.error('Erro na autenticação inicial:', error);
     });
 
-  // 3. CONFIGURAÇÃO DOS EVENT LISTENERS DA PÁGINA
+  // 5. EVENT LISTENERS
   window.addEventListener('hashchange', handleHashChange);
 
   document.getElementById('toggleSenha').addEventListener('click', function() {
@@ -114,14 +164,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const payload = {};
     for (const [key, value] of formData.entries()) {
-        if (value) { 
-            payload[key] = value;
-        }
+        if (value) payload[key] = value;
     }
 
-    if (Object.keys(payload).length === 0) {
-        return;
-    }
+    if (Object.keys(payload).length === 0) return;
 
     submitButton.disabled = true;
     submitButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...`;
@@ -179,18 +225,15 @@ document.addEventListener('DOMContentLoaded', function() {
     submitButton.disabled = true;
     submitButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...`;
 
-    // Preparar os dados
     const payload = {};
     for (const [key, value] of formData.entries()) {
       if (key !== 'local_id') {
         payload[key] = value;
       } else {
-        // Converter para número
         payload[key] = parseInt(value);
       }
     }
 
-    // Adicionar email do usuário
     payload.usuario_email = JSON.parse(localStorage.getItem('user')).email;
 
     fetch('/api/v1/regras-alerta', {
@@ -200,11 +243,8 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .then(async response => {
       if (response.ok) {
-        // Limpar o formulário
         form.reset();
-        // Recarregar os alertas
         carregarAlertasConfigurados();
-        // Mostrar mensagem de sucesso
         const alertDiv = document.createElement('div');
         alertDiv.className = 'alert alert-success alert-dismissible fade show';
         alertDiv.role = 'alert';
@@ -235,21 +275,16 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Evento para mudança de tipo de sensor, para atualizar campos disponíveis
+  // Evento para mudança de tipo de sensor
   document.getElementById('tipoSensorAlerta').addEventListener('change', function() {
     atualizarCamposSensor(this.value);
   });
 
+  // Eventos Botões Exportação
   document.getElementById('btnExportCSV').addEventListener('click', function() {
     const form = document.getElementById('formRelatorios');
     if (!form.inicio.value || !form.fim.value) {
       alert('Preencha a data inicial e final.');
-      return;
-    }
-    const inicioDate = new Date(form.inicio.value);
-    const fimDate = new Date(form.fim.value);
-    if (inicioDate > fimDate) {
-      alert('A data inicial deve ser menor ou igual à data final.');
       return;
     }
     
@@ -263,9 +298,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     fetch(url)
       .then(response => {
-        if (!response.ok) {
-          throw new Error('Erro ao exportar relatório.');
-        }
+        if (!response.ok) throw new Error('Erro ao exportar relatório.');
         return response.blob();
       })
       .then(blob => {
@@ -290,12 +323,6 @@ document.addEventListener('DOMContentLoaded', function() {
       alert('Preencha a data inicial e final.');
       return;
     }
-    const inicioDate = new Date(form.inicio.value);
-    const fimDate = new Date(form.fim.value);
-    if (inicioDate > fimDate) {
-      alert('A data inicial deve ser menor ou igual à data final.');
-      return;
-    }
 
     const btn = this;
     const originalHtml = btn.innerHTML;
@@ -307,9 +334,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     fetch(url)
       .then(response => {
-        if (!response.ok) {
-          throw new Error('Erro ao exportar relatório.');
-        }
+        if (!response.ok) throw new Error('Erro ao exportar relatório.');
         return response.blob();
       })
       .then(blob => {
@@ -334,12 +359,6 @@ document.addEventListener('DOMContentLoaded', function() {
       alert('Preencha a data inicial e final.');
       return;
     }
-    const inicioDate = new Date(form.inicio.value);
-    const fimDate = new Date(form.fim.value);
-    if (inicioDate > fimDate) {
-      alert('A data inicial deve ser menor ou igual à data final.');
-      return;
-    }
     
     const btn = this;
     const originalHtml = btn.innerHTML;
@@ -351,9 +370,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     fetch(url, { method: 'POST' })
       .then(response => {
-        if (!response.ok) {
-          return response.json().then(data => { throw new Error(data.detail || 'Erro ao enviar e-mail.'); });
-        }
+        if (!response.ok) return response.json().then(data => { throw new Error(data.detail || 'Erro ao enviar e-mail.'); });
         return response.json();
       })
       .then(data => {
@@ -391,7 +408,6 @@ function carregarDadosSensores() {
     })
     .then(data => {
       console.log('Dados dos sensores:', data);
-      // Armazenar dados dos sensores para uso posterior
       localStorage.setItem('sensores', JSON.stringify(data.dispositivos));
       
       const totalDispositivos = document.getElementById('total-dispositivos');
@@ -403,8 +419,8 @@ function carregarDadosSensores() {
         selectDispositivos.innerHTML = '<option value="">Todos</option>';
         data.dispositivos.forEach(disp => {
           const option = document.createElement('option');
-          option.value = disp.id;  // Usando ID do dispositivo
-          option.textContent = disp.nome;  // Usando nome do dispositivo
+          option.value = disp.id;
+          option.textContent = disp.nome;
           selectDispositivos.appendChild(option);
         });
       }
@@ -440,7 +456,6 @@ function renderizarSensores(data) {
     html += `
       <div class="dispositivo-panel" id="panel-${dispositivoId}" style="display: ${index === 0 ? 'block' : 'none'};">
         <div class="row g-4">
-          <!-- Card pH -->
           <div class="col-md-6 mb-4">
             <div class="card border-0 shadow-sm h-100">
               <div class="card-header bg-primary text-white">
@@ -481,7 +496,6 @@ function renderizarSensores(data) {
             </div>
           </div>
 
-          <!-- Card Nível -->
           <div class="col-md-6 mb-4">
             <div class="card border-0 shadow-sm h-100">
               <div class="card-header bg-primary text-white">
@@ -534,7 +548,6 @@ function renderizarSensores(data) {
           </div>
         </div>
 
-        <!-- Histórico detalhado -->
         <div class="row g-4 mt-2">
           <div class="col-md-6">
             <div class="card border-0 shadow-sm">
@@ -699,24 +712,22 @@ function carregarSensoresParaAlertas() {
   fetch('/api/v1/usuarios/dashboard-dados')
     .then(response => response.json())
     .then(data => {
-      // Armazenar dados dos sensores para uso posterior
       localStorage.setItem('sensores', JSON.stringify(data.dispositivos));
       
       data.dispositivos.forEach(disp => {
         const option = document.createElement('option');
-        option.value = disp.id; // Usando ID do dispositivo
-        option.textContent = disp.nome; // Mostrando nome do dispositivo
+        option.value = disp.id;
+        option.textContent = disp.nome;
         select.appendChild(option);
       });
       
-      // Atualizar também o select de relatórios se existir
       const selectRelatorios = document.getElementById('dispRel');
       if (selectRelatorios) {
         selectRelatorios.innerHTML = '<option value="">Todos</option>';
         data.dispositivos.forEach(disp => {
           const option = document.createElement('option');
-          option.value = disp.id;  // Usando ID do dispositivo
-          option.textContent = disp.nome;  // Usando nome do dispositivo
+          option.value = disp.id;
+          option.textContent = disp.nome;
           selectRelatorios.appendChild(option);
         });
       }
@@ -731,7 +742,6 @@ function atualizarCamposSensor(tipoSensor) {
   const campoSelect = document.getElementById('campoAlerta');
   campoSelect.innerHTML = '<option value="">Campo</option>';
   
-  // Mapear campos disponíveis para cada tipo de sensor
   const camposPorTipo = {
     'PH': [
       {value: 'ph', text: 'pH'},
@@ -793,7 +803,6 @@ function carregarAlertasConfigurados() {
       `;
 
       alertas.forEach(alerta => {
-        // Obter nome do sensor
         const sensorNome = obterNomeSensor(alerta.local_id);
         html += `
           <tr>
@@ -841,9 +850,7 @@ function excluirAlerta(alertaId) {
   })
   .then(response => {
     if (response.ok) {
-      // Recarregar a lista de alertas
       carregarAlertasConfigurados();
-      // Mostrar mensagem de sucesso
       const alertDiv = document.createElement('div');
       alertDiv.className = 'alert alert-success alert-dismissible fade show';
       alertDiv.role = 'alert';
