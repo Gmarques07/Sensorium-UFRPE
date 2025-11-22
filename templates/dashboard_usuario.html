@@ -3,11 +3,11 @@
 {% block title %}Dashboard do Usuário - Sensorium{% endblock %}
 
 {% block styles %}
-<link rel="stylesheet" href="{{ url_for('static', path='css/dashboard.css') }}?v=1.5">
+<link rel="stylesheet" href="{{ url_for('static', path='css/dashboard.css') }}?v=1.8">
 {% endblock %}
 
 {% block content %}
-<nav class="navbar navbar-light bg-light d-lg-none border-bottom px-3 mb-3 fixed-top">
+<nav class="navbar navbar-light bg-light d-lg-none border-bottom px-3 mb-3 fixed-top shadow-sm">
     <div class="container-fluid">
         <span class="navbar-brand fw-bold text-primary">Sensorium</span>
         <button class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu">
@@ -16,7 +16,7 @@
     </div>
 </nav>
 
-<div class="d-lg-none" style="height: 60px;"></div>
+<div class="d-lg-none" style="height: 70px;"></div>
 
 <div class="offcanvas-lg offcanvas-start sidebar-container" tabindex="-1" id="sidebarMenu">
     
@@ -27,7 +27,7 @@
 
     <div class="offcanvas-body d-flex flex-column p-3 h-100">
         
-        <div class="d-none d-lg-flex align-items-center text-white mb-4 ps-2">
+        <div class="d-none d-lg-flex align-items-center text-white mb-4 ps-2" data-aos="fade-right">
              <i class="bi bi-cpu fs-3 me-2 logo-icon"></i>
              <span class="fs-4 fw-bold brand-text">Sensorium</span>
         </div>
@@ -63,61 +63,67 @@
 </div>
 
 <main class="content col content-col">
-<header class="header-card d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3" data-aos="fade-down">
-    <div class="d-flex align-items-center gap-3 w-100">
-        <div class="user-avatar shadow-sm">
-            <i class="bi bi-person-fill"></i>
-        </div>
-        
-        <div>
-            <h1 class="h4 fw-bold mb-0 welcome-text">
-                Olá, <span class="text-primary">Gabriel!</span>
-            </h1>
-            <div class="d-flex align-items-center gap-2 text-muted small mt-1">
-                <span><i class="bi bi-grid-fill me-1"></i>Painel de Controle</span>
-                <span class="separator">•</span>
-                <span id="current-date">Carregando data...</span>
+    
+    <header class="header-card d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3" data-aos="fade-down">
+        <div class="d-flex align-items-center gap-3 w-100">
+            <div class="user-avatar shadow-sm">
+                <i class="bi bi-person-fill"></i>
+            </div>
+            
+            <div>
+                <h1 class="h4 fw-bold mb-0 welcome-text">
+                    Olá, <span class="text-primary">Gabriel!</span>
+                </h1>
+                <div class="d-flex align-items-center gap-2 text-muted small mt-1">
+                    <span><i class="bi bi-grid-fill me-1"></i>Painel de Controle</span>
+                    <span class="separator">•</span>
+                    <span id="current-date">Carregando data...</span>
+                </div>
             </div>
         </div>
-    </div>
-    
-    <div class="d-flex gap-2 w-100 w-md-auto justify-content-md-end">
-        <button class="btn btn-icon-only shadow-sm" id="theme-toggle" title="Alternar tema">
-            <i class="bi bi-sun-fill theme-icon-active"></i>
-            <i class="bi bi-moon-fill theme-icon-hidden d-none"></i>
-        </button>
         
-        <button class="btn btn-primary shadow-sm px-4 d-flex align-items-center gap-2" onclick="window.location.reload()">
-            <i class="bi bi-arrow-clockwise"></i>
-            <span>Atualizar</span>
-        </button>
-    </div>
-</header>
+        <div class="d-flex gap-2 w-100 w-md-auto justify-content-md-end align-items-center">
+            <button class="btn btn-icon-only shadow-sm" id="theme-toggle" title="Alternar tema">
+                <i class="bi bi-sun-fill theme-icon-active"></i>
+                <i class="bi bi-moon-fill theme-icon-hidden d-none"></i>
+            </button>
+            
+            <button class="btn btn-sm btn-primary shadow-sm px-3 d-flex align-items-center gap-2" onclick="window.location.reload()">
+                <i class="bi bi-arrow-clockwise"></i>
+                <span>Atualizar</span>
+            </button>
+        </div>
+    </header>
 
     <section id="dashboard" class="section-panel active">
         <div class="row g-4">
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
-                <div class="dashboard-card">
+            <div class="col-xl-4 col-lg-4 col-md-6 col-12" data-aos="fade-up" data-aos-delay="100">
+                <div class="dashboard-card h-100 position-relative">
                     <div class="dashboard-icon"><i class="bi bi-cpu"></i></div>
                     <h2 class="h5 mb-3">Dispositivos Conectados</h2>
                     <div class="fs-2 fw-bold text-primary" id="total-dispositivos">0</div>
                     <p class="text-muted mb-0">Total de dispositivos monitorados</p>
+                    <a href="#sensores" onclick="showSection(event, 'sensores')" class="stretched-link"></a>
                 </div>
             </div>
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
-                <div class="dashboard-card">
+
+            <div class="col-xl-4 col-lg-4 col-md-6 col-12" data-aos="fade-up" data-aos-delay="200">
+                <div class="dashboard-card h-100 position-relative">
                     <div class="dashboard-icon"><i class="bi bi-activity"></i></div>
                     <h2 class="h5 mb-3">Métricas Ativas</h2>
                     <div class="fs-2 fw-bold text-success">2</div>
                     <p class="text-muted mb-0">pH da água e nível</p>
+                    <a href="#sensores" onclick="showSection(event, 'sensores')" class="stretched-link"></a>
                 </div>
             </div>
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
-                <div class="dashboard-card">
+
+            <div class="col-xl-4 col-lg-4 col-md-12 col-12" data-aos="fade-up" data-aos-delay="300">
+                <div class="dashboard-card h-100 position-relative">
                     <div class="dashboard-icon"><i class="bi bi-file-earmark-bar-graph"></i></div>
                     <h2 class="h5 mb-3">Relatórios</h2>
-                    <div class="fs-5 fw-bold text-primary">Gere relatórios na aba Relatórios</div>
+                    <div class="fs-5 fw-bold text-primary mb-2">Gere relatórios na aba Relatórios</div>
                     <p class="text-muted mb-0">Exportação em CSV/PDF</p>
+                    <a href="#relatorios" onclick="showSection(event, 'relatorios')" class="stretched-link"></a>
                 </div>
             </div>
         </div>
@@ -155,7 +161,7 @@
                             <option value="">Todos</option>
                         </select>
                     </div>
-                    <div class="col-12 d-flex gap-2">
+                    <div class="col-12 d-flex gap-2 flex-wrap">
                         <button type="button" id="btnExportCSV" class="btn btn-primary">
                             <i class="bi bi-filetype-csv me-2"></i>Exportar CSV
                         </button>
