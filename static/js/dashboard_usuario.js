@@ -16,8 +16,227 @@ function showSection(event, sectionId) {
     }
   }
 
+  // Se a seção de alertas for selecionada e os sensores ainda não foram carregados, carregar agora
+  if (sectionId === 'alertas') {
+    const sensorSelect = document.getElementById('sensorAlerta');
+    if (sensorSelect && sensorSelect.options.length <= 1) { // Se só tem a opção padrão
+      carregarSensoresParaAlertas();
+    }
+  }
+
+  // Se a seção de sensores for selecionada, carregar sensores para gerenciamento
+  if (sectionId === 'sensores') {
+    setTimeout(() => {
+      // Por padrão, mostrar a visualização de gerenciamento
+      toggleSensorView('manage');
+    }, 100); // Pequeno atraso para garantir que a seção está visível
+  }
+
   history.pushState({}, '', `#${sectionId}`);
 }
+
+// Função para mostrar a seção de adicionar sensor
+function showAddSensorSection() {
+  // Rola para a seção de sensores
+  const sensoresSection = document.getElementById('sensores');
+  sensoresSection.scrollIntoView({ behavior: 'smooth' });
+
+  // Garante que a seção de sensores esteja ativa
+  document.querySelectorAll('.sidebar .nav-link').forEach(link => link.classList.remove('active'));
+  const sensorNavLink = document.querySelector('.nav-link[onclick*="showSection(event, \'sensores\')"]');
+  if (sensorNavLink) sensorNavLink.classList.add('active');
+
+  document.querySelectorAll('.section-panel').forEach(panel => panel.classList.remove('active'));
+  sensoresSection.classList.add('active');
+}
+
+// Função para carregar e exibir sensores para gerenciamento
+function carregarSensoresGerenciamento() {
+  const container = document.getElementById('sensores-container');
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="text-center py-4">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Carregando...</span>
+      </div>
+      <p class="mt-2 text-muted">Carregando sensores...</p>
+    </div>
+  `;
+
+  fetch('/api/v1/locais/')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Erro ao carregar sensores');
+      }
+      return response.json();
+    })
+    .then(sensores => {
+      atualizarListaSensoresUsuario(sensores);
+    })
+    .catch(error => {
+      console.error('Erro ao carregar sensores:', error);
+      container.innerHTML = `
+        <div class="text-center py-4">
+          <i class="bi bi-exclamation-circle text-muted fs-1 mb-2"></i>
+          <p class="mb-0">Erro ao carregar sensores.</p>
+        </div>
+      `;
+    });
+}
+
+// Função para atualizar a lista de sensores na interface do usuário
+function atualizarListaSensoresUsuario(sensores) {
+  const container = document.getElementById('sensores-container');
+  if (!container) return;
+
+  if (!sensores || sensores.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-4">
+        <i class="bi bi-cpu fs-1 text-muted"></i>
+        <h5 class="mt-3 text-muted">Nenhum sensor registrado</h5>
+        <p class="text-muted">Registre seu primeiro sensor usando o formulário acima</p>
+      </div>
+    `;
+    return;
+  }
+
+  let html = `
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">Meus Sensores</h5>
+    <button type="button" class="btn btn-sm btn-outline-primary" onclick="toggleSensorView('detailed')">
+      <i class="bi bi-eye me-1"></i>Visualizar Dados
+    </button>
+  </div>
+  <div class="row g-4">`;
+  sensores.forEach(sensor => {
+    html += `
+    <div class="col-md-6 col-lg-4" id="sensor-card-${sensor.id}">
+      <div class="card sensor-card h-100 border-0 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h5 class="card-title">${sensor.nome}</h5>
+              <span class="badge bg-primary">${sensor.tipo}</span>
+            </div>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                      data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-three-dots"></i>
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" onclick="copiarChaveSensor('${sensor.chave_api}')">
+                  <i class="bi bi-key me-2"></i>Copiar Chave API
+                </a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="#" onclick="excluirSensor(${sensor.id}, '${sensor.nome}')">
+                  <i class="bi bi-trash me-2"></i>Excluir Sensor
+                </a></li>
+              </ul>
+            </div>
+          </div>
+
+          ${sensor.descricao ? `<p class="card-text text-muted">${sensor.descricao}</p>` : ''}
+
+          <div class="mt-3">
+            <small class="text-muted">
+              <i class="bi bi-calendar me-1"></i>
+              Criado em: ${new Date(sensor.data_criacao).toLocaleDateString('pt-BR')}
+            </small>
+            <div class="mt-2">
+              <small class="text-muted d-block">Chave API:</small>
+              <code class="small" style="word-break: break-all;">${sensor.chave_api || 'Não gerada'}</code>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    `;
+  });
+  html += '</div>';
+
+  container.innerHTML = html;
+}
+
+// Função para copiar a chave de API de um sensor existente
+function copiarChaveSensor(chaveApi) {
+  navigator.clipboard.writeText(chaveApi).then(() => {
+    mostrarAlerta('Chave API copiada para a área de transferência!', 'success');
+  }).catch(err => {
+    mostrarAlerta('Erro ao copiar chave API', 'danger');
+    console.error('Erro ao copiar chave API:', err);
+  });
+}
+
+// Função para excluir um sensor
+async function excluirSensor(sensorId, sensorNome) {
+  if (!confirm(`Tem certeza que deseja excluir o sensor "${sensorNome}"? Esta ação não pode ser desfeita.`)) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/v1/locais/${sensorId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+      }
+    });
+
+    if (response.ok) {
+      mostrarAlerta('Sensor excluído com sucesso!', 'success');
+      // Remover o card do sensor da interface
+      const sensorCard = document.getElementById(`sensor-card-${sensorId}`);
+      if (sensorCard) {
+        sensorCard.remove();
+      }
+      // Recarregar a lista de sensores para manter a consistência
+      carregarDadosSensores();
+    } else {
+      const error = await response.json();
+      mostrarAlerta(`Erro ao excluir sensor: ${error.detail || 'Erro desconhecido'}`, 'danger');
+    }
+  } catch (error) {
+    mostrarAlerta(`Erro de conexão: ${error.message}`, 'danger');
+  }
+}
+
+// Função para mostrar alertas
+function mostrarAlerta(mensagem, tipo) {
+  // Criar elemento de alerta
+  const alertDiv = document.createElement('div');
+  alertDiv.className = `alert alert-${tipo} alert-dismissible fade show`;
+  alertDiv.role = 'alert';
+  alertDiv.innerHTML = `
+      ${mensagem}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  `;
+
+  // Adicionar ao container principal
+  const main = document.querySelector('main');
+  main.insertBefore(alertDiv, main.firstChild);
+
+  // Remover após 5 segundos
+  setTimeout(() => {
+      if (alertDiv.parentNode) {
+          alertDiv.remove();
+      }
+  }, 5000);
+}
+
+// Função para alternar entre visualizações de sensores
+function toggleSensorView(viewType) {
+  const container = document.getElementById('sensores-container');
+  if (!container) return;
+
+  if (viewType === 'manage') {
+    // Carregar a visão de gerenciamento
+    carregarSensoresGerenciamento();
+  } else if (viewType === 'detailed') {
+    // Carregar a visão detalhada original
+    carregarDadosSensores();
+  }
+}
+
 
 function handleHashChange() {
   const hash = window.location.hash.slice(1) || 'dashboard';
@@ -408,7 +627,13 @@ function carregarDadosSensores() {
           selectDispositivos.appendChild(option);
         });
       }
-      renderizarSensores(data);
+      // Verificar se a visualização atual não é de gerenciamento antes de renderizar
+      const container = document.getElementById('sensores-container');
+      if (container && !container.querySelector('.sensor-card')) {
+        renderizarSensores(data);
+      }
+      // Carregar também a lista de sensores para gerenciamento
+      carregarSensoresGerenciamento();
     })
     .catch(error => {
       console.error('Erro ao carregar dados dos sensores:', error);
@@ -421,16 +646,39 @@ function carregarDadosSensores() {
 
 function renderizarSensores(data) {
   const container = document.getElementById('sensores-container');
+  // Verificar se já existe conteúdo de gerenciamento de sensores
+  if (container && container.querySelector('.sensor-card')) {
+    // Não sobrescrever se já está mostrando os sensores para gerenciamento
+    return;
+  }
+
   if (!data.dispositivos || data.dispositivos.length === 0) {
     container.innerHTML = `<div class="text-center py-4"><i class="bi bi-exclamation-circle text-muted fs-1 mb-2 d-block"></i><p class="mb-0">Nenhum dispositivo encontrado.</p></div>`;
     return;
   }
 
-  let html = `<div class="mb-4"><label for="selectDispositivo" class="form-label fw-semibold">Selecione o Dispositivo:</label><select class="form-select w-auto d-inline-block" id="selectDispositivo" onchange="mostrarDispositivoSelecionado()">`;
+  let html = `
+  <div class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <label for="selectDispositivo" class="form-label fw-semibold">Selecione o Dispositivo:</label>
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleSensorView('manage')">
+          <i class="bi bi-gear me-1"></i>Gerenciar Sensores
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-primary" onclick="showAddSensorSection()">
+          <i class="bi bi-plus me-1"></i>Adicionar Novo
+        </button>
+      </div>
+    </div>
+    <select class="form-select w-auto d-inline-block" id="selectDispositivo" onchange="mostrarDispositivoSelecionado()">
+  `;
   data.dispositivos.forEach((disp) => {
     html += `<option value="${disp.nome}">${disp.nome}</option>`;
   });
   html += `</select></div>`;
+
+  // Adiciona uma div para distinguir visualização de gerenciamento
+  html += `<div id="visualizacao-sensores" data-view="detailed">`;
 
   data.dispositivos.forEach((disp, index) => {
     const dispositivoId = disp.nome.replace(/\s/g, '_');
@@ -596,8 +844,9 @@ function renderizarSensores(data) {
     `;
   });
   
+  html += `</div>`;  // Fecha a div #visualizacao-sensores
   container.innerHTML = html;
-  
+
   if (typeof Chart === 'undefined') {
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/chart.js';

@@ -39,7 +39,8 @@ Ao executar o comando `up`, o Docker Compose irá orquestrar todo o setup para v
 ### Acessando o Sistema
 
 Após a conclusão dos testes e o início do servidor, a aplicação estará disponível em:
-*   **Aplicação Web**: [http://localhost:8001](http://localhost:8001)
+*   **Aplicação Web**: [http://localhost:
+8001](http://localhost:8001)
 *   **Documentação da API (Swagger)**: [http://localhost:8001/docs](http://localhost:8001/docs)
 
 ## Tecnologias
@@ -71,7 +72,7 @@ Após a conclusão dos testes e o início do servidor, a aplicação estará dis
 
 *   O serviço do MySQL roda em um contêiner separado e armazena seus dados em um volume Docker (`mysql_data`) para persistência.
 *   Para se conectar ao banco de dados a partir da sua máquina (usando MySQL Workbench, por exemplo), use as seguintes credenciais:
-    *   **Host**: `localhost`
+    *   **Host**: `127.0.0.1`
     *   **Porta**: `3306`
     *   **Usuário**: `root`
     *   **Senha**: `rootpassword`
