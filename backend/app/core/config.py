@@ -58,6 +58,23 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "")
     GOOGLE_CLIENT_SECRET: str = os.getenv("GOOGLE_CLIENT_SECRET", "")
     GOOGLE_REDIRECT_URI: str = os.getenv("GOOGLE_REDIRECT_URI", "")
+
+    # Variáveis para ambiente de desenvolvimento e produção
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
+
+    # Variáveis para scripts de envio de dados
+    SENSORIUM_TOKEN: str = os.getenv("SENSORIUM_TOKEN", "")
+    SENSORIUM_DISPOSITIVO_ID: int = int(os.getenv("SENSORIUM_DISPOSITIVO_ID", "1"))
+    SENSORIUM_API_BASE_URL: str = os.getenv("SENSORIUM_API_BASE_URL", "http://localhost:8000")
+
+    @property
+    def google_redirect_uri(self) -> str:
+        """Retorna a URL de redirecionamento do Google OAuth com base no ambiente"""
+        if self.ENVIRONMENT == "production":
+            return os.getenv("GOOGLE_REDIRECT_URI", "https://sensoriumtech.online/api/v1/oauth/google/callback")
+        else:
+            # Usa a URL específica para desenvolvimento se definida, caso contrário usa localhost padrão
+            return os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8001/api/v1/oauth/google/callback")
     
     @property
     def emails_enabled(self) -> bool:

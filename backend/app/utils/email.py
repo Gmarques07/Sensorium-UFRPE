@@ -76,204 +76,102 @@ def send_confirmacao_cadastro(
 ) -> bool:
     """
     Envia e-mail de confirmação de cadastro.
-    
+
     Args:
         email_to: Endereço de e-mail do destinatário
         nome_usuario: Nome do usuário cadastrado
         endereco: Endereço do usuário
-        
+
     Returns:
         bool: True se o e-mail foi enviado com sucesso, False caso contrário
     """
     subject = "Confirmação de Cadastro - Sensorium UFRPE"
-    
-    html_content = f"""
-    <!DOCTYPE html>
-    <html lang="pt-BR">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Confirmação de Cadastro - Sensorium UFRPE</title>
-        <style>
-            body {{
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                max-width: 600px;
-                margin: 0 auto;
-                padding: 20px;
-                background-color: #f8f9fa;
-            }}
-            .container {{
-                background-color: #ffffff;
-                padding: 30px;
-                border-radius: 10px;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            }}
-            .header {{
-                text-align: center;
-                margin-bottom: 30px;
-                padding-bottom: 20px;
-                border-bottom: 2px solid #007bff;
-            }}
-            .logo {{
-                font-size: 24px;
-                font-weight: bold;
-                color: #007bff;
-                margin-bottom: 10px;
-            }}
-            .subtitle {{
-                color: #6c757d;
-                font-size: 14px;
-            }}
-            .content {{
-                margin-bottom: 30px;
-            }}
-            .user-info {{
-                background-color: #f8f9fa;
-                padding: 20px;
-                border-radius: 8px;
-                margin: 20px 0;
-                border-left: 4px solid #007bff;
-            }}
-            .user-info h3 {{
-                margin-top: 0;
-                color: #007bff;
-                font-size: 18px;
-            }}
-            .info-item {{
-                margin: 10px 0;
-                display: flex;
-                align-items: center;
-            }}
-            .info-label {{
-                font-weight: bold;
-                min-width: 100px;
-                color: #495057;
-            }}
-            .info-value {{
-                color: #212529;
-            }}
-            .instructions {{
-                background-color: #e7f3ff;
-                padding: 20px;
-                border-radius: 8px;
-                margin: 20px 0;
-                border-left: 4px solid #007bff;
-            }}
-            .instructions h3 {{
-                margin-top: 0;
-                color: #007bff;
-                font-size: 18px;
-            }}
-            .instructions ul {{
-                margin: 10px 0;
-                padding-left: 20px;
-            }}
-            .instructions li {{
-                margin: 8px 0;
-                color: #495057;
-            }}
-            .footer {{
-                text-align: center;
-                margin-top: 30px;
-                padding-top: 20px;
-                border-top: 1px solid #dee2e6;
-                color: #6c757d;
-                font-size: 14px;
-            }}
-            .btn {{
-                display: inline-block;
-                padding: 12px 24px;
-                background-color: #007bff;
-                color: white;
-                text-decoration: none;
-                border-radius: 5px;
-                font-weight: bold;
-                margin: 10px 0;
-            }}
-            .btn:hover {{
-                background-color: #0056b3;
-                color: white;
-                text-decoration: none;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="header">
-                <div class="logo">🌊 Sensorium UFRPE</div>
-                <div class="subtitle">Sistema de Monitoramento de Qualidade da Água</div>
-            </div>
-            
-            <div class="content">
-                <h2>🎉 Cadastro Realizado com Sucesso!</h2>
-                
+
+    html_content = f"""<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmação de Cadastro - Sensorium UFRPE</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        <tr>
+            <td style="text-align: center; padding: 30px 20px; border-bottom: 2px solid #007bff;">
+                <div style="font-size: 24px; font-weight: bold; color: #007bff; margin-bottom: 10px;">🌊 Sensorium UFRPE</div>
+                <div style="color: #6c757d; font-size: 14px;">Sistema de Monitoramento de Qualidade da Água</div>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 30px;">
+                <h2 style="text-align: center; color: #007bff;">🎉 Cadastro Realizado com Sucesso!</h2>
+
                 <p>Olá <strong>{nome_usuario}</strong>,</p>
-                
+
                 <p>Seja bem-vindo(a) ao <strong>Sensorium UFRPE</strong>! Seu cadastro foi realizado com sucesso e agora você pode acessar todas as funcionalidades do nosso sistema de monitoramento de qualidade da água.</p>
-                
-                <div class="user-info">
-                    <h3>📋 Resumo do seu Cadastro</h3>
-                    <div class="info-item">
-                        <span class="info-label">Nome:</span>
-                        <span class="info-value">{nome_usuario}</span>
+
+                <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #007bff;">
+                    <h3 style="margin-top: 0; color: #007bff; font-size: 18px;">📋 Resumo do seu Cadastro</h3>
+                    <div style="margin: 10px 0; display: flex; align-items: center;">
+                        <span style="font-weight: bold; min-width: 100px; color: #495057; display: inline-block;">Nome:</span>
+                        <span style="color: #212529;">{nome_usuario}</span>
                     </div>
-                    <div class="info-item">
-                        <span class="info-label">E-mail:</span>
-                        <span class="info-value">{email_to}</span>
+                    <div style="margin: 10px 0; display: flex; align-items: center;">
+                        <span style="font-weight: bold; min-width: 100px; color: #495057; display: inline-block;">E-mail:</span>
+                        <span style="color: #212529;">{email_to}</span>
                     </div>
-                    <div class="info-item">
-                        <span class="info-label">Endereço:</span>
-                        <span class="info-value">{endereco}</span>
+                    <div style="margin: 10px 0; display: flex; align-items: center;">
+                        <span style="font-weight: bold; min-width: 100px; color: #495057; display: inline-block;">Endereço:</span>
+                        <span style="color: #212529;">{endereco}</span>
                     </div>
-                    <div class="info-item">
-                        <span class="info-label">Status:</span>
-                        <span class="info-value">✅ Ativo</span>
+                    <div style="margin: 10px 0; display: flex; align-items: center;">
+                        <span style="font-weight: bold; min-width: 100px; color: #495057; display: inline-block;">Status:</span>
+                        <span style="color: #212529;">✅ Ativo</span>
                     </div>
                 </div>
-                
-                <div class="instructions">
-                    <h3>📚 Instruções Importantes</h3>
+
+                <div style="background-color: #e7f3ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #007bff;">
+                    <h3 style="margin-top: 0; color: #007bff; font-size: 18px;">📚 Instruções Importantes</h3>
                     <p>Para começar a usar o sistema, siga estas instruções:</p>
-                    <ul>
-                        <li><strong>Faça login:</strong> Acesse o sistema usando seu e-mail e senha cadastrados</li>
-                        <li><strong>Configure sensores:</strong> Adicione e configure seus sensores de monitoramento</li>
-                        <li><strong>Monitore dados:</strong> Visualize dados em tempo real de pH, nível da água e outros parâmetros</li>
-                        <li><strong>Receba alertas:</strong> Configure notificações para receber alertas importantes</li>
-                        <li><strong>Gere relatórios:</strong> Crie relatórios detalhados dos dados coletados</li>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        <li style="margin: 8px 0; color: #495057;"><strong>Faça login:</strong> Acesse o sistema usando seu e-mail e senha cadastrados</li>
+                        <li style="margin: 8px 0; color: #495057;"><strong>Configure sensores:</strong> Adicione e configure seus sensores de monitoramento</li>
+                        <li style="margin: 8px 0; color: #495057;"><strong>Monitore dados:</strong> Visualize dados em tempo real de pH, nível da água e outros parâmetros</li>
+                        <li style="margin: 8px 0; color: #495057;"><strong>Receba alertas:</strong> Configure notificações para receber alertas importantes</li>
+                        <li style="margin: 8px 0; color: #495057;"><strong>Gere relatórios:</strong> Crie relatórios detalhados dos dados coletados</li>
                     </ul>
                 </div>
-                
+
                 <div style="text-align: center; margin: 30px 0;">
-                    <a href="{settings.BASE_URL}/login_usuario.html" class="btn">
+                    <a href="{settings.BASE_URL}/login_usuario.html" style="display: inline-block; padding: 12px 24px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 10px 0;">
                         🚀 Acessar o Sistema
                     </a>
                 </div>
-                
-                <div class="instructions">
-                    <h3>🔒 Segurança e Suporte</h3>
-                    <ul>
-                        <li>Mantenha suas credenciais seguras e não as compartilhe</li>
-                        <li>Em caso de problemas, entre em contato conosco através do e-mail: equipesensorium@gmail.com</li>
-                        <li>Para dúvidas técnicas, consulte nossa documentação ou suporte</li>
+
+                <div style="background-color: #e7f3ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #007bff;">
+                    <h3 style="margin-top: 0; color: #007bff; font-size: 18px;">🔒 Segurança e Suporte</h3>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        <li style="margin: 8px 0; color: #495057;">Mantenha suas credenciais seguras e não as compartilhe</li>
+                        <li style="margin: 8px 0; color: #495057;">Em caso de problemas, entre em contato conosco através do e-mail: equipesensorium@gmail.com</li>
+                        <li style="margin: 8px 0; color: #495057;">Para dúvidas técnicas, consulte nossa documentação ou suporte</li>
                     </ul>
                 </div>
-            </div>
-            
-            <div class="footer">
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: center; padding: 30px 20px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6; color: #6c757d; font-size: 14px;">
                 <p><strong>Equipe Sensorium UFRPE</strong></p>
                 <p>Universidade Federal Rural de Pernambuco</p>
                 <p>📧 equipesensorium@gmail.com | 🌐 Sistema de Monitoramento de Qualidade da Água</p>
                 <p style="font-size: 12px; color: #adb5bd; margin-top: 15px;">
                     Este é um e-mail automático, por favor não responda. Se precisar de ajuda, entre em contato conosco.
                 </p>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
-    
+            </td>
+        </tr>
+    </table>
+</body>
+</html>"""
+
     # Enviar e-mail
     return send_email_with_attachment(
         email_to=email_to,
