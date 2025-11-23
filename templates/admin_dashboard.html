@@ -3,453 +3,298 @@
 {% block title %}Dashboard Admin - Sensorium{% endblock %}
 
 {% block styles %}
-<link rel="stylesheet" href="{{ url_for('static', path='css/dashboard.css') }}?v=1.1">
+<link rel="stylesheet" href="{{ url_for('static', path='css/dashboard.css') }}?v=2.8">
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row flex-nowrap">
-        <!-- Sidebar -->
-        <div class="col-auto sidebar">
-            <a href="{{ url_for('homepage') }}" class="d-flex align-items-center mb-4 text-decoration-none text-white">
-                <i class="bi bi-cpu logo-icon"></i>
-                <span class="fs-4 ms-2">Sensorium</span>
-            </a>
-            <nav class="nav flex-column w-100">
-                <a class="nav-link active" href="#painel"><i class="bi bi-speedometer2"></i> Painel</a>
-                <a class="nav-link" href="#usuarios"><i class="bi bi-people"></i> Usuários</a>
-                <a class="nav-link" href="#sensores"><i class="bi bi-cpu"></i> Sensores</a>
-                <a class="nav-link" href="#notificacoes"><i class="bi bi-bell"></i> Notificações</a>
-                <a class="nav-link" href="#configuracoes"><i class="bi bi-gear"></i> Configurações</a>
-            </nav>
-            <a href="#" class="logout-link mt-auto" id="logout-button">
-                <i class="bi bi-box-arrow-right"></i> Sair
-            </a>
+<nav class="navbar navbar-light bg-light d-lg-none border-bottom px-3 mb-3 fixed-top shadow-sm">
+    <div class="container-fluid">
+        <span class="navbar-brand fw-bold text-primary">Sensorium Admin</span>
+        <button class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu">
+            <i class="bi bi-list"></i> Menu
+        </button>
+    </div>
+</nav>
+<div class="d-lg-none" style="height: 70px;"></div>
+
+<div class="offcanvas-lg offcanvas-start sidebar-container" tabindex="-1" id="sidebarMenu">
+    <div class="offcanvas-header border-bottom border-white-50">
+        <h5 class="offcanvas-title text-white fw-bold">Admin</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu"></button>
+    </div>
+    <div class="offcanvas-body d-flex flex-column p-3 h-100">
+        <div class="d-none d-lg-flex align-items-center text-white mb-4 ps-2" data-aos="fade-right">
+             <i class="bi bi-shield-lock fs-3 me-2 logo-icon"></i>
+             <span class="fs-4 fw-bold brand-text">Sensorium</span>
         </div>
-
-        <!-- Conteúdo -->
-        <div class="col content">
-            <!-- Cabeçalho -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="mb-0 text-primary">
-                    <i class="bi bi-person-workspace me-2"></i> Bem-vindo, Administrador!
-                </h2>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-outline-primary" id="theme-toggle" title="Alternar tema">
-                        <i class="bi bi-sun-fill"></i>
-                        <i class="bi bi-moon-fill d-none"></i>
-                    </button>
-                    <button class="btn btn-outline-primary" onclick="window.location.reload()">
-                        <i class="bi bi-arrow-clockwise me-2"></i> Atualizar
-                    </button>
-                </div>
-            </div>
-
-            <!-- Painel de métricas -->
-            <div id="painel" class="row mb-4">
-                <div class="col-md-6 col-lg-4">
-                    <div class="dashboard-card">
-                        <i class="bi bi-people dashboard-icon"></i>
-                        <h5>Total de Usuários</h5>
-                        <h2 data-stat="total-usuarios">0</h2>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-4">
-                    <div class="dashboard-card">
-                        <i class="bi bi-bell dashboard-icon"></i>
-                        <h5>Notificações</h5>
-                        <h2 data-stat="total-notificacoes">0</h2>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Seção Usuários -->
-            <div id="usuarios" class="mt-5">
-                <h4><i class="bi bi-people-fill me-2 text-primary"></i> Usuários</h4>
-                <div class="dashboard-card">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Nome</th><th>Email</th><th>Endereço</th><th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usuarios-tbody">
-                                {% for usuario in usuarios %}
-                                <tr>
-                                    <td><i class="bi bi-person-circle text-primary me-2"></i>{{ usuario.nome }}</td>
-                                    <td>{{ usuario.email }}</td>
-                                    <td>{{ usuario.endereco }}</td>
-                                    <td>
-                                        <button class="btn btn-sm btn-primary btn-visualizar-usuario" data-id="{{ usuario.id }}"><i class="bi bi-eye"></i></button>
-                                        <a href="/gerenciar_sensores/{{ usuario.id }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
-                                        <button class="btn btn-sm btn-danger btn-excluir-usuario" data-id="{{ usuario.id }}"><i class="bi bi-trash"></i></button>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Seção Sensores -->
-            <div id="sensores" class="mt-5">
-                <h4><i class="bi bi-cpu-fill me-2 text-primary"></i> Gerenciamento de Sensores</h4>
-                <div class="dashboard-card">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Nome</th>
-                                    <th>Localização</th>
-                                    <th>Status</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for sensor in sensores %}
-                                <tr>
-                                    <td>{{ sensor.id }}</td>
-                                    <td>{{ sensor.nome }}</td>
-                                    <td>{{ sensor.latitude }}, {{ sensor.longitude }}</td>
-                                    <td><span class="badge bg-success">Ativo</span></td>
-                                    <td>
-                                        <a href="/gerenciar_sensores/{{ sensor.id }}" class="btn btn-sm btn-info"><i class="bi bi-gear"></i> Gerenciar</a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Seção Notificações -->
-            <div id="notificacoes" class="mt-5">
-                <h4><i class="bi bi-bell-fill me-2 text-primary"></i> Notificações</h4>
-                <div class="dashboard-card">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Mensagem</th><th>Data</th><th>Status</th><th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="notificacoes-lista">
-                                {% for notificacao in notificacoes %}
-                                <tr data-id="{{ notificacao.id }}" class="{% if not notificacao.lida %}table-warning{% endif %}">
-                                    <td>{{ notificacao.tipo }}</td>
-                                    <td>{{ notificacao.titulo }}</td>
-                                    <td>{{ notificacao.mensagem }}</td>
-                                    <td>{{ notificacao.data_criacao }}</td>
-                                    <td>
-                                        <span class="badge {{ 'bg-success' if notificacao.lida else 'bg-warning' }}">
-                                        {{ 'Lida' if notificacao.lida else 'Não lida' }}
-                                    </span>
-                                    </td>
-                                    <td>
-                                        {% if not notificacao.lida %}
-                                        <button class="btn btn-sm btn-success btn-marcar-lida"><i class="bi bi-check-lg"></i></button>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Seção Configurações -->
-            <div id="configuracoes" class="mt-5">
-                <h4><i class="bi bi-gear-fill me-2 text-primary"></i> Configurações do Sistema</h4>
-                <div class="dashboard-card">
-                    <form id="form-configuracoes">
-                        {% for config in configuracoes %}
-                        <div class="mb-4">
-                            <label class="form-label">{{ config.descricao }}</label>
-                            {% if config.tipo == 'texto' %}
-                            <input type="text" class="form-control" data-chave="{{ config.chave }}" value="{{ config.valor }}">
-                            {% elif config.tipo == 'numero' %}
-                            <input type="number" class="form-control" data-chave="{{ config.chave }}" value="{{ config.valor }}">
-                            {% elif config.tipo == 'booleano' %}
-                            <select class="form-select" data-chave="{{ config.chave }}">
-                                <option value="True" {% if config.valor %}selected{% endif %}>Sim</option>
-                                <option value="False" {% if not config.valor %}selected{% endif %}>Não</option>
-                            </select>
-                            {% endif %}
-                        </div>
-                        {% endfor %}
-                        <button type="submit" class="btn btn-primary">Salvar Configurações</button>
-                    </form>
-                </div>
-            </div>
-
+        <nav class="nav nav-pills flex-column gap-2">
+            <a class="nav-link text-white d-flex align-items-center gap-2 active" href="#painel" onclick="showSection(event, 'painel')" role="button">
+                <i class="bi bi-speedometer2"></i> <span>Painel Geral</span>
+            </a>
+            <a class="nav-link text-white d-flex align-items-center gap-2" href="#usuarios" onclick="showSection(event, 'usuarios')" role="button">
+                <i class="bi bi-people"></i> <span>Usuários</span>
+            </a>
+            <a class="nav-link text-white d-flex align-items-center gap-2" href="#sensores" onclick="showSection(event, 'sensores')" role="button">
+                <i class="bi bi-cpu"></i> <span>Sensores</span>
+            </a>
+            <a class="nav-link text-white d-flex align-items-center gap-2" href="#notificacoes" onclick="showSection(event, 'notificacoes')" role="button">
+                <i class="bi bi-bell"></i> <span>Notificações</span>
+            </a>
+            <a class="nav-link text-white d-flex align-items-center gap-2" href="#configuracoes" onclick="showSection(event, 'configuracoes')" role="button">
+                <i class="bi bi-gear"></i> <span>Configurações</span>
+            </a>
+        </nav>
+        <div class="mt-auto pt-4 border-top border-white-50">
+            <a href="#" id="logout-button" class="nav-link text-white-50 d-flex align-items-center gap-2">
+                <i class="bi bi-box-arrow-right"></i> <span>Sair</span>
+            </a>
         </div>
     </div>
 </div>
+
+<main class="content col content-col">
+    
+    <header class="header-card d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3" data-aos="fade-down">
+        <div class="d-flex align-items-center gap-3 w-100">
+            <div class="user-avatar shadow-sm" style="background: linear-gradient(135deg, #2c3e50 0%, #4ca1af 100%);">
+                <i class="bi bi-person-workspace"></i>
+            </div>
+            <div>
+                <h1 class="h4 fw-bold mb-0 welcome-text">Área Administrativa</h1>
+                <div class="d-flex align-items-center gap-2 text-muted small mt-1">
+                    <span><i class="bi bi-shield-check me-1"></i>Gestão Total</span>
+                    <span class="separator">•</span>
+                    <span id="current-date">Carregando...</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="d-flex gap-2 w-100 w-md-auto justify-content-md-end align-items-center">
+            <button class="btn btn-icon-only shadow-sm" id="theme-toggle" title="Alternar tema">
+                <i class="bi bi-sun-fill theme-icon-active"></i>
+                <i class="bi bi-moon-fill theme-icon-hidden d-none"></i>
+            </button>
+            <button class="btn btn-sm btn-primary shadow-sm px-3 d-flex align-items-center gap-2" onclick="window.location.reload()">
+                <i class="bi bi-arrow-clockwise"></i> <span>Atualizar</span>
+            </button>
+        </div>
+    </header>
+
+    <section id="painel" class="section-panel active">
+        <div class="row g-4">
+            <div class="col-xl-6 col-lg-6 col-md-12" data-aos="fade-up" data-aos-delay="100">
+                <div class="dashboard-card h-100 position-relative">
+                    <div class="dashboard-icon"><i class="bi bi-people"></i></div>
+                    <h2 class="h5 mb-3">Total de Usuários</h2>
+                    <div class="fs-2 fw-bold text-primary" data-stat="total-usuarios">{{ usuarios|length if usuarios else 0 }}</div>
+                    <p class="text-muted mb-0">Usuários cadastrados no sistema</p>
+                    <a href="#usuarios" onclick="showSection(event, 'usuarios')" class="stretched-link"></a>
+                </div>
+            </div>
+            <div class="col-xl-6 col-lg-6 col-md-12" data-aos="fade-up" data-aos-delay="200">
+                <div class="dashboard-card h-100 position-relative">
+                    <div class="dashboard-icon"><i class="bi bi-bell"></i></div>
+                    <h2 class="h5 mb-3">Notificações</h2>
+                    <div class="fs-2 fw-bold text-primary" data-stat="total-notificacoes">{{ notificacoes|length if notificacoes else 0 }}</div>
+                    <p class="text-muted mb-0">Alertas e avisos do sistema</p>
+                    <a href="#notificacoes" onclick="showSection(event, 'notificacoes')" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="usuarios" class="section-panel">
+        <div class="d-flex align-items-center mb-3" data-aos="fade-up">
+            <i class="bi bi-people-fill fs-3 me-2 text-primary"></i>
+            <h4 class="mb-0 fw-bold">Usuários</h4>
+        </div>
+
+        <div class="dashboard-card p-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Nome</th>
+                            <th>Email</th>
+                            <th>Endereço</th>
+                            <th class="text-end pe-4">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if usuarios %}
+                            {% for usuario in usuarios %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-person-circle text-primary fs-4 me-3"></i>
+                                        <span class="fw-bold text-dark" style="font-size: 1.05rem;">{{ usuario.nome }}</span>
+                                    </div>
+                                </td>
+                                <td class="text-muted">{{ usuario.email }}</td>
+                                <td class="text-muted">{{ usuario.endereco or '-' }}</td>
+                                <td class="text-end pe-4">
+                                    <button class="btn btn-primary btn-action-lg btn-visualizar-usuario" data-id="{{ usuario.id }}" title="Ver">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <a href="/gerenciar_sensores/{{ usuario.id }}" class="btn btn-warning text-white btn-action-lg" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button class="btn btn-danger btn-action-lg btn-excluir-usuario" data-id="{{ usuario.id }}" title="Excluir">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted">Nenhum usuário encontrado.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section id="sensores" class="section-panel">
+        <div class="d-flex align-items-center mb-3" data-aos="fade-up">
+            <i class="bi bi-cpu-fill fs-3 me-2 text-primary"></i>
+            <h4 class="mb-0 fw-bold">Gerenciamento de Sensores</h4>
+        </div>
+
+        <div class="dashboard-card p-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">ID</th>
+                            <th>Nome</th>
+                            <th>Localização</th>
+                            <th>Status</th>
+                            <th class="text-end pe-4">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if sensores %}
+                            {% for sensor in sensores %}
+                            <tr>
+                                <td class="ps-4 fw-bold text-muted">#{{ sensor.id }}</td>
+                                <td class="fw-bold text-primary fs-6">{{ sensor.nome }}</td>
+                                <td>{{ sensor.latitude }}, {{ sensor.longitude }}</td>
+                                <td>
+                                    <span class="badge bg-success badge-lg">Ativo</span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <a href="/gerenciar_sensores/{{ sensor.id }}" class="btn btn-info text-white btn-pill-lg">
+                                        <i class="bi bi-gear-fill me-2"></i> Gerenciar
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">Nenhum sensor cadastrado.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section id="notificacoes" class="section-panel">
+        <div class="d-flex align-items-center mb-3" data-aos="fade-up">
+            <i class="bi bi-bell-fill fs-3 me-2 text-primary"></i>
+            <h4 class="mb-0 fw-bold">Notificações</h4>
+        </div>
+        
+        <div class="dashboard-card p-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Tipo</th>
+                            <th>Mensagem</th>
+                            <th>Data</th>
+                            <th>Status</th>
+                            <th class="text-end pe-4">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="notificacoes-lista">
+                        {% if notificacoes %}
+                            {% for notif in notificacoes %}
+                            <tr class="{{ 'table-light' if notif.lida else '' }}">
+                                <td class="ps-4 fw-bold text-primary">{{ notif.tipo }}</td>
+                                <td>{{ notif.mensagem }}</td>
+                                <td class="text-muted">{{ notif.data_criacao }}</td>
+                                <td>
+                                    <span class="badge {{ 'bg-success' if notif.lida else 'bg-warning text-dark' }} badge-lg">
+                                        {{ 'Lida' if notif.lida else 'Nova' }}
+                                    </span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    {% if not notif.lida %}
+                                    <button class="btn btn-success btn-action-lg btn-marcar-lida" title="Marcar como lida">
+                                        <i class="bi bi-check"></i>
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">Nenhuma notificação encontrada.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section id="configuracoes" class="section-panel">
+        <div class="d-flex align-items-center mb-3" data-aos="fade-up">
+            <i class="bi bi-gear-fill fs-3 me-2 text-primary"></i>
+            <h4 class="mb-0 fw-bold">Configurações do Sistema</h4>
+        </div>
+        
+        <div class="dashboard-card p-4">
+            {% if configuracoes %}
+                <form id="form-configuracoes">
+                    {% for config in configuracoes %}
+                    <div class="mb-4 pb-3 border-bottom">
+                        <label class="form-label fw-bold d-block mb-2 fs-5">{{ config.descricao or config.chave }}</label>
+                        
+                        {% if config.tipo == 'texto' %}
+                            <input type="text" class="form-control form-control-lg" data-chave="{{ config.chave }}" value="{{ config.valor }}">
+                        {% elif config.tipo == 'numero' %}
+                            <input type="number" class="form-control form-control-lg" data-chave="{{ config.chave }}" value="{{ config.valor }}">
+                        {% elif config.tipo == 'booleano' %}
+                            <select class="form-select form-select-lg" data-chave="{{ config.chave }}">
+                                <option value="True" {% if config.valor %}selected{% endif %}>Sim</option>
+                                <option value="False" {% if not config.valor %}selected{% endif %}>Não</option>
+                            </select>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill">
+                            <i class="bi bi-save me-2"></i>Salvar Configurações
+                        </button>
+                    </div>
+                </form>
+            {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-sliders fs-1 mb-3"></i>
+                    <p>Nenhuma configuração disponível.</p>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+</main>
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/admin_dashboard.js"></script>
-
-<!-- Script de autenticação -->
-<script>
-  // Verificar se o usuário está autenticado
-  document.addEventListener('DOMContentLoaded', function() {
-    const accessToken = localStorage.getItem('adminAccessToken');
-    
-    if (!accessToken) {
-      // Se não houver token, redirecionar para a página de login
-      window.location.href = '/login_admin.html';
-      return;
-    }
-    
-    // Adicionar token às requisições fetch
-    const originalFetch = window.fetch;
-    window.fetch = function(input, init = {}) {
-      // Se for uma string (URL), converter para objeto
-      if (typeof input === 'string') {
-        input = new Request(input, init);
-      }
-      
-      // Adicionar o header de autorização se tivermos o token
-      if (accessToken) {
-        input.headers.set('Authorization', `Bearer ${accessToken}`);
-      }
-      
-      return originalFetch(input, init);
-    };
-            // Helper para chamadas à API que injeta o Authorization header
-            function apiFetch(input, init = {}) {
-                init = init || {};
-                init.headers = init.headers || {};
-                // se for Headers ou Request, let fetch normalize; aqui usamos header simples
-                if (accessToken) {
-                    init.headers['Authorization'] = `Bearer ${accessToken}`;
-                }
-                return fetch(input, init);
-            }
-    
-    // Adicionar funcionalidade de logout
-    const logoutButton = document.getElementById('logout-button');
-    if (logoutButton) {
-      logoutButton.addEventListener('click', function(e) {
-        e.preventDefault();
-        // Remover o token do localStorage
-        localStorage.removeItem('adminAccessToken');
-        // Redirecionar para a página de login
-        window.location.href = '/login_admin.html';
-      });
-    }
-
-        // Ações: visualizar e excluir usuário
-        // Visualizar usuário: busca detalhes e exibe modal
-        document.querySelectorAll('.btn-visualizar-usuario').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const id = btn.dataset.id;
-                if (!id) return;
-                try {
-                        const res = await apiFetch(`/api/v1/admin/usuarios/${id}`);
-                    if (!res.ok) {
-                        const err = await res.json().catch(()=>({detail:'Erro desconhecido'}));
-                        throw new Error(err.detail || 'Falha ao buscar usuário');
-                    }
-                    const usuario = await res.json();
-
-                    // Criar modal se não existir
-                    if (!document.getElementById('usuarioModal')) {
-                        const modalHtml = `
-                        <div class="modal fade" id="usuarioModal" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="usuarioModalTitle">Usuário</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body" id="usuarioModalBody"></div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>`;
-                        const wrapper = document.createElement('div');
-                        wrapper.innerHTML = modalHtml;
-                        document.body.appendChild(wrapper.firstElementChild);
-                    }
-
-                    // Preencher modal
-                    document.getElementById('usuarioModalTitle').textContent = usuario.nome || 'Usuário';
-                    const body = document.getElementById('usuarioModalBody');
-                    body.innerHTML = `
-                        <p><strong>Nome:</strong> ${usuario.nome || '-'}</p>
-                        <p><strong>Email:</strong> ${usuario.email || '-'}</p>
-                        <p><strong>Endereço:</strong> ${usuario.endereco || '-'}</p>
-                        <p><strong>Telefone:</strong> ${usuario.telefone || '-'}</p>
-                        <p><strong>Cadastro:</strong> ${usuario.data_criacao || '-'}</p>
-                    `;
-
-                    // Mostrar modal
-                    const bsModal = new bootstrap.Modal(document.getElementById('usuarioModal'));
-                    bsModal.show();
-
-                } catch (error) {
-                    console.error(error);
-                    alert(error.message || 'Erro ao buscar usuário');
-                }
-            });
-        });
-
-            // Funções relacionadas à listagem de usuários e ações (visualizar/excluir)
-        const usuariosTbody = document.getElementById('usuarios-tbody');
-        let usuariosCache = [];
-
-            async function loadUsuarios() {
-                try {
-                    const res = await apiFetch('/api/v1/admin/usuarios');
-                    if (!res.ok) throw new Error('Falha ao carregar usuários');
-                    const list = await res.json();
-                    usuariosCache = list;
-                    // preencher tabela
-                    usuariosTbody.innerHTML = list.map(u => `
-                        <tr>
-                            <td><i class="bi bi-person-circle text-primary me-2"></i>${u.nome || ''}</td>
-                            <td>${u.email || ''}</td>
-                            <td>${u.endereco || ''}</td>
-                            <td>
-                                <button class="btn btn-sm btn-primary btn-visualizar-usuario" data-id="${u.id}"><i class="bi bi-eye"></i></button>
-                                <a href="/gerenciar_sensores/${u.id}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
-                                <button class="btn btn-sm btn-danger btn-excluir-usuario" data-id="${u.id}"><i class="bi bi-trash"></i></button>
-                            </td>
-                        </tr>
-                    `).join('');
-                    attachUserHandlers();
-                    // atualizar contagem
-                    const totalElem = document.querySelector('[data-stat="total-usuarios"]');
-                    if (totalElem) totalElem.textContent = list.length;
-                } catch (err) {
-                    console.error(err);
-                }
-            }
-
-            function attachUserHandlers() {
-                // visualizar
-                document.querySelectorAll('.btn-visualizar-usuario').forEach(btn => {
-                    btn.removeEventListener('click', () => {});
-                    btn.addEventListener('click', async (e) => {
-                        const id = btn.dataset.id;
-                        if (!id) return;
-                        try {
-                            const res = await apiFetch(`/api/v1/admin/usuarios/${id}`);
-                            let usuario;
-                            if (res.ok) {
-                                usuario = await res.json();
-                            } else if (res.status === 404) {
-                                // fallback: usar dados já carregados na listagem
-                                console.warn('GET /usuarios/{id} retornou 404 — usando cache de listagem');
-                                usuario = usuariosCache.find(u => String(u.id) === String(id));
-                                if (!usuario) throw new Error('Detalhes do usuário não encontrados (404)');
-                            } else {
-                                const err = await res.json().catch(()=>({detail:'Erro desconhecido'}));
-                                throw new Error(err.detail || 'Falha ao buscar usuário');
-                            }
-
-                            // Criar modal se não existir
-                            if (!document.getElementById('usuarioModal')) {
-                                const modalHtml = `
-                                <div class="modal fade" id="usuarioModal" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="usuarioModalTitle">Usuário</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body" id="usuarioModalBody"></div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>`;
-                                const wrapper = document.createElement('div');
-                                wrapper.innerHTML = modalHtml;
-                                document.body.appendChild(wrapper.firstElementChild);
-                            }
-
-                            // Preencher modal
-                            document.getElementById('usuarioModalTitle').textContent = usuario.nome || 'Usuário';
-                            const body = document.getElementById('usuarioModalBody');
-                            body.innerHTML = `
-                                <p><strong>Nome:</strong> ${usuario.nome || '-'}</p>
-                                <p><strong>Email:</strong> ${usuario.email || '-'}</p>
-                                <p><strong>Endereço:</strong> ${usuario.endereco || '-'}</p>
-                                <p><strong>Telefone:</strong> ${usuario.telefone || '-'}</p>
-                                <p><strong>Cadastro:</strong> ${usuario.data_criacao || '-'}</p>
-                            `;
-
-                            // Mostrar modal
-                            const bsModal = new bootstrap.Modal(document.getElementById('usuarioModal'));
-                            bsModal.show();
-
-                        } catch (error) {
-                            console.error(error);
-                            alert(error.message || 'Erro ao buscar usuário');
-                        }
-                    });
-                });
-
-                // excluir
-                document.querySelectorAll('.btn-excluir-usuario').forEach(btn => {
-                    btn.removeEventListener('click', () => {});
-                    btn.addEventListener('click', async (e) => {
-                        const id = btn.dataset.id;
-                        if (!id) return;
-                        if (!confirm('Tem certeza que deseja excluir este usuário? Esta ação é irreversível.')) return;
-                        try {
-                            const res = await apiFetch(`/api/v1/admin/usuarios/${id}`, { method: 'DELETE' });
-                            if (!res.ok) {
-                                const json = await res.json().catch(()=>({detail:'Erro desconhecido'}));
-                                throw new Error(json.detail || 'Falha ao excluir usuário');
-                            }
-                            // recarregar lista
-                            await loadUsuarios();
-                        } catch (error) {
-                            console.error(error);
-                            alert(error.message || 'Erro ao excluir usuário');
-                        }
-                    });
-                });
-            }
-
-            // iniciar carregamento dinâmico de usuários
-            // substituir renderização server-side para garantir consistência
-            if (usuariosTbody) {
-                loadUsuarios();
-            }
-        // Excluir usuário: confirmação e chamada DELETE
-        document.querySelectorAll('.btn-excluir-usuario').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const id = btn.dataset.id;
-                if (!id) return;
-                if (!confirm('Tem certeza que deseja excluir este usuário? Esta ação é irreversível.')) return;
-                try {
-                    const res = await fetch(`/api/v1/admin/usuarios/${id}`, { method: 'DELETE' });
-                    if (!res.ok) {
-                        const json = await res.json().catch(()=>({detail:'Erro desconhecido'}));
-                        throw new Error(json.detail || 'Falha ao excluir usuário');
-                    }
-                    // Remover linha da tabela
-                    const row = btn.closest('tr');
-                    if (row) row.remove();
-                } catch (error) {
-                    console.error(error);
-                    alert(error.message || 'Erro ao excluir usuário');
-                }
-            });
-        });
-  });
-</script>
+<script src="{{ url_for('static', path='js/admin_dashboard.js') }}"></script>
 {% endblock %}

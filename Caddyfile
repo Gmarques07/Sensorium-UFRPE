@@ -1,0 +1,3 @@
+sensoriumtech.online {
+    reverse_proxy app:8001
+}

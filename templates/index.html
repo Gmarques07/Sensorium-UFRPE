@@ -5,9 +5,9 @@
 {% block styles %}
 <style>
     :root {
-    --primary-blue: #0066cc;
+    --primary-blue: #004183;
     --secondary-blue: #4FC3F7;
-    --dark-blue: #003366;
+    --dark-blue: #004183;
     --light-bg: #f8faff;
     --text-color: #333;
     --accent-color: #00E0C6; /* Ciano vibrante - mais moderno */
@@ -21,6 +21,12 @@
         background-color: var(--light-bg);
         color: var(--text-color); /* Cor padrão do texto */
         line-height: 1.6; /* Melhora a legibilidade */
+    }
+
+    /* Fix navbar text color in light mode */
+    body:not(.dark-mode) .navbar.navbar-light .nav-link,
+    body:not(.dark-mode) .navbar.navbar-light .navbar-brand {
+        color: var(--white) !important;
     }
 
     .navbar {
@@ -141,7 +147,7 @@
     .btn-primary:hover {
         background-color: var(--accent-color);
         border-color: var(--accent-color);
-        color: #003366;
+        color: #004183;
         transform: translateY(-3px);
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     }
@@ -366,11 +372,11 @@
 
     body.dark-mode .feature-icon {
         background: #101010;
-        color: #0066cc; /* Novo azul */  
+        color: #004183; /* Novo azul */  
     }
 
     body.dark-mode .feature-card:hover .feature-icon {
-        background: #0066cc;
+        background: #004183;
         color: #101010;
     }
 
@@ -396,8 +402,8 @@
     <!-- Hero -->
     <section class="hero-section">
         <div class="container hero-content" data-aos="fade-up">
-            <h1 class="hero-title">Sensorium</h1>
-            <p class="hero-subtitle">Plataforma inovadora para monitoramento inteligente através sensores.</p>
+            <h1 class="hero-title">Monitore tudo, otimize sempre.</h1>
+            <p class="hero-subtitle">Transforme dados de sensores em decisões inteligentes e reduza custos operacionais em tempo real.</p>
             <div class="hero-buttons mt-4">
                 <a href="sobre.html" class="btn btn-primary btn-lg">Saiba Mais</a>
                 <a href="cadastro.html" class="btn btn-outline-light btn-lg">Comece Agora</a>
@@ -419,21 +425,21 @@
                     <div class="feature-card">
                         <div class="feature-icon"><i class="bi bi-cloud-arrow-up"></i></div>
                         <h4 class="text-center mb-3">Instalação Simplificada</h4>
-                        <p class="text-center mb-0">Configure seus sensores em poucos passos. Interface intuitiva e processo otimizado para sua comodidade.</p>
+                        <p class="text-center mb-0">Conecte seus sensores e comece a monitorar em minutos. Nossa plataforma intuitiva elimina a necessidade de configurações complexas.</p>
                     </div>
                 </div>
                 <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
                     <div class="feature-card">
                         <div class="feature-icon"><i class="bi bi-lightning-charge"></i></div>
                         <h4 class="text-center mb-3">Gestão Inteligente</h4>
-                        <p class="text-center mb-0">Controle total sobre dispositivos e dados. Acompanhe status em tempo real e receba atualizações automáticas.</p>
+                        <p class="text-center mb-0">Centralize todos os seus sensores em um único dashboard. Receba alertas automáticos e aja de forma proativa antes que problemas aconteçam.</p>
                     </div>
                 </div>
                 <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
                     <div class="feature-card">
                         <div class="feature-icon"><i class="bi bi-graph-up"></i></div>
                         <h4 class="text-center mb-3">Monitoramento Avançado</h4>
-                        <p class="text-center mb-0">Acompanhamento em tempo real dos dados dos sensores. Informações precisas e relatórios detalhados para sua segurança.</p>
+                        <p class="text-center mb-0">Transforme dados brutos em insights de negócio. Nossos relatórios e gráficos avançados revelam tendências e oportunidades para otimizar sua performance.</p>
                     </div>
                 </div>
             </div>

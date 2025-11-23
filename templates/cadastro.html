@@ -8,13 +8,22 @@
     /* Page baseline */
     body {
         font-family: 'Poppins', sans-serif;
-        background: linear-gradient(135deg, var(--primary-blue, #0066cc) 0%, var(--dark-blue, #003366) 100%);
+        background: linear-gradient(135deg, var(--primary-blue, #004183) 0%, var(--dark-blue, #004183) 100%);
         min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 5rem 2rem 2rem;
         transition: all 0.3s ease;
+    }
+
+    /* Fix navbar in light mode for this page */
+    body:not(.dark-mode) .navbar.navbar-light {
+        background-color: transparent !important;
+    }
+    body:not(.dark-mode) .navbar.navbar-light .nav-link,
+    body:not(.dark-mode) .navbar.navbar-light .navbar-brand {
+        color: var(--white) !important;
     }
 
     /* Card (match login style) */
@@ -163,6 +172,16 @@
 <script>
     // AOS já é inicializado no base, mas garantimos configuração local caso necessário
     AOS.init({ duration: 800, once: true });
+
+    // Navbar scroll effect - same as index page
+    window.addEventListener('scroll', function() {
+        const navbar = document.querySelector('.navbar');
+        if (window.scrollY > 50) {
+            navbar.classList.add('navbar-scrolled');
+        } else {
+            navbar.classList.remove('navbar-scrolled');
+        }
+    });
 
     document.addEventListener('DOMContentLoaded', function() {
         const senhaInput = document.getElementById('senha');

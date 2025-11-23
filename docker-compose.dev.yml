@@ -1,0 +1,54 @@
+services:
+  app:
+    build: .
+    container_name: sensorium_app_local
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+    env_file:
+      - .env.dev
+    environment:
+      PYTHONPATH: "/app"
+      DISABLE_RATE_LIMITING: "true"
+      API_BASE_URL: "http://localhost:8001"
+      BASE_URL: "http://localhost:8001"
+      EMAILS_FROM_NAME: "Sensorium Local"
+    volumes:
+      - .:/app 
+    ports:
+      - "8001:8001"
+    
+    command: >
+      sh -c "
+        set -e
+        echo 'Aguardando banco de dados iniciar...'
+        sleep 5
+        echo 'Inicializando banco de dados...'
+        python backend/scripts/init_db.py
+        echo 'Rodando testes automatizados...'
+        ENVIRONMENT=test pytest backend/tests/ -v --tb=short
+        echo 'Testes passaram! Iniciando servidor de desenvolvimento com Hot-Reload...'
+        uvicorn backend.app.main:app --host 0.0.0.0 --port 8001 --reload
+      "
+
+  mysql:
+    image: mysql:8.0
+    container_name: sensorium_mysql_local
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: sensorium_db
+    ports:
+      - "3307:3306" 
+    volumes:
+      - mysql_data_local:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysql_data_local:
