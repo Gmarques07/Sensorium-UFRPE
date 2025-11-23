@@ -20,7 +20,7 @@ async def google_login():
     Inicia o processo de autenticação com o Google
     """
     # Verificar se as credenciais do Google estão configuradas
-    if not settings.GOOGLE_CLIENT_ID or not settings.GOOGLE_REDIRECT_URI:
+    if not settings.GOOGLE_CLIENT_ID or not settings.google_redirect_uri:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Credenciais do Google não configuradas corretamente. Verifique o arquivo .env."
@@ -30,7 +30,7 @@ async def google_login():
     
     params = {
         "client_id": settings.GOOGLE_CLIENT_ID,
-        "redirect_uri": settings.GOOGLE_REDIRECT_URI,
+        "redirect_uri": settings.google_redirect_uri,
         "response_type": "code",
         "scope": "openid email profile",
         "access_type": "offline",
@@ -57,11 +57,8 @@ async def google_callback(
                 detail="Chave secreta do Google não configurada. Verifique o arquivo .env e adicione GOOGLE_CLIENT_SECRET."
             )
         
-        # Verificar e corrigir a porta no redirect_uri se necessário
-        redirect_uri = settings.GOOGLE_REDIRECT_URI
-        # Assegurar que estamos usando a porta correta (8002)
-        if "localhost:8003" in redirect_uri:
-            redirect_uri = redirect_uri.replace("localhost:8003", "localhost:8002")
+        # Usar o redirect_uri baseado no ambiente
+        redirect_uri = settings.google_redirect_uri
         
         # Trocar o código de autorização por um token de acesso
         token_url = "https://oauth2.googleapis.com/token"
@@ -144,7 +141,7 @@ async def google_callback(
             data={"sub": usuario.email}, expires_delta=access_token_expires
         )
         
-        # Determinar para onde redirecionar
+        # Determinar para onde redirecionar usando a URL base configurável
         if is_new_user:
             # Se for um novo usuário (cadastro), redirecionar para login
             redirect_url = f"{settings.BASE_URL}/login_usuario.html?token={access_token}"
