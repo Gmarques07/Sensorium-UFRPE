@@ -62,6 +62,10 @@ from .usuario_sensor import (
     UsuarioSensorInDB,
     UsuarioSensor,
 )
+from .sensor_registro import (
+    SensorRegistroCreate,
+    SensorRegistroResponse,
+)
 
 __all__ = [
     "DashboardStats",
@@ -74,8 +78,8 @@ __all__ = [
     "TokenData",
     "Login",
     "RegistroUsuario",
-    "OAuthUserResponse",
     "OAuthLoginResponse",
+    "OAuthUserResponse",
     "RecuperacaoSenha",
     "ResetarSenha",
     "LeituraBase",
@@ -116,4 +120,6 @@ __all__ = [
     "UsuarioSensorUpdate",
     "UsuarioSensorInDB",
     "UsuarioSensor",
+    "SensorRegistroCreate",
+    "SensorRegistroResponse",
 ]

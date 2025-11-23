@@ -1,16 +1,17 @@
 import requests
 import random
 import time
+import os
 
 def enviar_dados_teste():
     # Configurações básicas
-    url = "http://localhost:8000/api/v1/leituras/"
-    
+    url = f"{os.getenv('SENSORIUM_API_BASE_URL', 'http://localhost:8000')}/api/v1/leituras/"
+
     # Token de acesso (substitua pelo seu token real)
-    token = "INSIRA_SEU_TOKEN_AQUI"
-    
+    token = os.getenv("SENSORIUM_TOKEN", "INSIRA_SEU_TOKEN_AQUI")
+
     # ID do dispositivo (substitua pelo ID do seu sensor real)
-    dispositivo_id = 1
+    dispositivo_id = int(os.getenv("SENSORIUM_DISPOSITIVO_ID", "1"))
     
     headers = {
         "Authorization": f"Bearer {token}",

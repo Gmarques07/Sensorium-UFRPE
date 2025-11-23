@@ -13,6 +13,7 @@ from .endpoints.relatorios import router as relatorios_router
 from .endpoints.oauth import router as oauth_router
 from .endpoints.leituras import router as leituras_router
 from .endpoints.regra_alerta import router as regra_alerta_router
+from .endpoints.sensor_registro import router as sensor_registro_router
 print("leituras_router imported")
 
 api_router.include_router(auth_router, prefix="/auth", tags=["auth"])
@@ -24,4 +25,5 @@ api_router.include_router(relatorios_router, prefix="/relatorios", tags=["relato
 api_router.include_router(oauth_router, prefix="/oauth", tags=["oauth"])
 api_router.include_router(leituras_router, prefix="/leituras", tags=["leituras"])
 api_router.include_router(regra_alerta_router, prefix="/regras-alerta", tags=["regras-alerta"])
+api_router.include_router(sensor_registro_router, prefix="/sensores", tags=["sensores"])
 

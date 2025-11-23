@@ -9,19 +9,21 @@ class Local(Base):
     nome = Column(String(100), nullable=False)
     tipo = Column(String(50), nullable=False)  # CISTERNA, AQUARIO, CASA, etc
     descricao = Column(String(200))
+    chave_api = Column(String(64), unique=True, nullable=True)  # Chave de API única para o sensor
     data_criacao = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    
+
     # Relacionamentos
     notificacoes = relationship("Notificacao", foreign_keys="[Notificacao.local_id]")
     usuarios_atribuidos = relationship("UsuarioSensor", back_populates="sensor")
     leituras = relationship("Leitura", back_populates="local")
     regras_alerta = relationship("RegraAlerta", back_populates="local")
-    
+
     def to_dict(self):
         return {
             "id": self.id,
             "nome": self.nome,
             "tipo": self.tipo,
             "descricao": self.descricao,
+            "chave_api": self.chave_api,
             "data_criacao": self.data_criacao
         }
