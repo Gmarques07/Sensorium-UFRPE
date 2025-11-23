@@ -241,6 +241,8 @@ config.ini
 .env.local
 .env.production
 .env.staging
+.env.dev
+.env.prod
 
 # Backup files
 *.bak

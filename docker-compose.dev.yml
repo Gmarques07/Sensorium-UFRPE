@@ -6,25 +6,13 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+    env_file:
+      - .env.dev
     environment:
-      MYSQL_HOST: mysql
-      MYSQL_USER: root
-      MYSQL_PASSWORD: rootpassword
-      MYSQL_DATABASE: sensorium_db
-      MYSQL_PORT: 3306
-      DATABASE_URL: "mysql+mysqlconnector://root:rootpassword@mysql:3306/sensorium_db?charset=utf8mb4"
-      SECRET_KEY: "chave_secreta_dev"
-      ACCESS_TOKEN_EXPIRE_MINUTES: "1440"
-      BACKEND_CORS_ORIGINS: '["*"]'
       PYTHONPATH: "/app"
       DISABLE_RATE_LIMITING: "true"
       API_BASE_URL: "http://localhost:8001"
-      BASE_URL: "http://localhost:8001" 
-      SMTP_HOST: "smtp.gmail.com"
-      SMTP_PORT: "587"
-      SMTP_USER: "equipesensorium@gmail.com"
-      SMTP_PASSWORD: "hbpl kcxg ndho zwra"
-      EMAILS_FROM_EMAIL: "equipesensorium@gmail.com"
+      BASE_URL: "http://localhost:8001"
       EMAILS_FROM_NAME: "Sensorium Local"
     volumes:
       - .:/app 

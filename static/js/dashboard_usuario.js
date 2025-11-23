@@ -37,29 +37,6 @@ function showSection(event, sectionId) {
   // Lógica de Alertas (carregar sensores se necessário)
   if (sectionId === 'alertas') {
     const sensorSelect = document.getElementById('sensorAlerta');
-    if (sensorSelect && sensorSelect.options.length <= 1) {
-      carregarSensoresParaAlertas();
-    }
-  }
-
-  // Fecha o menu no mobile
-  const sidebarEl = document.getElementById('sidebarMenu');
-  if (sidebarEl && sidebarEl.classList.contains('show') && window.bootstrap) {
-    const bsOffcanvas = bootstrap.Offcanvas.getInstance(sidebarEl);
-    if (bsOffcanvas) bsOffcanvas.hide();
-  }
-
-  // Lógica de Alertas (carregar sensores se necessário)
-  if (sectionId === 'alertas') {
-    const sensorSelect = document.getElementById('sensorAlerta');
-    if (sensorSelect && sensorSelect.options.length <= 1) { // Se só tem a opção padrão
-      carregarSensoresParaAlertas();
-    }
-  }
-
-  // Se a seção de alertas for selecionada e os sensores ainda não foram carregados, carregar agora
-  if (sectionId === 'alertas') {
-    const sensorSelect = document.getElementById('sensorAlerta');
     if (sensorSelect && sensorSelect.options.length <= 1) { // Se só tem a opção padrão
       carregarSensoresParaAlertas();
     }
