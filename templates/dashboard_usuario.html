@@ -19,14 +19,14 @@
 <div class="d-lg-none" style="height: 70px;"></div>
 
 <div class="offcanvas-lg offcanvas-start sidebar-container" tabindex="-1" id="sidebarMenu">
-    
+
     <div class="offcanvas-header border-bottom border-white-50">
         <h5 class="offcanvas-title text-white fw-bold">Sensorium</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu"></button>
     </div>
 
     <div class="offcanvas-body d-flex flex-column p-3 h-100">
-        
+
         <div class="d-none d-lg-flex align-items-center text-white mb-4 ps-2" data-aos="fade-right">
              <i class="bi bi-cpu fs-3 me-2 logo-icon"></i>
              <span class="fs-4 fw-bold brand-text">Sensorium</span>
@@ -63,16 +63,16 @@
 </div>
 
 <main class="content col content-col">
-    
+
     <header class="header-card d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3" data-aos="fade-down">
         <div class="d-flex align-items-center gap-3 w-100">
             <div class="user-avatar shadow-sm">
                 <i class="bi bi-person-fill"></i>
             </div>
-            
+
             <div>
                 <h1 class="h4 fw-bold mb-0 welcome-text">
-                    Olá, <span class="text-primary">Gabriel!</span>
+                    <span id="welcome-message" class="text-primary">Olá, Usuário!</span>
                 </h1>
                 <div class="d-flex align-items-center gap-2 text-muted small mt-1">
                     <span><i class="bi bi-grid-fill me-1"></i>Painel de Controle</span>
@@ -81,13 +81,13 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="d-flex gap-2 w-100 w-md-auto justify-content-md-end align-items-center">
             <button class="btn btn-icon-only shadow-sm" id="theme-toggle" title="Alternar tema">
                 <i class="bi bi-sun-fill theme-icon-active"></i>
                 <i class="bi bi-moon-fill theme-icon-hidden d-none"></i>
             </button>
-            
+
             <button class="btn btn-sm btn-primary shadow-sm px-3 d-flex align-items-center gap-2" onclick="window.location.reload()">
                 <i class="bi bi-arrow-clockwise"></i>
                 <span>Atualizar</span>

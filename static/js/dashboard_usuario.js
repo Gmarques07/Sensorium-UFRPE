@@ -5,11 +5,11 @@ function showSection(event, sectionId) {
   // --- CORREÇÃO FINAL: SELETOR ROBUSTO ---
   // Busca todos os links dentro do container da sidebar (independente de ser nav-pills ou não)
   const allLinks = document.querySelectorAll('.sidebar-container .nav-link');
-  
+
   allLinks.forEach(link => {
     link.classList.remove('active');
     // Limpa qualquer estilo inline que possa estar travando a cor
-    link.style.borderLeft = ''; 
+    link.style.borderLeft = '';
     link.style.borderLeftColor = '';
   });
 
@@ -277,7 +277,7 @@ function montarQueryRelatorio(form) {
 // Bloco principal de execução quando o DOM está pronto
 document.addEventListener('DOMContentLoaded', function() {
   const hash = window.location.hash.slice(1) || 'dashboard';
-  
+
   // --- 1. LIMPEZA INICIAL DA SIDEBAR ---
   // Garante que nenhum botão comece verde errado ao carregar
   const allLinks = document.querySelectorAll('.sidebar-container .nav-link');
@@ -295,7 +295,7 @@ if (dateElement) {
     // Deixa a primeira letra maiúscula
     dateElement.textContent = today.charAt(0).toUpperCase() + today.slice(1);
 }
-  
+
   // Ativa apenas o botão correto
   const activeLink = document.querySelector(`.nav-link[href="#${hash}"]`);
   if (activeLink) activeLink.classList.add('active');
@@ -312,7 +312,7 @@ if (dateElement) {
 
   // --- 3. AUTENTICAÇÃO ---
   const accessToken = localStorage.getItem('accessToken');
-  
+
   if (!accessToken) {
     window.location.href = '/login_usuario.html';
     return;
@@ -323,14 +323,14 @@ if (dateElement) {
   window.fetch = function(input, init = {}) {
     const url = typeof input === 'string' ? input : input.url;
     const headers = new Headers(init.headers || (typeof input !== 'string' && input.headers) || {});
-    
+
     if (accessToken) {
       headers.set('Authorization', `Bearer ${accessToken}`);
     }
 
     let newInit = { ...init, headers };
     let newRequest = typeof input === 'string' ? new Request(input, newInit) : new Request(input, newInit);
-    
+
     return originalFetch(newRequest);
   };
 
@@ -346,10 +346,10 @@ if (dateElement) {
     })
     .then(user => {
       console.log('Usuário autenticado:', user);
-      localStorage.setItem('user', JSON.stringify(user)); 
+      localStorage.setItem('user', JSON.stringify(user));
       const welcomeMessage = document.getElementById('welcome-message');
       if (welcomeMessage && user.nome) {
-        welcomeMessage.textContent = `Bem-vindo(a), ${user.nome}!`;
+        welcomeMessage.textContent = `Olá, ${user.nome}!`;
       }
       carregarDadosSensores();
       carregarAlertasConfigurados();
@@ -406,9 +406,9 @@ if (dateElement) {
             alertDiv.role = 'alert';
             alertDiv.innerHTML = `Perfil atualizado com sucesso!<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>`;
             document.querySelector('main').insertBefore(alertDiv, document.querySelector('main').firstChild);
-            
+
             if (payload.nome) {
-              document.querySelector('#welcome-message').textContent = `Bem-vindo(a), ${payload.nome}!`;
+              document.querySelector('#welcome-message').textContent = `Olá, ${payload.nome}!`;
             }
 
             setTimeout(() => alertDiv.remove(), 3000);
@@ -507,7 +507,7 @@ if (dateElement) {
       alert('Preencha a data inicial e final.');
       return;
     }
-    
+
     const btn = this;
     const originalHtml = btn.innerHTML;
     btn.disabled = true;
@@ -515,7 +515,7 @@ if (dateElement) {
 
     const qs = montarQueryRelatorio(form);
     const url = `/api/v1/relatorios/exportar.csv?${qs}`;
-    
+
     fetch(url)
       .then(response => {
         if (!response.ok) throw new Error('Erro ao exportar relatório.');
@@ -551,7 +551,7 @@ if (dateElement) {
 
     const qs = montarQueryRelatorio(form);
     const url = `/api/v1/relatorios/exportar.pdf?${qs}`;
-    
+
     fetch(url)
       .then(response => {
         if (!response.ok) throw new Error('Erro ao exportar relatório.');
@@ -579,15 +579,15 @@ if (dateElement) {
       alert('Preencha a data inicial e final.');
       return;
     }
-    
+
     const btn = this;
     const originalHtml = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Enviando...';
-    
+
     const qs = montarQueryRelatorio(form);
     const url = `/api/v1/relatorios/enviar-por-email?${qs}`;
-    
+
     fetch(url, { method: 'POST' })
       .then(response => {
         if (!response.ok) return response.json().then(data => { throw new Error(data.detail || 'Erro ao enviar e-mail.'); });
@@ -629,7 +629,7 @@ function carregarDadosSensores() {
     .then(data => {
       console.log('Dados dos sensores:', data);
       localStorage.setItem('sensores', JSON.stringify(data.dispositivos));
-      
+
       const totalDispositivos = document.getElementById('total-dispositivos');
       if (totalDispositivos) {
         totalDispositivos.textContent = data.dispositivos.length;
@@ -701,7 +701,7 @@ function renderizarSensores(data) {
     const dispositivoId = disp.nome.replace(/\s/g, '_');
     const phData = data.ph_por_dispositivo[disp.nome];
     const nivelData = data.nivel_por_dispositivo[disp.nome];
-    
+
     html += `
       <div class="dispositivo-panel" id="panel-${dispositivoId}" style="display: ${index === 0 ? 'block' : 'none'};">
         <div class="row g-4">
@@ -712,12 +712,12 @@ function renderizarSensores(data) {
               </div>
               <div class="card-body">
     `;
-    
+
     if (phData && phData.atual) {
       const ph = phData.atual.ph;
       const badgeClass = ph < 6.5 ? 'bg-danger' : (ph > 8.5 ? 'bg-warning' : 'bg-success');
       const status = ph < 6.5 ? 'Ácido' : (ph > 8.5 ? 'Alcalino' : 'Neutro');
-      
+
       html += `
         <div class="text-center mb-4">
           <div class="display-4 text-primary mb-2">${ph}</div>
@@ -739,7 +739,7 @@ function renderizarSensores(data) {
         </div>
       `;
     }
-    
+
     html += `
               </div>
             </div>
@@ -752,7 +752,7 @@ function renderizarSensores(data) {
               </div>
               <div class="card-body">
     `;
-    
+
     if (nivelData && nivelData.atual) {
       const status = nivelData.atual.status;
       const boia = nivelData.atual.boia;
@@ -760,7 +760,7 @@ function renderizarSensores(data) {
       const badgeClass = status === 'ALTO' ? 'bg-success' : 'bg-warning';
       const boiaClass = boia === 1 ? 'bg-primary' : 'bg-secondary';
       const boiaText = boia === 1 ? 'Ativada' : 'Desativada';
-      
+
       html += `
         <div class="text-center mb-4">
           <div class="mb-4">
@@ -790,7 +790,7 @@ function renderizarSensores(data) {
         </div>
       `;
     }
-    
+
     html += `
               </div>
             </div>
@@ -806,7 +806,7 @@ function renderizarSensores(data) {
               <div class="card-body">
                 <ul class="list-group list-group-flush">
     `;
-    
+
     if (phData && phData.historico && phData.historico.length > 0) {
       phData.historico.forEach(item => {
         html += `
@@ -819,7 +819,7 @@ function renderizarSensores(data) {
     } else {
       html += `<li class="list-group-item text-muted">Nenhum registro encontrado</li>`;
     }
-    
+
     html += `
                 </ul>
               </div>
@@ -833,7 +833,7 @@ function renderizarSensores(data) {
               <div class="card-body">
                 <ul class="list-group list-group-flush">
     `;
-    
+
     if (nivelData && nivelData.historico && nivelData.historico.length > 0) {
       nivelData.historico.forEach(item => {
         const badgeClass = item.status === 'ALTO' ? 'bg-success' : 'bg-warning';
@@ -847,7 +847,7 @@ function renderizarSensores(data) {
     } else {
       html += `<li class="list-group-item text-muted">Nenhum registro encontrado</li>`;
     }
-    
+
     html += `
                 </ul>
               </div>
@@ -857,7 +857,7 @@ function renderizarSensores(data) {
       </div>
     `;
   });
-  
+
   html += `</div>`;  // Fecha a div #visualizacao-sensores
   container.innerHTML = html;
 
@@ -876,25 +876,25 @@ function criarGraficos(data) {
     const dispositivoId = disp.nome.replace(/\s/g, '_');
     const phData = data.ph_por_dispositivo[disp.nome];
     const nivelData = data.nivel_por_dispositivo[disp.nome];
-    
+
     // Configuração comum para responsividade
     const configComum = {
         responsive: true,
         maintainAspectRatio: false, // CRÍTICO PARA MOBILE
-        plugins: { 
+        plugins: {
             legend: { display: false },
-            tooltip: { 
-                backgroundColor: 'rgba(0, 0, 0, 0.8)', 
-                titleFont: { family: "'Poppins', sans-serif" }, 
-                bodyFont: { family: "'Poppins', sans-serif" }, 
-                padding: 12, 
-                cornerRadius: 8, 
-                displayColors: false 
-            } 
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleFont: { family: "'Poppins', sans-serif" },
+                bodyFont: { family: "'Poppins', sans-serif" },
+                padding: 12,
+                cornerRadius: 8,
+                displayColors: false
+            }
         },
-        scales: { 
-            y: { beginAtZero: false, grid: { color: 'rgba(0, 0, 0, 0.05)' }, ticks: { font: { family: "'Poppins', sans-serif" } } }, 
-            x: { grid: { display: false }, ticks: { font: { family: "'Poppins', sans-serif" } } } 
+        scales: {
+            y: { beginAtZero: false, grid: { color: 'rgba(0, 0, 0, 0.05)' }, ticks: { font: { family: "'Poppins', sans-serif" } } },
+            x: { grid: { display: false }, ticks: { font: { family: "'Poppins', sans-serif" } } }
         },
         animation: { duration: 2000, easing: 'easeOutQuart' },
         interaction: { intersect: false, mode: 'index' }
@@ -924,7 +924,7 @@ function criarGraficos(data) {
         options: configComum
       });
     }
-    
+
     const nivelCtx = document.getElementById(`nivelChart-${dispositivoId}`);
     if (nivelCtx && nivelData && nivelData.historico) {
       const historicoNivel = nivelData.historico.reverse();
@@ -950,10 +950,10 @@ function criarGraficos(data) {
             ...configComum,
             scales: {
                 ...configComum.scales,
-                y: { 
-                    beginAtZero: true, min: 0, max: 2, 
-                    grid: { color: 'rgba(0, 0, 0, 0.05)' }, 
-                    ticks: { callback: function(value) { if (value === 2) return 'ALTO'; if (value === 1) return 'BAIXO'; return ''; } } 
+                y: {
+                    beginAtZero: true, min: 0, max: 2,
+                    grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                    ticks: { callback: function(value) { if (value === 2) return 'ALTO'; if (value === 1) return 'BAIXO'; return ''; } }
                 }
             }
         }
@@ -977,19 +977,19 @@ function mostrarDispositivoSelecionado() {
 function carregarSensoresParaAlertas() {
   const select = document.getElementById('sensorAlerta');
   select.innerHTML = '<option value="">Selecione um sensor</option>';
-  
+
   fetch('/api/v1/usuarios/dashboard-dados')
     .then(response => response.json())
     .then(data => {
       localStorage.setItem('sensores', JSON.stringify(data.dispositivos));
-      
+
       data.dispositivos.forEach(disp => {
         const option = document.createElement('option');
         option.value = disp.id;
         option.textContent = disp.nome;
         select.appendChild(option);
       });
-      
+
       const selectRelatorios = document.getElementById('dispRel');
       if (selectRelatorios) {
         selectRelatorios.innerHTML = '<option value="">Todos</option>';
@@ -1010,7 +1010,7 @@ function carregarSensoresParaAlertas() {
 function atualizarCamposSensor(tipoSensor) {
   const campoSelect = document.getElementById('campoAlerta');
   campoSelect.innerHTML = '<option value="">Campo</option>';
-  
+
   const camposPorTipo = {
     'PH': [
       {value: 'ph', text: 'pH'},
@@ -1025,7 +1025,7 @@ function atualizarCamposSensor(tipoSensor) {
       {value: 'status', text: 'Status'},
     ]
   };
-  
+
   if (camposPorTipo[tipoSensor]) {
     camposPorTipo[tipoSensor].forEach(campo => {
       const option = document.createElement('option');
