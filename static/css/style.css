@@ -51,6 +51,11 @@ body {
 }
 
 /* Estilos da navbar */
+nav.navbar {
+    background-color: rgba(0, 65, 131, 0.95); /* Azul primário com transparência */
+    backdrop-filter: blur(10px);
+}
+
 nav.navbar .navbar-brand,
 nav.navbar .navbar-brand i.bi-cpu {
     color: var(--white);
