@@ -3,9 +3,9 @@
     --dark-blue: #004183;
     --light-bg: #f8faff;
     --card-bg: #ffffff;
-    
+
     /* Cores de destaque */
-    --accent-color: #00FF8B; 
+    --accent-color: #00FF8B;
     --error-red: #FF1744;
     --success-green: #00FF41;
     --warning-yellow: #FFC400;
@@ -81,13 +81,13 @@ body {
 .dashboard-card, .card {
     background: var(--card-bg);
     border-radius: 20px;
-    padding: 2rem; 
+    padding: 2rem;
     height: 100%;
     box-shadow: 0 10px 30px var(--shadow-color);
     transition: var(--transition);
     border: 1px solid var(--border-color);
     border-top: 4px solid var(--primary-blue);
-    border-left: 4px solid transparent; 
+    border-left: 4px solid transparent;
 }
 
 .dashboard-card:hover, .card:hover {
@@ -131,7 +131,7 @@ body.dark-mode .sidebar-container {
 }
 
 /* Cards e Modais */
-body.dark-mode .card, 
+body.dark-mode .card,
 body.dark-mode .dashboard-card,
 body.dark-mode .modal-content {
     background-color: var(--card-bg);
@@ -141,7 +141,7 @@ body.dark-mode .modal-content {
 }
 
 /* Títulos e Textos */
-body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, 
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3,
 body.dark-mode h4, body.dark-mode h5, body.dark-mode h6,
 body.dark-mode .form-label,
 body.dark-mode .modal-title,
@@ -150,6 +150,10 @@ body.dark-mode .fw-bold {
 }
 
 body.dark-mode .text-muted {
+    color: #a0a0a0 !important;
+}
+
+body.dark-mode .form-text {
     color: #a0a0a0 !important;
 }
 
@@ -216,7 +220,7 @@ html, body { overflow-x: hidden; width: 100%; }
 
 @media (max-width: 767.98px) {
     .content-col {
-        padding-top: 80px !important; 
+        padding-top: 80px !important;
         padding-left: 15px !important;
         padding-right: 15px !important;
     }
@@ -267,7 +271,7 @@ body.dark-mode .btn-icon-only:hover { background-color: var(--primary-blue); bor
 
 /* Action Card (Vincular Sensor) - Borda Sólida */
 .action-card {
-    border: 2px solid #e2e8f0; 
+    border: 2px solid #e2e8f0;
     background-color: #f8faff;
     transition: all 0.3s ease;
 }
