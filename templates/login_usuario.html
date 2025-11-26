@@ -271,12 +271,10 @@
     </div>
 
     <div class="mb-4">
-        <a href="{{ url_for('homepage') }}" class="link-secondary back-link">
+        <a href="/" class="link-secondary back-link">
             <i class="bi bi-arrow-left me-2"></i>Voltar à Página Inicial
         </a>
     </div>
-
-    <div id="alert-container"></div>
 
     <form id="loginForm">
         <div class="mb-4">
@@ -322,7 +320,7 @@
         <div class="text-center">
             <p class="mb-0">
                 Ainda não tem uma conta?
-                <a href="{{ url_for('cadastro') }}" class="link-secondary ms-1">Cadastre-se aqui</a>
+                <a href="/cadastro" class="link-secondary ms-1">Cadastre-se aqui</a>
             </p>
         </div>
     </form>
@@ -332,6 +330,18 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Verificar se há token na URL (caso de redirecionamento externo)
+        const urlParams = new URLSearchParams(window.location.search);
+        const tokenFromUrl = urlParams.get('token');
+        
+        if (tokenFromUrl) {
+            localStorage.setItem('accessToken', tokenFromUrl);
+            // Limpar token da URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+            // Redirecionar para o dashboard
+            window.location.href = '/dashboard';
+            return;
+        }
 
         // Adicionar o evento de submit ao formulário
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
@@ -340,9 +350,6 @@
             const btn = document.getElementById('btnLogin');
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Entrando...';
-            
-            const alertContainer = document.getElementById('alert-container');
-            alertContainer.innerHTML = '';
             
             const email = document.getElementById('email-login').value;
             const senha = document.getElementById('senha-login').value;
@@ -368,23 +375,28 @@
                     localStorage.setItem('accessToken', result.access_token);
                     
                     // Redirecionar para o dashboard do usuário
-                    window.location.href = '/dashboard_usuario.html';
+                    window.location.href = '/dashboard';
                 } else {
-                    const errorMessage = result.detail || 'Ocorreu um erro ao tentar fazer login.';
-                    const alertHTML = `
-                        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-                            <strong>Erro!</strong> ${errorMessage}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>`;
-                    alertContainer.innerHTML = alertHTML;
+                    let msg = result.detail || 'Ocorreu um erro ao tentar fazer login.';
+                    if (typeof msg === 'object') {
+                        // Tratamento de erro de validação (Pydantic retorna lista)
+                        if (Array.isArray(msg) && msg.length > 0 && msg[0].msg) {
+                            msg = msg[0].msg;
+                        } else {
+                            msg = 'Dados inválidos. Verifique os campos.';
+                        }
+                    }
+                    
+                    // Tradução de erros técnicos comuns
+                    if (msg.includes('value is not a valid email address') || msg.includes('valid email address')) {
+                        msg = 'E-mail inválido. Verifique o formato (ex: nome@dominio.com).';
+                    }
+                    
+                    // Erro de login -> Modal Central para destaque
+                    mostrarAlertaModal(msg, 'Erro no Login');
                 }
             } catch (error) {
-                const alertHTML = `
-                    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-                        <strong>Erro de conexão!</strong> Não foi possível se conectar ao servidor.
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>`;
-                alertContainer.innerHTML = alertHTML;
+                mostrarAlertaModal('Erro de conexão! Não foi possível se conectar ao servidor.', 'Erro de Conexão');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Entrar';

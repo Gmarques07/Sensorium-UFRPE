@@ -20,6 +20,7 @@ from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from zoneinfo import ZoneInfo
 
 router = APIRouter()
 
@@ -30,6 +31,51 @@ ACCENT_GREEN = colors.Color(0, 230/255, 118/255)  # #00E676
 LIGHT_BG = colors.Color(245/255, 249/255, 255/255)  # #f5f9ff
 CARD_BG = colors.white
 BORDER_RADIUS = 15
+
+@router.get("/visualizar")
+def visualizar_relatorio(
+    inicio: date = Query(..., description="Data inicial no formato YYYY-MM-DD"),
+    fim: date = Query(..., description="Data final no formato YYYY-MM-DD"),
+    dispositivo: Optional[str] = Query(None, description="Nome do dispositivo (opcional)"),
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    """
+    Retorna os dados do relatório em formato JSON para visualização no frontend.
+    """
+    dados_ph, dados_nivel = obter_dados_relatorio(db, inicio, fim, dispositivo)
+    
+    resultado = []
+    
+    # Processar dados de pH
+    for item in dados_ph:
+        resultado.append({
+            "data_iso": item.leitura.data, # Para ordenação
+            "data": item.leitura.data.astimezone(ZoneInfo("America/Sao_Paulo")).strftime("%d/%m/%Y %H:%M:%S"),
+            "dispositivo": item.leitura.local.nome,
+            "tipo": "pH",
+            "valor": str(item.ph),
+            "status": "-"
+        })
+        
+    # Processar dados de Nível
+    for item in dados_nivel:
+        valor_formatado = f"{item.valor}%" if item.valor is not None else "N/A"
+        resultado.append({
+            "data_iso": item.leitura.data, # Para ordenação
+            "data": item.leitura.data.astimezone(ZoneInfo("America/Sao_Paulo")).strftime("%d/%m/%Y %H:%M:%S"),
+            "dispositivo": item.leitura.local.nome,
+            "tipo": "Nível",
+            "valor": valor_formatado,
+            "status": item.status
+        })
+    
+    # Ordenar por data (mais recente primeiro) e remover campo auxiliar
+    resultado.sort(key=lambda x: x["data_iso"], reverse=True)
+    for item in resultado:
+        del item["data_iso"]
+        
+    return resultado
 
 def calcular_estatisticas_diarias_ph(dados_ph: List[PhNivel]) -> Dict[str, Dict[str, float]]:
     """

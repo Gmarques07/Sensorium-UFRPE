@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, constr, ConfigDict
+from pydantic import BaseModel, EmailStr, constr, ConfigDict, field_validator
 from typing import Optional
 from datetime import datetime
 
@@ -15,6 +15,15 @@ class UsuarioUpdate(BaseModel):
     email: Optional[EmailStr] = None
     endereco: Optional[str] = None
     senha: Optional[str] = None
+
+    @field_validator('nome')
+    def validar_nome(cls, v):
+        if v is not None:
+            if not v.strip():
+                raise ValueError('Nome não pode ser vazio')
+            if len(v.strip()) < 3:
+                raise ValueError('Nome deve ter pelo menos 3 caracteres')
+        return v
 
 class UsuarioInDB(UsuarioBase):
     id: int

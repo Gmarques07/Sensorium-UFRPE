@@ -24,7 +24,22 @@ function showSection(event, sectionId) {
 
   // Troca os painéis visíveis
   document.querySelectorAll('.section-panel').forEach(panel => panel.classList.remove('active'));
-  const section = document.getElementById(sectionId);
+  
+  let section = document.getElementById(sectionId);
+  // Fallback: Se a seção não existir (ex: hash inválido na URL), voltar para o dashboard
+  if (!section) {
+      console.warn(`Seção "${sectionId}" não encontrada. Redirecionando para dashboard.`);
+      sectionId = 'dashboard';
+      section = document.getElementById(sectionId);
+      // Atualiza a URL para corrigir o hash inválido
+      history.replaceState({}, '', `#${sectionId}`);
+      
+      // Re-seleciona o link correto na sidebar
+      allLinks.forEach(link => link.classList.remove('active'));
+      const targetLink = document.querySelector(`.nav-link[href="#${sectionId}"]`);
+      if (targetLink) targetLink.classList.add('active');
+  }
+  
   if (section) section.classList.add('active');
 
   // Fecha o menu no mobile
@@ -126,7 +141,8 @@ function atualizarListaSensoresUsuario(sensores) {
       <i class="bi bi-eye me-1"></i>Visualizar Dados
     </button>
   </div>
-  <div class="row g-4">`;
+  <div class="row g-4">
+`;
   sensores.forEach(sensor => {
     html += `
     <div class="col-md-6 col-lg-4" id="sensor-card-${sensor.id}">
@@ -143,11 +159,11 @@ function atualizarListaSensoresUsuario(sensores) {
                 <i class="bi bi-three-dots"></i>
               </button>
               <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#" onclick="copiarChaveSensor('${sensor.chave_api}')">
+                <li><a class="dropdown-item" href="javascript:void(0)" onclick="copiarChaveSensor('${sensor.chave_api}')">
                   <i class="bi bi-key me-2"></i>Copiar Chave API
                 </a></li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-danger" href="#" onclick="excluirSensor(${sensor.id}, '${sensor.nome}')">
+                <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="excluirSensor(${sensor.id}, '${sensor.nome}')">
                   <i class="bi bi-trash me-2"></i>Excluir Sensor
                 </a></li>
               </ul>
@@ -179,66 +195,41 @@ function atualizarListaSensoresUsuario(sensores) {
 // Função para copiar a chave de API de um sensor existente
 function copiarChaveSensor(chaveApi) {
   navigator.clipboard.writeText(chaveApi).then(() => {
-    mostrarAlerta('Chave API copiada para a área de transferência!', 'success');
+    mostrarNotificacao('Chave API copiada para a área de transferência!', 'success');
   }).catch(err => {
-    mostrarAlerta('Erro ao copiar chave API', 'danger');
+    mostrarNotificacao('Erro ao copiar chave API', 'danger');
     console.error('Erro ao copiar chave API:', err);
   });
 }
 
 // Função para excluir um sensor
 async function excluirSensor(sensorId, sensorNome) {
-  if (!confirm(`Tem certeza que deseja excluir o sensor "${sensorNome}"? Esta ação não pode ser desfeita.`)) {
-    return;
-  }
+  confirmarAcao('Excluir Sensor', `Tem certeza que deseja excluir o sensor "${sensorNome}"? Esta ação não pode ser desfeita.`, async () => {
+      try {
+        const response = await fetch(`/api/v1/locais/${sensorId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          }
+        });
 
-  try {
-    const response = await fetch(`/api/v1/locais/${sensorId}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        if (response.ok) {
+          mostrarAlertaModal('Sensor excluído com sucesso!', 'Sucesso', 'success');
+          // Remover o card do sensor da interface
+          const sensorCard = document.getElementById(`sensor-card-${sensorId}`);
+          if (sensorCard) {
+            sensorCard.remove();
+          }
+          // Recarregar a lista de sensores para manter a consistência
+          carregarDadosSensores();
+        } else {
+          const error = await response.json();
+          mostrarAlertaModal(`Erro ao excluir sensor: ${error.detail || 'Erro desconhecido'}`, 'Erro', 'danger');
+        }
+      } catch (error) {
+        mostrarAlertaModal(`Erro de conexão: ${error.message}`, 'Erro de Conexão', 'danger');
       }
-    });
-
-    if (response.ok) {
-      mostrarAlerta('Sensor excluído com sucesso!', 'success');
-      // Remover o card do sensor da interface
-      const sensorCard = document.getElementById(`sensor-card-${sensorId}`);
-      if (sensorCard) {
-        sensorCard.remove();
-      }
-      // Recarregar a lista de sensores para manter a consistência
-      carregarDadosSensores();
-    } else {
-      const error = await response.json();
-      mostrarAlerta(`Erro ao excluir sensor: ${error.detail || 'Erro desconhecido'}`, 'danger');
-    }
-  } catch (error) {
-    mostrarAlerta(`Erro de conexão: ${error.message}`, 'danger');
-  }
-}
-
-// Função para mostrar alertas
-function mostrarAlerta(mensagem, tipo) {
-  // Criar elemento de alerta
-  const alertDiv = document.createElement('div');
-  alertDiv.className = `alert alert-${tipo} alert-dismissible fade show`;
-  alertDiv.role = 'alert';
-  alertDiv.innerHTML = `
-      ${mensagem}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  `;
-
-  // Adicionar ao container principal
-  const main = document.querySelector('main');
-  main.insertBefore(alertDiv, main.firstChild);
-
-  // Remover após 5 segundos
-  setTimeout(() => {
-      if (alertDiv.parentNode) {
-          alertDiv.remove();
-      }
-  }, 5000);
+  });
 }
 
 // Função para alternar entre visualizações de sensores
@@ -311,10 +302,20 @@ if (dateElement) {
   }
 
   // --- 3. AUTENTICAÇÃO ---
+  // Verificação de token na URL (OAuth Callback)
+  const urlParams = new URLSearchParams(window.location.search);
+  const tokenFromUrl = urlParams.get('token');
+  
+  if (tokenFromUrl) {
+    localStorage.setItem('accessToken', tokenFromUrl);
+    // Limpar token da URL para não ficar visível
+    window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+  }
+
   const accessToken = localStorage.getItem('accessToken');
 
   if (!accessToken) {
-    window.location.href = '/login_usuario.html';
+    window.location.href = '/login';
     return;
   }
 
@@ -339,7 +340,7 @@ if (dateElement) {
     .then(response => {
       if (!response.ok) {
         localStorage.removeItem('accessToken');
-        window.location.href = '/login_usuario.html';
+        window.location.href = '/login';
         throw new Error('Token inválido ou expirado');
       }
       return response.json();
@@ -389,6 +390,15 @@ if (dateElement) {
 
     if (Object.keys(payload).length === 0) return;
 
+    // Validação Frontend: Nome
+    if (payload.nome) {
+        const nomeLimpo = payload.nome.trim();
+        if (nomeLimpo.length < 3) {
+            mostrarNotificacao("O nome deve ter pelo menos 3 caracteres válidos.", 'warning');
+            return;
+        }
+    }
+
     submitButton.disabled = true;
     submitButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...`;
 
@@ -401,32 +411,18 @@ if (dateElement) {
         if (response.ok) {
             const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditarPerfil'));
             modal.hide();
-            const alertDiv = document.createElement('div');
-            alertDiv.className = 'alert alert-success alert-dismissible fade show';
-            alertDiv.role = 'alert';
-            alertDiv.innerHTML = `Perfil atualizado com sucesso!<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>`;
-            document.querySelector('main').insertBefore(alertDiv, document.querySelector('main').firstChild);
+            mostrarAlertaModal('Perfil atualizado com sucesso!', 'Sucesso', 'success');
 
             if (payload.nome) {
               document.querySelector('#welcome-message').textContent = `Olá, ${payload.nome}!`;
             }
-
-            setTimeout(() => alertDiv.remove(), 3000);
         } else {
             const errorData = await response.json();
-            const alertDiv = document.createElement('div');
-            alertDiv.className = 'alert alert-danger alert-dismissible fade show';
-            alertDiv.role = 'alert';
-            alertDiv.innerHTML = `${errorData.detail || 'Erro ao atualizar o perfil.'}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>`;
-            document.querySelector('#modalEditarPerfil .modal-body').prepend(alertDiv);
+            mostrarAlertaModal(errorData.detail || 'Erro ao atualizar o perfil.', 'Erro', 'danger');
         }
     })
     .catch(() => {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-danger alert-dismissible fade show';
-        alertDiv.role = 'alert';
-        alertDiv.innerHTML = `Erro de conexão. Tente novamente.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>`;
-        document.querySelector('#modalEditarPerfil .modal-body').prepend(alertDiv);
+        mostrarAlertaModal('Erro de conexão. Tente novamente.', 'Erro de Conexão', 'danger');
     })
     .finally(() => {
         submitButton.disabled = false;
@@ -465,29 +461,14 @@ if (dateElement) {
       if (response.ok) {
         form.reset();
         carregarAlertasConfigurados();
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-success alert-dismissible fade show';
-        alertDiv.role = 'alert';
-        alertDiv.innerHTML = `Alerta criado com sucesso!<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>`;
-        document.querySelector('main').insertBefore(alertDiv, document.querySelector('main').firstChild);
-        setTimeout(() => alertDiv.remove(), 3000);
+        mostrarAlertaModal('Alerta criado com sucesso!', 'Sucesso', 'success');
       } else {
         const errorData = await response.json();
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-danger alert-dismissible fade show';
-        alertDiv.role = 'alert';
-        alertDiv.innerHTML = `${errorData.detail || 'Erro ao criar alerta.'}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>`;
-        document.querySelector('#formCriarAlerta').prepend(alertDiv);
-        setTimeout(() => alertDiv.remove(), 5000);
+        mostrarAlertaModal(errorData.detail || 'Erro ao criar alerta.', 'Erro', 'danger');
       }
     })
     .catch(() => {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-danger alert-dismissible fade show';
-        alertDiv.role = 'alert';
-        alertDiv.innerHTML = `Erro de conexão. Tente novamente.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>`;
-        document.querySelector('#formCriarAlerta').prepend(alertDiv);
-        setTimeout(() => alertDiv.remove(), 5000);
+        mostrarAlertaModal('Erro de conexão. Tente novamente.', 'Erro de Conexão', 'danger');
     })
     .finally(() => {
         submitButton.disabled = false;
@@ -501,10 +482,89 @@ if (dateElement) {
   });
 
   // Eventos Botões Exportação
+
+  // Botão Visualizar
+  document.getElementById('btnVisualizarRelatorio').addEventListener('click', function() {
+    const form = document.getElementById('formRelatorios');
+    if (!form.inicio.value || !form.fim.value) {
+      mostrarNotificacao('Preencha a data inicial e final.', 'warning');
+      return;
+    }
+
+    const btn = this;
+    const originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Carregando...`;
+
+    const qs = montarQueryRelatorio(form);
+    const url = `/api/v1/relatorios/visualizar?${qs}`;
+    
+    // Esconde resultados anteriores
+    document.getElementById('relatorio-visualizacao').classList.add('d-none');
+
+    fetch(url)
+      .then(response => {
+        if (!response.ok) throw new Error('Erro ao carregar dados do relatório.');
+        return response.json();
+      })
+      .then(data => {
+        const tbody = document.getElementById('tabela-relatorio-corpo');
+        tbody.innerHTML = '';
+
+        if (!data || data.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">
+                        <i class="bi bi-info-circle me-2"></i>Nenhum dado encontrado para o período selecionado.
+                    </td>
+                </tr>
+            `;
+        } else {
+            data.forEach(item => {
+                // Define cor do badge de status
+                let statusBadge = '';
+                if (item.tipo === 'pH') {
+                    const valor = parseFloat(item.valor);
+                    if (valor < 6.0 || valor > 8.0) statusBadge = '<span class="badge bg-warning text-dark">Atenção</span>';
+                    else statusBadge = '<span class="badge bg-success">Normal</span>';
+                } else {
+                    statusBadge = item.status === 'ALTO' 
+                        ? '<span class="badge bg-success">Normal</span>' 
+                        : '<span class="badge bg-warning text-dark">Baixo</span>';
+                }
+
+                const row = `
+                    <tr>
+                        <td class="ps-4">${item.data}</td>
+                        <td><span class="fw-semibold">${item.dispositivo}</span></td>
+                        <td>${item.tipo}</td>
+                        <td class="fw-bold text-primary">${item.valor}</td>
+                        <td>${statusBadge}</td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+
+        // Mostra a tabela
+        document.getElementById('relatorio-visualizacao').classList.remove('d-none');
+        // Scroll suave até o resultado
+        document.getElementById('relatorio-visualizacao').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      })
+      .catch(error => {
+        console.error('Erro:', error);
+        mostrarNotificacao(error.message || 'Erro ao visualizar relatório.', 'danger');
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+      });
+  });
+
   document.getElementById('btnExportCSV').addEventListener('click', function() {
     const form = document.getElementById('formRelatorios');
     if (!form.inicio.value || !form.fim.value) {
-      alert('Preencha a data inicial e final.');
+      mostrarNotificacao('Preencha a data inicial e final.', 'warning');
       return;
     }
 
@@ -529,7 +589,7 @@ if (dateElement) {
       })
       .catch(error => {
         console.error('Erro:', error);
-        alert(error.message || 'Erro ao exportar relatório.');
+        mostrarNotificacao(error.message || 'Erro ao exportar relatório.', 'danger');
       })
       .finally(() => {
         btn.disabled = false;
@@ -540,7 +600,7 @@ if (dateElement) {
   document.getElementById('btnExportPDF').addEventListener('click', function() {
     const form = document.getElementById('formRelatorios');
     if (!form.inicio.value || !form.fim.value) {
-      alert('Preencha a data inicial e final.');
+      mostrarNotificacao('Preencha a data inicial e final.', 'warning');
       return;
     }
 
@@ -565,7 +625,7 @@ if (dateElement) {
       })
       .catch(error => {
         console.error('Erro:', error);
-        alert(error.message || 'Erro ao exportar relatório.');
+        mostrarNotificacao(error.message || 'Erro ao exportar relatório.', 'danger');
       })
       .finally(() => {
         btn.disabled = false;
@@ -576,7 +636,7 @@ if (dateElement) {
   document.getElementById('btnEnviarEmail').addEventListener('click', function() {
     const form = document.getElementById('formRelatorios');
     if (!form.inicio.value || !form.fim.value) {
-      alert('Preencha a data inicial e final.');
+      mostrarNotificacao('Preencha a data inicial e final.', 'warning');
       return;
     }
 
@@ -594,11 +654,11 @@ if (dateElement) {
         return response.json();
       })
       .then(data => {
-        alert(data.message || 'Relatório enviado com sucesso!');
+        mostrarAlertaModal(data.message || 'Relatório enviado com sucesso!', 'Sucesso', 'success');
       })
       .catch(error => {
         console.error('Erro:', error);
-        alert(error.message || 'Erro ao enviar e-mail.');
+        mostrarAlertaModal(error.message || 'Erro ao enviar e-mail.', 'Erro', 'danger');
       })
       .finally(() => {
         btn.disabled = false;
@@ -610,8 +670,38 @@ if (dateElement) {
   if (logoutButton) {
     logoutButton.addEventListener('click', function(e) {
       e.preventDefault();
-      localStorage.removeItem('accessToken');
-      window.location.href = '/login_usuario.html';
+      
+      const modalEl = document.getElementById('modalConfirmLogout');
+      if (modalEl) {
+          const modal = new bootstrap.Modal(modalEl);
+          modal.show();
+      } else {
+          console.error("Modal de logout não encontrado!");
+          // Fallback seguro
+          if(confirm("Deseja sair da sua conta?")) {
+              fetch('/api/v1/auth/logout', { method: 'POST' })
+                  .then(() => {
+                      localStorage.removeItem('accessToken');
+                      localStorage.removeItem('user');
+                      window.location.href = '/login';
+                  })
+                  .catch(err => console.error('Erro no logout:', err));
+          }
+      }
+    });
+  }
+
+  // Listener for the confirm logout button in the modal
+  const confirmLogoutBtn = document.getElementById('btnConfirmLogout');
+  if (confirmLogoutBtn) {
+    confirmLogoutBtn.addEventListener('click', function() {
+        fetch('/api/v1/auth/logout', { method: 'POST' })
+            .then(() => {
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('user');
+                window.location.href = '/login';
+            })
+            .catch(err => console.error('Erro no logout:', err));
     });
   }
 });
@@ -695,7 +785,8 @@ function renderizarSensores(data) {
   html += `</select></div>`;
 
   // Adiciona uma div para distinguir visualização de gerenciamento
-  html += `<div id="visualizacao-sensores" data-view="detailed">`;
+  html += `<div id="visualizacao-sensores" data-view="detailed">
+`;
 
   data.dispositivos.forEach((disp, index) => {
     const dispositivoId = disp.nome.replace(/\s/g, '_');
@@ -1110,40 +1201,35 @@ function obterNomeSensor(localId) {
 }
 
 function excluirAlerta(alertaId) {
-  if (!confirm('Tem certeza que deseja excluir este alerta?')) {
-    return;
-  }
-
-  fetch(`/api/v1/regras-alerta/${alertaId}`, {
-    method: 'DELETE'
-  })
-  .then(response => {
-    if (response.ok) {
-      carregarAlertasConfigurados();
-      const alertDiv = document.createElement('div');
-      alertDiv.className = 'alert alert-success alert-dismissible fade show';
-      alertDiv.role = 'alert';
-      alertDiv.innerHTML = `Alerta excluído com sucesso!<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>`;
-      document.querySelector('main').insertBefore(alertDiv, document.querySelector('main').firstChild);
-      setTimeout(() => alertDiv.remove(), 3000);
-    } else {
-      return response.json().then(data => {
-        throw new Error(data.detail || 'Erro ao excluir alerta');
+  confirmarAcao('Excluir Alerta', 'Tem certeza que deseja excluir este alerta?', () => {
+      fetch(`/api/v1/regras-alerta/${alertaId}`, {
+        method: 'DELETE'
+      })
+      .then(response => {
+        if (response.ok) {
+          carregarAlertasConfigurados();
+          mostrarAlertaModal('Alerta excluído com sucesso!', 'Sucesso', 'success');
+        } else {
+          return response.json().then(data => {
+            throw new Error(data.detail || 'Erro ao excluir alerta');
+          });
+        }
+      })
+      .catch(error => {
+        console.error('Erro:', error);
+        mostrarAlertaModal(error.message || 'Erro ao excluir alerta.', 'Erro', 'danger');
       });
-    }
-  })
-  .catch(error => {
-    console.error('Erro:', error);
-    const alertDiv = document.createElement('div');
-    alertDiv.className = 'alert alert-danger alert-dismissible fade show';
-    alertDiv.role = 'alert';
-    alertDiv.innerHTML = `${error.message || 'Erro ao excluir alerta.'}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>`;
-    document.querySelector('main').insertBefore(alertDiv, document.querySelector('main').firstChild);
-    setTimeout(() => alertDiv.remove(), 5000);
   });
 }
 
 function limparFormularioAlerta() {
   document.getElementById('formCriarAlerta').reset();
   document.getElementById('campoAlerta').innerHTML = '<option value="">Campo</option>';
+}
+
+function fecharVisualizacaoRelatorio() {
+  const container = document.getElementById('relatorio-visualizacao');
+  if (container) {
+    container.classList.add('d-none');
+  }
 }

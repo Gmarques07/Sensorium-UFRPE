@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="main-navbar">
     <div class="container">
-        <a class="navbar-brand" href="{{ url_for('homepage') }}">
+        <a class="navbar-brand" href="/">
             <i class="bi bi-cpu"></i> Sensorium
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Abrir menu">
@@ -8,10 +8,10 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto align-items-center">
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('homepage') }}">Início</a></li>
-                <li class="nav-item ms-3"><a class="nav-link"href="{{ url_for('login_usuario') }}">Login</a></li>
-                <li class="nav-item ms-2"><a class="nav-link"href="{{ url_for('cadastro') }}">Cadastro</a></li>
-                <li class="nav-item ms-2"><a class="nav-link" href="{{ url_for('sobre') }}">Sobre</a></li>
+                <li class="nav-item"><a class="nav-link" href="/">Início</a></li>
+                <li class="nav-item ms-3"><a class="nav-link"href="/login">Login</a></li>
+                <li class="nav-item ms-2"><a class="nav-link"href="/cadastro">Cadastro</a></li>
+                <li class="nav-item ms-2"><a class="nav-link" href="/sobre">Sobre</a></li>
                 <!-- Botão de Alternância de Tema -->
                 <li class="nav-item ms-3">
                     <a href="#" class="nav-link" id="theme-toggle">

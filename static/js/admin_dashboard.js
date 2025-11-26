@@ -30,7 +30,21 @@ function showSection(event, sectionId) {
     });
 
     // 4. Mostra APENAS a seção desejada
-    const activePanel = document.getElementById(sectionId);
+    let activePanel = document.getElementById(sectionId);
+    
+    // Fallback: Se a seção não existir (hash inválido), voltar para o painel inicial
+    if (!activePanel) {
+        console.warn(`Seção "${sectionId}" não encontrada. Redirecionando para painel.`);
+        sectionId = 'painel';
+        activePanel = document.getElementById(sectionId);
+        history.replaceState({}, '', `#${sectionId}`);
+        
+        // Corrige a sidebar para refletir a mudança
+        allLinks.forEach(link => link.classList.remove('active'));
+        const targetLink = document.querySelector(`.nav-link[href="#${sectionId}"]`);
+        if (targetLink) targetLink.classList.add('active');
+    }
+
     if (activePanel) {
         activePanel.classList.add('active');
         activePanel.style.display = 'block'; // Garante visibilidade
@@ -81,8 +95,34 @@ document.addEventListener('DOMContentLoaded', function() {
     if (logoutButton) {
         logoutButton.addEventListener('click', (e) => {
             e.preventDefault();
-            localStorage.removeItem('adminAccessToken');
-            window.location.href = '/login_admin.html';
+            const modalEl = document.getElementById('modalConfirmLogout');
+            if (modalEl) {
+                const modal = new bootstrap.Modal(modalEl);
+                modal.show();
+            } else {
+                console.error("Modal de logout não encontrado!");
+                // Fallback para garantir que o usuário consiga sair
+                if(confirm("Deseja sair do sistema?")) {
+                    fetch('/api/v1/admin/logout', { method: 'POST' })
+                        .then(() => {
+                            localStorage.removeItem('adminAccessToken');
+                            window.location.href = '/admin';
+                        })
+                        .catch(err => console.error('Erro no logout:', err));
+                }
+            }
+        });
+    }
+
+    const confirmLogoutBtn = document.getElementById('btnConfirmLogout');
+    if (confirmLogoutBtn) {
+        confirmLogoutBtn.addEventListener('click', () => {
+            fetch('/api/v1/admin/logout', { method: 'POST' })
+                .then(() => {
+                    localStorage.removeItem('adminAccessToken');
+                    window.location.href = '/admin';
+                })
+                .catch(err => console.error('Erro no logout:', err));
         });
     }
 
@@ -122,23 +162,25 @@ function setupActionButtons() {
         const newBtn = btn.cloneNode(true);
         btn.parentNode.replaceChild(newBtn, btn);
         
-        newBtn.addEventListener('click', async (e) => {
+        newBtn.addEventListener('click', (e) => {
             const id = newBtn.dataset.id;
-            if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
             
-            try {
-                const res = await fetch(`/api/v1/admin/usuarios/${id}`, { method: 'DELETE' });
-                if (res.ok) {
-                    newBtn.closest('tr').remove();
-                    const counter = document.querySelector('[data-stat="total-usuarios"]');
-                    if(counter) counter.innerText = Math.max(0, parseInt(counter.innerText) - 1);
-                } else {
-                    alert('Erro ao excluir usuário. Verifique se você está logado.');
+            confirmarAcao('Excluir Usuário', 'Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.', async () => {
+                try {
+                    const res = await fetch(`/api/v1/admin/usuarios/${id}`, { method: 'DELETE' });
+                    if (res.ok) {
+                        newBtn.closest('tr').remove();
+                        const counter = document.querySelector('[data-stat="total-usuarios"]');
+                        if(counter) counter.innerText = Math.max(0, parseInt(counter.innerText) - 1);
+                        mostrarAlertaModal('Usuário excluído com sucesso.', 'Sucesso', 'success');
+                    } else {
+                        mostrarAlertaModal('Erro ao excluir usuário.', 'Erro', 'danger');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    mostrarAlertaModal('Erro de conexão.', 'Erro de Conexão', 'danger');
                 }
-            } catch (err) {
-                console.error(err);
-                alert('Erro de conexão.');
-            }
+            });
         });
     });
 }

@@ -90,13 +90,11 @@
             </a>
         </div>
 
-        <div class="mb-4">
-            <a href="{{ url_for('homepage') }}" class="link-secondary back-link">
-                <i class="bi bi-arrow-left me-2"></i>Voltar à Página Inicial
-            </a>
-        </div>
-
-        <div id="alert-container"></div>
+            <div class="mb-4">
+                <a href="/" class="link-secondary back-link">
+                    <i class="bi bi-arrow-left me-2"></i>Voltar à Página Inicial
+                </a>
+            </div>
 
         <form id="cadastroForm">
             <div class="mb-4">
@@ -160,10 +158,32 @@
             <div class="text-center">
                 <p class="mb-0">
                     Já tem uma conta?
-                    <a href="{{ url_for('login_usuario') }}" class="link-secondary ms-1">Faça login aqui</a>
+                    <a href="/login" class="link-secondary ms-1">Faça login aqui</a>
                 </p>
-            </div>
+            </div>        
         </form>
+    </div>
+
+    <!-- Modal de Sucesso no Cadastro -->
+    <div class="modal fade" id="modalSucessoCadastro" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-center p-4 border-0 shadow-lg">
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                            <i class="bi bi-check-lg text-success display-4"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold mb-3 text-dark">Cadastro Realizado!</h3>
+                    <p class="text-muted mb-4">Seja bem-vindo ao Sensorium. Sua conta foi criada com sucesso e você já pode acessar o painel de controle para monitorar seus dispositivos.</p>
+                    <div class="d-grid gap-2">
+                        <a href="/dashboard" class="btn btn-primary btn-lg rounded-pill">
+                            Acessar Painel <i class="bi bi-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
 {% endblock %}
@@ -276,9 +296,6 @@
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Cadastrando...';
 
-            const alertContainer = document.getElementById('alert-container');
-            alertContainer.innerHTML = '';
-
             const data = {
                 nome: document.getElementById('nome').value,
                 email: document.getElementById('email').value,
@@ -296,27 +313,34 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    alertContainer.innerHTML = `
-                        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-                            <strong>Sucesso!</strong> Cadastro realizado. Você será redirecionado para o login.
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>`;
+                    // Armazena o token
                     localStorage.setItem('accessToken', result.access_token);
-                    setTimeout(() => { window.location.href = '{{ url_for("login_usuario") }}'; }, 2000);
+                    
+                    // Mostra Modal de Sucesso
+                    const modalSucesso = new bootstrap.Modal(document.getElementById('modalSucessoCadastro'));
+                    modalSucesso.show();
+                    
+                    // Opcional: Redirecionar automaticamente após 5 segundos se o usuário não clicar
+                    setTimeout(() => { window.location.href = '/dashboard'; }, 5000);
                 } else {
-                    const errorMessage = result.detail || 'Ocorreu um erro ao tentar cadastrar.';
-                    alertContainer.innerHTML = `
-                        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-                            <strong>Erro!</strong> ${errorMessage}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>`;
+                    let msg = result.detail || 'Ocorreu um erro ao tentar cadastrar.';
+                    if (typeof msg === 'object') {
+                        if (Array.isArray(msg) && msg.length > 0 && msg[0].msg) {
+                            msg = msg[0].msg;
+                        } else {
+                            msg = 'Dados inválidos. Verifique os campos.';
+                        }
+                    }
+                    
+                    // Tradução de erros técnicos
+                    if (msg.includes('value is not a valid email address') || msg.includes('valid email address')) {
+                        msg = 'E-mail inválido. Verifique o formato (ex: nome@dominio.com).';
+                    }
+                    
+                    mostrarAlertaModal(msg, 'Erro no Cadastro');
                 }
             } catch (error) {
-                alertContainer.innerHTML = `
-                    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-                        <strong>Erro de conexão!</strong> Não foi possível se conectar ao servidor.
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>`;
+                mostrarAlertaModal('Erro de conexão! Não foi possível se conectar ao servidor.', 'Erro de Conexão');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="bi bi-person-plus me-2"></i>Criar Conta';
