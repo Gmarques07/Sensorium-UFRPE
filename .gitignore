@@ -242,3 +242,8 @@ temp/
 
 # Local development files
 cookies.txt
+
+# Explicitly ignore .env files
+.env.dev
+.env.prod
+/backend/.env
