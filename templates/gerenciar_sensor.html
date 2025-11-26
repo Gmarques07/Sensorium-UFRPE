@@ -1,0 +1,381 @@
+{% extends "partials/base.html" %}
+
+{% block title %}Gerenciar Sensor - {{ sensor.nome }}{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', path='css/dashboard.css') }}?v=3.0">
+{% endblock %}
+
+{% block content %}
+<nav class="navbar navbar-light bg-light d-lg-none border-bottom px-3 mb-3 fixed-top shadow-sm">
+    <div class="container-fluid">
+        <span class="navbar-brand fw-bold text-primary">Sensorium Admin</span>
+        <button class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu">
+            <i class="bi bi-list"></i> Menu
+        </button>
+    </div>
+</nav>
+<div class="d-lg-none" style="height: 70px;"></div>
+
+<div class="offcanvas-lg offcanvas-start sidebar-container" tabindex="-1" id="sidebarMenu">
+    <div class="offcanvas-header border-bottom border-white-50">
+        <h5 class="offcanvas-title text-white fw-bold">Admin</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu"></button>
+    </div>
+    <div class="offcanvas-body d-flex flex-column p-3 h-100">
+        <div class="d-none d-lg-flex align-items-center text-white mb-4 ps-2">
+             <i class="bi bi-shield-lock fs-3 me-2 logo-icon"></i>
+             <span class="fs-4 fw-bold brand-text">Sensorium</span>
+        </div>
+        <nav class="nav nav-pills flex-column gap-2">
+            <a class="nav-link text-white d-flex align-items-center gap-2" href="/admin_dashboard.html#painel">
+                <i class="bi bi-speedometer2"></i> <span>Painel Geral</span>
+            </a>
+            <a class="nav-link text-white d-flex align-items-center gap-2" href="/admin_dashboard.html#usuarios">
+                <i class="bi bi-people"></i> <span>Usuários</span>
+            </a>
+            <a class="nav-link text-white d-flex align-items-center gap-2 active" href="/admin_dashboard.html#sensores">
+                <i class="bi bi-cpu"></i> <span>Sensores</span>
+            </a>
+            <a class="nav-link text-white d-flex align-items-center gap-2" href="/admin_dashboard.html#notificacoes">
+                <i class="bi bi-bell"></i> <span>Notificações</span>
+            </a>
+            <a class="nav-link text-white d-flex align-items-center gap-2" href="/admin_dashboard.html#configuracoes">
+                <i class="bi bi-gear"></i> <span>Configurações</span>
+            </a>
+        </nav>
+        <div class="mt-auto pt-4 border-top border-white-50">
+            <a href="#" id="logout-button" class="nav-link text-white-50 d-flex align-items-center gap-2">
+                <i class="bi bi-box-arrow-right"></i> <span>Sair</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<main class="content col content-col">
+
+    <header class="header-card d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3" data-aos="fade-down">
+        <div class="d-flex align-items-center gap-3 w-100">
+            <div class="user-avatar shadow-sm" style="background: linear-gradient(135deg, #00c9ff 0%, #92fe9d 100%);">
+                <i class="bi bi-cpu"></i>
+            </div>
+            <div>
+                <h1 class="h4 fw-bold mb-0 welcome-text">Gerenciar Sensor</h1>
+                <div class="d-flex align-items-center gap-2 text-muted small mt-1">
+                    <span>Editando: <strong>{{ sensor.nome }}</strong></span>
+                    <span class="separator">•</span>
+                    <span>{{ sensor.tipo }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 w-100 w-md-auto justify-content-md-end align-items-center">
+            <button class="btn btn-icon-only shadow-sm" id="theme-toggle-sensor" title="Alternar tema">
+                <i class="bi bi-sun-fill theme-icon-active"></i>
+                <i class="bi bi-moon-fill theme-icon-hidden d-none"></i>
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger shadow-sm px-3 d-flex align-items-center gap-2" id="btnExcluirSensor">
+                <i class="bi bi-trash"></i> <span>Excluir Sensor</span>
+            </button>
+            <a href="/admin_dashboard.html#sensores" class="btn btn-sm btn-outline-primary shadow-sm px-3 d-flex align-items-center gap-2">
+                <i class="bi bi-arrow-left"></i> <span>Voltar</span>
+            </a>
+        </div>
+    </header>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="dashboard-card h-100">
+                <h5 class="mb-3 fw-bold text-primary"><i class="bi bi-info-circle me-2"></i>Informações do Sensor</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item px-0 d-flex justify-content-between">
+                        <strong class="text-muted">ID:</strong> <span>#{{ sensor.id }}</span>
+                    </li>
+                    <li class="list-group-item px-0 d-flex justify-content-between">
+                        <strong class="text-muted">Nome:</strong> <span>{{ sensor.nome }}</span>
+                    </li>
+                    <li class="list-group-item px-0 d-flex justify-content-between">
+                        <strong class="text-muted">Tipo:</strong> <span>{{ sensor.tipo }}</span>
+                    </li>
+                    <li class="list-group-item px-0 d-flex justify-content-between">
+                        <strong class="text-muted">Descrição:</strong> <span>{{ sensor.descricao or 'Não informada' }}</span>
+                    </li>
+                    <li class="list-group-item px-0">
+                        <strong class="text-muted">Chave API:</strong> 
+                        <div class="input-group mt-2">
+                            <input type="text" class="form-control" value="{{ sensor.chave_api }}" readonly>
+                            <button class="btn btn-outline-secondary" type="button" id="btnCopiarChave" data-chave="{{ sensor.chave_api }}">
+                                <i class="bi bi-copy"></i>
+                            </button>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="dashboard-card h-100 d-flex flex-column justify-content-center align-items-center text-center p-4 action-card">
+                <div class="mb-3">
+                    <i class="bi bi-person-plus fs-1 text-primary"></i>
+                </div>
+                <h5 class="fw-bold">Vincular Novo Usuário</h5>
+                <p class="text-muted small mb-3">Selecione um usuário disponível na lista global para atribuir a este sensor.</p>
+                <button class="btn btn-primary px-4 rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#adicionarUsuarioModal">
+                    <i class="bi bi-plus-circle me-2"></i>Vincular Usuário
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-panel active">
+        <div class="d-flex align-items-center mb-3">
+            <i class="bi bi-check-circle-fill fs-3 me-2 text-success"></i>
+            <h4 class="mb-0 fw-bold">Usuários Vinculados</h4>
+        </div>
+
+        <div class="dashboard-card p-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4 py-3">ID</th>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th>Endereço</th>
+                            <th class="text-end pe-4">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if usuarios_atribuidos %}
+                            {% for usuario in usuarios_atribuidos %}
+                            <tr>
+                                <td class="ps-4 fw-bold text-muted">#{{ usuario.id }}</td>
+                                <td class="fw-bold text-primary">{{ usuario.nome }}</td>
+                                <td class="text-muted">{{ usuario.email }}</td>
+                                <td class="text-muted">{{ usuario.endereco or '-' }}</td>
+                                <td class="text-end pe-4">
+                                    <button class="btn btn-sm btn-outline-danger rounded-pill px-3 btn-desvincular-usuario" data-id="{{ usuario.id }}" data-nome="{{ usuario.nome }}">
+                                        <i class="bi bi-trash me-1"></i> Desvincular
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                    Este sensor não possui usuários vinculados.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<div class="modal fade" id="adicionarUsuarioModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="bi bi-link-45deg me-2"></i>Vincular Usuário</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label text-muted">Selecione um usuário disponível:</label>
+                    <select class="form-select form-select-lg" id="selectUsuario">
+                        <option value="">Selecione...</option>
+                        {% for usuario in todos_usuarios %}
+                            {% if usuario not in usuarios_atribuidos %}
+                            <option value="{{ usuario.id }}">{{ usuario.nome }} ({{ usuario.email }})</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">Apenas usuários não vinculados aparecem aqui.</div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-top-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary px-4" id="btnConfirmarVinculo">
+                    Confirmar Vínculo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log("Gerenciar Sensor: Iniciado");
+
+        // 1. VERIFICAÇÃO DE SEGURANÇA
+        const accessToken = localStorage.getItem('adminAccessToken');
+        if (!accessToken) {
+            window.location.href = '/login_admin.html';
+            return;
+        }
+
+        // 2. TEMA (Lógica Robusta com ID Único)
+        const themeToggle = document.getElementById('theme-toggle-sensor'); // ID ÚNICO AQUI
+
+        if (themeToggle) {
+            const sunIcon = themeToggle.querySelector('.bi-sun-fill');
+            const moonIcon = themeToggle.querySelector('.bi-moon-fill');
+
+            function aplicarTemaVisual(isDark) {
+                if (isDark) {
+                    document.body.classList.add('dark-mode');
+                    sunIcon.classList.add('d-none');
+                    moonIcon.classList.remove('d-none');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    sunIcon.classList.remove('d-none');
+                    moonIcon.classList.add('d-none');
+                }
+            }
+
+            // Carregar Preferência
+            const savedTheme = localStorage.getItem('theme');
+            aplicarTemaVisual(savedTheme === 'dark');
+
+            // Evento de Clique
+            themeToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                const isDark = document.body.classList.toggle('dark-mode');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                aplicarTemaVisual(isDark);
+            });
+        } else {
+            console.warn("Botão de tema não encontrado.");
+        }
+
+        // 3. LOGOUT
+        const logoutBtn = document.getElementById('logout-button');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                localStorage.removeItem('adminAccessToken');
+                window.location.href = '/login_admin.html';
+            });
+        }
+
+        // 4. COPIAR CHAVE API
+        const btnCopiarChave = document.getElementById('btnCopiarChave');
+        if (btnCopiarChave) {
+            btnCopiarChave.addEventListener('click', function() {
+                const chave = this.getAttribute('data-chave');
+                navigator.clipboard.writeText(chave).then(() => {
+                    // Mostrar feedback visual
+                    const icon = this.querySelector('i');
+                    const originalClass = icon.className;
+                    icon.className = 'bi bi-check text-success';
+                    setTimeout(() => {
+                        icon.className = originalClass;
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Erro ao copiar chave:', err);
+                });
+            });
+        }
+
+        // 5. VINCULAR USUÁRIO
+        const btnConfirmarVinculo = document.getElementById('btnConfirmarVinculo');
+        if (btnConfirmarVinculo) {
+            btnConfirmarVinculo.addEventListener('click', async function() {
+                const select = document.getElementById('selectUsuario');
+                const usuarioId = select.value;
+
+                if (!usuarioId) return alert('Por favor, selecione um usuário.');
+
+                const btn = this;
+                const originalText = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = 'Processando...';
+
+                try {
+                    const res = await fetch(`/api/v1/admin/usuarios/${usuarioId}/sensores?sensor_id={{ sensor.id }}`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (res.ok) {
+                        window.location.reload();
+                    } else {
+                        const data = await res.json();
+                        alert(data.detail || 'Erro ao vincular usuário.');
+                        btn.disabled = false;
+                        btn.innerHTML = originalText;
+                    }
+                } catch (e) {
+                    alert('Erro de conexão.');
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            });
+        }
+
+        // 6. DESVINCULAR USUÁRIO
+        document.body.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.btn-desvincular-usuario');
+            if (btn) {
+                const id = btn.dataset.id;
+                const nome = btn.dataset.nome;
+
+                if (!confirm(`Desvincular o usuário "${nome}" deste sensor?`)) return;
+
+                try {
+                    const res = await fetch(`/api/v1/admin/usuarios/${id}/sensores/{{ sensor.id }}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${accessToken}` }
+                    });
+
+                    if (res.ok) {
+                        window.location.reload();
+                    } else {
+                        alert('Erro ao desvincular usuário.');
+                    }
+                } catch (err) {
+                    alert('Erro de conexão.');
+                }
+            }
+        });
+
+        // 7. EXCLUIR SENSOR
+        const btnExcluirSensor = document.getElementById('btnExcluirSensor');
+        if (btnExcluirSensor) {
+            btnExcluirSensor.addEventListener('click', async function() {
+                if (!confirm(`Tem certeza que deseja excluir o sensor "${{ sensor.nome }}"? Esta ação removerá completamente o sensor do sistema e não poderá ser desfeita.`)) return;
+
+                try {
+                    const res = await fetch(`/api/v1/admin/sensores/{{ sensor.id }}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (res.ok) {
+                        window.location.href = '/admin_dashboard.html#sensores';
+                    } else {
+                        const data = await res.json();
+                        alert(data.detail || 'Erro ao excluir sensor.');
+                    }
+                } catch (e) {
+                    alert('Erro de conexão.');
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

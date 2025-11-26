@@ -363,6 +363,23 @@ async def atualizar_configuracao(
         )
     return config
 
+@router.delete("/sensores/{sensor_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def deletar_sensor(
+    sensor_id: int,
+    db: Session = Depends(get_db),
+    _: dict = Depends(get_current_admin)
+) -> None:
+    """
+    Remove um sensor do sistema.
+    """
+    from backend.app.crud import local as crud_local
+    if not crud_local.deletar_local(db, sensor_id):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Sensor não encontrado"
+        )
+    return None
+
 @router.delete("/configuracoes/{chave}", status_code=status.HTTP_204_NO_CONTENT)
 async def deletar_configuracao(
     chave: str,

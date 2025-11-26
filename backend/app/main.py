@@ -171,21 +171,21 @@ async def gerenciar_sensores(request: Request, usuario_id: int, db: Session = De
     usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
-    
+
     # Obter sensores atribuídos ao usuário
     from backend.app.crud import usuario_sensor as crud_usuario_sensor
     usuario_sensores = crud_usuario_sensor.get_sensores_do_usuario(db, usuario_id)
-    
+
     # Converter para objetos de sensor
     sensores_atribuidos = []
     for usuario_sensor in usuario_sensores:
         sensor = db.query(Local).filter(Local.id == usuario_sensor.sensor_id).first()
         if sensor:
             sensores_atribuidos.append(sensor)
-    
+
     # Obter todos os sensores
     todos_sensores = db.query(Local).all()
-    
+
     return templates.TemplateResponse("gerenciar_sensores.html", {
         "request": request,
         "usuario": {
@@ -196,6 +196,116 @@ async def gerenciar_sensores(request: Request, usuario_id: int, db: Session = De
         },
         "sensores_atribuidos": sensores_atribuidos,
         "todos_sensores": todos_sensores
+    })
+
+@app.get("/gerenciar_sensor/{sensor_id}", response_class=HTMLResponse)
+async def gerenciar_sensor(request: Request, sensor_id: int, db: Session = Depends(get_db)):
+    # Obter o sensor
+    sensor = db.query(Local).filter(Local.id == sensor_id).first()
+    if not sensor:
+        raise HTTPException(status_code=404, detail="Sensor não encontrado")
+
+    # Obter usuários associados ao sensor
+    from backend.app.crud import usuario_sensor as crud_usuario_sensor
+    sensor_usuarios = crud_usuario_sensor.get_usuarios_do_sensor(db, sensor_id)
+
+    # Converter para objetos de usuário
+    usuarios_atribuidos = []
+    for usuario_sensor in sensor_usuarios:
+        usuario = db.query(Usuario).filter(Usuario.id == usuario_sensor.usuario_id).first()
+        if usuario:
+            usuarios_atribuidos.append(usuario)
+
+    # Obter todos os usuários
+    todos_usuarios = db.query(Usuario).all()
+
+    return templates.TemplateResponse("gerenciar_sensor.html", {
+        "request": request,
+        "sensor": {
+            "id": sensor.id,
+            "nome": sensor.nome,
+            "tipo": sensor.tipo,
+            "descricao": sensor.descricao,
+            "chave_api": sensor.chave_api
+        },
+        "usuarios_atribuidos": usuarios_atribuidos,
+        "todos_usuarios": todos_usuarios
+    })
+
+@app.get("/dados_sensor/{sensor_id}", response_class=HTMLResponse)
+async def dados_sensor(request: Request, sensor_id: int, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
+    # Obter o sensor
+    sensor = db.query(Local).filter(Local.id == sensor_id).first()
+    if not sensor:
+        raise HTTPException(status_code=404, detail="Sensor não encontrado")
+
+    # Verificar associação do sensor com o usuário
+    from backend.app.models.usuario_sensor import UsuarioSensor
+    from sqlalchemy import and_
+    assoc = db.query(UsuarioSensor).filter(
+        and_(
+            UsuarioSensor.usuario_id == current_user.id,
+            UsuarioSensor.sensor_id == sensor_id
+        )
+    ).first()
+
+    if not assoc:
+        raise HTTPException(status_code=403, detail="Você não tem permissão para acessar este sensor")
+
+    # Obter histórico de leituras (últimas 50)
+    from backend.app.models.leitura import Leitura
+    leituras = db.query(Leitura).filter(
+        Leitura.dispositivo_id == sensor_id
+    ).order_by(Leitura.data_registro.desc()).limit(50).all()
+
+    return templates.TemplateResponse("dados_sensor.html", {
+        "request": request,
+        "sensor": {
+            "id": sensor.id,
+            "nome": sensor.nome,
+            "tipo": sensor.tipo,
+            "descricao": sensor.descricao,
+            "chave_api": sensor.chave_api
+        },
+        "leituras": leituras
+    })
+
+@app.get("/dados_sensor/{sensor_id}", response_class=HTMLResponse)
+async def dados_sensor(request: Request, sensor_id: int, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
+    # Obter o sensor
+    sensor = db.query(Local).filter(Local.id == sensor_id).first()
+    if not sensor:
+        raise HTTPException(status_code=404, detail="Sensor não encontrado")
+
+    # Verificar associação do sensor com o usuário
+    from backend.app.models.usuario_sensor import UsuarioSensor
+    from sqlalchemy import and_
+    assoc = db.query(UsuarioSensor).filter(
+        and_(
+            UsuarioSensor.usuario_id == current_user.id,
+            UsuarioSensor.sensor_id == sensor_id
+        )
+    ).first()
+
+    if not assoc:
+        raise HTTPException(status_code=403, detail="Você não tem permissão para acessar este sensor")
+
+    # Obter histórico de leituras (últimas 50)
+    from backend.app.models.leitura import Leitura
+    leituras = db.query(Leitura).filter(
+        Leitura.dispositivo_id == sensor_id
+    ).order_by(Leitura.data_registro.desc()).limit(50).all()
+
+    return templates.TemplateResponse("dados_sensor.html", {
+        "request": request,
+        "sensor": {
+            "id": sensor.id,
+            "nome": sensor.nome,
+            "tipo": sensor.tipo,
+            "descricao": sensor.descricao,
+            "chave_api": sensor.chave_api
+        },
+        "leituras": leituras
     })
 
 @app.get("/sobre.html", response_class=HTMLResponse)

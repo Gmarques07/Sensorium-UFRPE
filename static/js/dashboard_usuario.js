@@ -122,9 +122,6 @@ function atualizarListaSensoresUsuario(sensores) {
   let html = `
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="mb-0">Meus Sensores</h5>
-    <button type="button" class="btn btn-sm btn-outline-primary" onclick="toggleSensorView('detailed')">
-      <i class="bi bi-eye me-1"></i>Visualizar Dados
-    </button>
   </div>
   <div class="row g-4">`;
   sensores.forEach(sensor => {
@@ -142,12 +139,14 @@ function atualizarListaSensoresUsuario(sensores) {
                       data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-three-dots"></i>
               </button>
-              <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#" onclick="copiarChaveSensor('${sensor.chave_api}')">
+              <ul class="dropdown-menu dropdown-menu-end" style="z-index: 1050;">
+                <li><a class="dropdown-item py-2" href="#" onclick="mostrarDadosSensor(${sensor.id})">
+                  <i class="bi bi-eye me-2"></i>Mostrar Dados
+                </a></li>
+                <li><a class="dropdown-item py-2 d-none" href="#" onclick="copiarChaveSensor('${sensor.chave_api}')">
                   <i class="bi bi-key me-2"></i>Copiar Chave API
                 </a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-danger" href="#" onclick="excluirSensor(${sensor.id}, '${sensor.nome}')">
+                <li><a class="dropdown-item py-2 text-danger" href="#" onclick="excluirSensor(${sensor.id}, '${sensor.nome}')">
                   <i class="bi bi-trash me-2"></i>Excluir Sensor
                 </a></li>
               </ul>
@@ -161,7 +160,7 @@ function atualizarListaSensoresUsuario(sensores) {
               <i class="bi bi-calendar me-1"></i>
               Criado em: ${new Date(sensor.data_criacao).toLocaleDateString('pt-BR')}
             </small>
-            <div class="mt-2">
+            <div class="mt-2 d-none">
               <small class="text-muted d-block">Chave API:</small>
               <code class="small" style="word-break: break-all;">${sensor.chave_api || 'Não gerada'}</code>
             </div>
@@ -186,9 +185,35 @@ function copiarChaveSensor(chaveApi) {
   });
 }
 
-// Função para excluir um sensor
+// Função para mostrar dados do sensor
+async function mostrarDadosSensor(sensorId) {
+  // Primeiro verificar se o token ainda é válido fazendo uma chamada simples
+  try {
+    const response = await fetch('/api/v1/usuarios/perfil', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+      }
+    });
+
+    if (response.ok) {
+      // Token é válido, redirecionar para a rota intermediária que verifica autenticação e redireciona
+      window.location.href = `/acesso_dados_sensor/${sensorId}`;
+    } else {
+      // Token inválido, redirecionar para login
+      localStorage.removeItem('accessToken');
+      window.location.href = '/login_usuario.html';
+    }
+  } catch (error) {
+    console.error('Erro ao verificar autenticação:', error);
+    localStorage.removeItem('accessToken');
+    window.location.href = '/login_usuario.html';
+  }
+}
+
+// Função para desvincular um sensor
 async function excluirSensor(sensorId, sensorNome) {
-  if (!confirm(`Tem certeza que deseja excluir o sensor "${sensorNome}"? Esta ação não pode ser desfeita.`)) {
+  if (!confirm(`Tem certeza que deseja desvincular o sensor "${sensorNome}"? Esta ação não removerá o sensor do sistema, apenas do seu acesso.`)) {
     return;
   }
 
@@ -201,7 +226,7 @@ async function excluirSensor(sensorId, sensorNome) {
     });
 
     if (response.ok) {
-      mostrarAlerta('Sensor excluído com sucesso!', 'success');
+      mostrarAlerta('Sensor desvinculado com sucesso!', 'success');
       // Remover o card do sensor da interface
       const sensorCard = document.getElementById(`sensor-card-${sensorId}`);
       if (sensorCard) {
@@ -209,9 +234,11 @@ async function excluirSensor(sensorId, sensorNome) {
       }
       // Recarregar a lista de sensores para manter a consistência
       carregarDadosSensores();
+      // Garantir que permaneça na aba de sensores
+      showSection(null, 'sensores');
     } else {
       const error = await response.json();
-      mostrarAlerta(`Erro ao excluir sensor: ${error.detail || 'Erro desconhecido'}`, 'danger');
+      mostrarAlerta(`Erro ao desvincular sensor: ${error.detail || 'Erro desconhecido'}`, 'danger');
     }
   } catch (error) {
     mostrarAlerta(`Erro de conexão: ${error.message}`, 'danger');

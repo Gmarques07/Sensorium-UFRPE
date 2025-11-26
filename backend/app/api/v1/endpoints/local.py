@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from backend.app.crud import local as crud_local
 from backend.app.schemas import local as schemas_local, leitura as schemas_leitura
-from backend.app.api.deps import get_db, get_current_user
+from backend.app.api.deps import get_db, get_current_user, get_current_admin
 from backend.app.models.usuario import Usuario
 from backend.app.models import Local as LocalModel
 
@@ -51,7 +51,27 @@ async def criar_local(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
 ) -> Any:
-    return crud_local.criar_local(db, local)
+    # Criar o local
+    created_local = crud_local.criar_local(db, local)
+
+    # Associar automaticamente o usuário criador ao local
+    from backend.app.models.usuario_sensor import UsuarioSensor
+    from sqlalchemy.exc import IntegrityError
+
+    usuario_sensor = UsuarioSensor(
+        usuario_id=current_user.id,
+        sensor_id=created_local.id
+    )
+    db.add(usuario_sensor)
+
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        # Caso já exista associação, apenas continue
+        pass
+
+    return created_local
 
 @router.get(
     "/{local_id}/dados-atuais",
@@ -165,11 +185,11 @@ async def registrar_leitura_boia(
 @router.delete(
     "/{local_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Excluir Local",
-    response_description="Local excluído com sucesso",
+    summary="Desvincular Local",
+    response_description="Local desvinculado com sucesso",
     tags=["locais"]
 )
-async def excluir_local(
+async def desvincular_local(
     local_id: int,
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
@@ -188,19 +208,16 @@ async def excluir_local(
     if not assoc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Local não encontrado ou você não tem permissão para excluí-lo"
+            detail="Local não encontrado ou você não tem permissão para desvinculá-lo"
         )
 
-    # Remover a associação na tabela intermediária primeiro
+    # Remover a associação na tabela intermediária
     from backend.app.crud import usuario_sensor as crud_usuario_sensor
-    crud_usuario_sensor.delete_usuario_sensor(db, current_user.id, local_id)
-
-    # Em seguida, excluir o local (e suas leituras associadas)
-    success = crud_local.deletar_local(db, local_id)
+    success = crud_usuario_sensor.delete_usuario_sensor(db, current_user.id, local_id)
 
     if not success:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Local não encontrado"
+            detail="Associação entre usuário e local não encontrada"
         )
 
