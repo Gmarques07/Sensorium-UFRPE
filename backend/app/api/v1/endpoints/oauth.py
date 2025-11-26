@@ -141,13 +141,8 @@ async def google_callback(
             data={"sub": usuario.email}, expires_delta=access_token_expires
         )
         
-        # Determinar para onde redirecionar usando a URL base configurável
-        if is_new_user:
-            # Se for um novo usuário (cadastro), redirecionar para login
-            redirect_url = f"{settings.BASE_URL}/login_usuario.html?token={access_token}"
-        else:
-            # Se for login de usuário existente, redirecionar para dashboard
-            redirect_url = f"{settings.BASE_URL}/dashboard_usuario.html?token={access_token}"
+        # Redirecionar sempre para o dashboard, independente de ser novo usuário ou não
+        redirect_url = f"{settings.BASE_URL}/dashboard_usuario.html?token={access_token}"
         
         # Retornar redirecionamento
         return RedirectResponse(url=redirect_url)

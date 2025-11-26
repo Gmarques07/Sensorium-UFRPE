@@ -332,6 +332,18 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Verificar se há token na URL (caso de redirecionamento externo)
+        const urlParams = new URLSearchParams(window.location.search);
+        const tokenFromUrl = urlParams.get('token');
+        
+        if (tokenFromUrl) {
+            localStorage.setItem('accessToken', tokenFromUrl);
+            // Limpar token da URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+            // Redirecionar para o dashboard
+            window.location.href = '/dashboard_usuario.html';
+            return;
+        }
 
         // Adicionar o evento de submit ao formulário
         document.getElementById('loginForm').addEventListener('submit', async function(e) {

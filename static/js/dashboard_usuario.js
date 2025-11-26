@@ -311,6 +311,16 @@ if (dateElement) {
   }
 
   // --- 3. AUTENTICAÇÃO ---
+  // Verificação de token na URL (OAuth Callback)
+  const urlParams = new URLSearchParams(window.location.search);
+  const tokenFromUrl = urlParams.get('token');
+  
+  if (tokenFromUrl) {
+    localStorage.setItem('accessToken', tokenFromUrl);
+    // Limpar token da URL para não ficar visível
+    window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+  }
+
   const accessToken = localStorage.getItem('accessToken');
 
   if (!accessToken) {
