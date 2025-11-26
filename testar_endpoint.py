@@ -1,8 +1,9 @@
 import requests
 import json
+import os
 
 def testar_endpoint():
-    url = "http://localhost:8001/api/v1/estados-luz"
+    url = f"{os.getenv('SENSORIUM_API_BASE_URL', 'http://localhost:8001')}/api/v1/estados-luz"
     
     # Testar com estado "ligado"
     payload = {"estado": "ligado"}

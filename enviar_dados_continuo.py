@@ -2,6 +2,7 @@ import requests
 import random
 import time
 from datetime import datetime
+import os
 
 def enviar_dados_cisterna_principal(token, dispositivo_id=1):
     """
