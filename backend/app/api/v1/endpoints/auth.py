@@ -1,6 +1,6 @@
 from datetime import timedelta
 from typing import Any
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from backend.app.crud import usuario as crud_usuario
@@ -24,6 +24,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
              description="Endpoint para autenticação de usuário usando email e senha",
              response_description="Token de acesso JWT")
 async def login(
+    response: Response,
     login_data: schemas_auth.Login,
     db: Session = Depends(get_db),
     __rl: None = Depends(rate_limit(5, 60, "login"))
@@ -69,6 +70,17 @@ async def login(
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": usuario.email}, expires_delta=access_token_expires
+    )
+    
+    # Define o cookie HttpOnly para segurança em rotas HTML
+    response.set_cookie(
+        key="access_token",
+        value=f"Bearer {access_token}",
+        httponly=True,
+        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        expires=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        samesite="lax",
+        secure=False  # Alterar para True em produção com HTTPS
     )
     
     return {
@@ -179,3 +191,11 @@ async def resetar_senha(
     crud_usuario.update_password(db, usuario=usuario, new_password=hashed_password)
     
     return {"message": "Senha atualizada com sucesso"}
+
+@router.post("/logout")
+async def logout(response: Response) -> Any:
+    """
+    Realiza o logout do usuário removendo o cookie de autenticação.
+    """
+    response.delete_cookie(key="access_token")
+    return {"message": "Logout realizado com sucesso"}

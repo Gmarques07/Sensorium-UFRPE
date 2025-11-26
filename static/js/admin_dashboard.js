@@ -103,8 +103,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error("Modal de logout não encontrado!");
                 // Fallback para garantir que o usuário consiga sair
                 if(confirm("Deseja sair do sistema?")) {
-                    localStorage.removeItem('adminAccessToken');
-                    window.location.href = '/admin';
+                    fetch('/api/v1/admin/logout', { method: 'POST' })
+                        .then(() => {
+                            localStorage.removeItem('adminAccessToken');
+                            window.location.href = '/admin';
+                        })
+                        .catch(err => console.error('Erro no logout:', err));
                 }
             }
         });
@@ -113,8 +117,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const confirmLogoutBtn = document.getElementById('btnConfirmLogout');
     if (confirmLogoutBtn) {
         confirmLogoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('adminAccessToken');
-            window.location.href = '/admin';
+            fetch('/api/v1/admin/logout', { method: 'POST' })
+                .then(() => {
+                    localStorage.removeItem('adminAccessToken');
+                    window.location.href = '/admin';
+                })
+                .catch(err => console.error('Erro no logout:', err));
         });
     }
 

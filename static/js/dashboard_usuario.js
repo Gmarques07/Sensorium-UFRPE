@@ -679,9 +679,13 @@ if (dateElement) {
           console.error("Modal de logout não encontrado!");
           // Fallback seguro
           if(confirm("Deseja sair da sua conta?")) {
-              localStorage.removeItem('accessToken');
-              localStorage.removeItem('user');
-              window.location.href = '/login';
+              fetch('/api/v1/auth/logout', { method: 'POST' })
+                  .then(() => {
+                      localStorage.removeItem('accessToken');
+                      localStorage.removeItem('user');
+                      window.location.href = '/login';
+                  })
+                  .catch(err => console.error('Erro no logout:', err));
           }
       }
     });
@@ -691,9 +695,13 @@ if (dateElement) {
   const confirmLogoutBtn = document.getElementById('btnConfirmLogout');
   if (confirmLogoutBtn) {
     confirmLogoutBtn.addEventListener('click', function() {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('user');
-        window.location.href = '/login';
+        fetch('/api/v1/auth/logout', { method: 'POST' })
+            .then(() => {
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('user');
+                window.location.href = '/login';
+            })
+            .catch(err => console.error('Erro no logout:', err));
     });
   }
 });

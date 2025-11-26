@@ -1,6 +1,6 @@
 from typing import Any, List
 from datetime import timedelta
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from sqlalchemy import text
@@ -28,6 +28,7 @@ router = APIRouter()
              response_description="Token de acesso JWT",
              tags=["admin"])
 async def admin_login(
+    response: Response,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
     __rl: None = Depends(rate_limit(5, 60, "login-admin"))
@@ -70,10 +71,29 @@ async def admin_login(
         data={"sub": admin.email, "type": "admin"}, expires_delta=access_token_expires
     )
     
+    # Define o cookie HttpOnly para segurança em rotas HTML
+    response.set_cookie(
+        key="admin_access_token",
+        value=f"Bearer {access_token}",
+        httponly=True,
+        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        expires=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        samesite="lax",
+        secure=False  # Alterar para True em produção com HTTPS
+    )
+    
     return {
         "access_token": access_token,
         "token_type": "bearer"
     }
+
+@router.post("/logout")
+async def admin_logout(response: Response) -> Any:
+    """
+    Realiza o logout do administrador removendo o cookie de autenticação.
+    """
+    response.delete_cookie(key="admin_access_token")
+    return {"message": "Logout realizado com sucesso"}
 
 @router.get(
     "/dashboard",

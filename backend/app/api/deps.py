@@ -1,5 +1,5 @@
-from typing import Generator
-from fastapi import Depends, HTTPException, status
+from typing import Generator, Optional
+from fastapi import Depends, HTTPException, status, Cookie
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
@@ -76,3 +76,65 @@ def get_current_admin(
     if admin is None:
         raise credentials_exception
     return admin
+
+def get_current_admin_from_cookie(
+    db: Session = Depends(get_db), 
+    admin_access_token: Optional[str] = Cookie(None)
+) -> Admin:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate admin credentials from cookie",
+    )
+    
+    if not admin_access_token:
+        raise credentials_exception
+        
+    token = admin_access_token.replace("Bearer ", "")
+    
+    try:
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=["HS256"]
+        )
+        email: str = payload.get("sub")
+        token_type: str = payload.get("type")
+        
+        if email is None or token_type != "admin":
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    
+    admin = db.query(Admin).filter(Admin.email == email).first()
+    if admin is None:
+        raise credentials_exception
+    return admin
+
+def get_current_user_from_cookie(
+    db: Session = Depends(get_db), 
+    access_token: Optional[str] = Cookie(None)
+) -> Usuario:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials from cookie",
+    )
+    
+    if not access_token:
+        raise credentials_exception
+        
+    token = access_token.replace("Bearer ", "")
+    
+    try:
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=["HS256"]
+        )
+        email: str = payload.get("sub")
+        if email is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    
+    user = crud.usuario.get_usuario_by_email(db, email=email)
+    if user is None:
+        raise credentials_exception
+    if not user.ativo:
+        raise HTTPException(status_code=400, detail="Inactive user")
+    return user

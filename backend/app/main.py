@@ -11,7 +11,7 @@ from backend.app.api.deps import get_current_user
 from backend.app.crud.usuario import get_usuario
 from pathlib import Path
 from sqlalchemy.orm import Session
-from backend.app.api.deps import get_db
+from backend.app.api.deps import get_db, get_current_admin_from_cookie, get_current_user_from_cookie
 from backend.app.models.usuario import Usuario
 from backend.app.models.local import Local
 import warnings
@@ -53,6 +53,13 @@ async def custom_http_exception_handler(request: Request, exc: StarletteHTTPExce
     # Se for erro 404 no navegador, mostra a página 404.html
     if exc.status_code == 404:
         return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
+    
+    # Redireciona para login se não autenticado (401) ou proibido (403) em rotas HTML
+    if exc.status_code in [401, 403]:
+        if "/admin" in request.url.path:
+            return RedirectResponse(url="/admin", status_code=302)
+        else:
+            return RedirectResponse(url="/login", status_code=302)
     
     # Outros erros HTTP (401, 403, etc) podem ser tratados aqui ou cair no padrão
     return JSONResponse(
@@ -116,7 +123,7 @@ async def homepage(request: Request):
 
 # Rotas Limpas (Aliases)
 @app.get("/dashboard", response_class=HTMLResponse)
-async def dashboard_clean(request: Request):
+async def dashboard_clean(request: Request, current_user=Depends(get_current_user_from_cookie)):
     return templates.TemplateResponse("dashboard_usuario.html", {"request": request})
 
 @app.get("/login", response_class=HTMLResponse)
@@ -132,13 +139,13 @@ async def admin_login_clean(request: Request):
     return templates.TemplateResponse("login_admin.html", {"request": request})
 
 @app.get("/admin/dashboard", response_class=HTMLResponse)
-async def admin_dashboard_clean(request: Request, db: Session = Depends(get_db)):
+async def admin_dashboard_clean(request: Request, db: Session = Depends(get_db), current_admin=Depends(get_current_admin_from_cookie)):
     # Reutiliza a lógica da rota original
-    return await admin_dashboard(request, db)
+    return await admin_dashboard(request, db, current_admin)
 
 @app.get("/admin/sensores/{usuario_id}", response_class=HTMLResponse)
-async def gerenciar_sensores_clean(request: Request, usuario_id: int, db: Session = Depends(get_db)):
-    return await gerenciar_sensores(request, usuario_id, db)
+async def gerenciar_sensores_clean(request: Request, usuario_id: int, db: Session = Depends(get_db), current_admin=Depends(get_current_admin_from_cookie)):
+    return await gerenciar_sensores(request, usuario_id, db, current_admin)
 
 @app.get("/sobre", response_class=HTMLResponse)
 async def sobre_clean(request: Request):
@@ -170,7 +177,7 @@ async def cadastro(request: Request):
     return templates.TemplateResponse("cadastro.html", {"request": request})
 
 @app.get("/dashboard_usuario.html", response_class=HTMLResponse)
-async def dashboard_usuario(request: Request):
+async def dashboard_usuario(request: Request, current_user=Depends(get_current_user_from_cookie)):
     return templates.TemplateResponse(
         "dashboard_usuario.html", 
         {
@@ -187,7 +194,7 @@ async def test_token(request: Request):
     return templates.TemplateResponse("test_token.html", {"request": request})
 
 @app.get("/admin_dashboard.html", response_class=HTMLResponse)
-async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
+async def admin_dashboard(request: Request, db: Session = Depends(get_db), current_admin=Depends(get_current_admin_from_cookie)):
     # Buscar dados reais do banco de dados
     from backend.app import crud
     
@@ -244,7 +251,7 @@ async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
     })
 
 @app.get("/gerenciar_sensores/{usuario_id}", response_class=HTMLResponse)
-async def gerenciar_sensores(request: Request, usuario_id: int, db: Session = Depends(get_db)):
+async def gerenciar_sensores(request: Request, usuario_id: int, db: Session = Depends(get_db), current_admin=Depends(get_current_admin_from_cookie)):
     # Obter o usuário
     usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
     if not usuario:
