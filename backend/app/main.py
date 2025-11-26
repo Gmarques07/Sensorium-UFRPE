@@ -1,10 +1,11 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.responses import HTMLResponse, RedirectResponse, JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi import Request
+from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html # Importar
 from backend.app.core.config import settings
 from backend.app.api.v1 import api_router
 from backend.app.api.deps import get_current_user
@@ -20,7 +21,27 @@ app = FastAPI(
     title="Sensorium API",
     description="API do sistema Sensorium UFRPE",
     version="1.0.0",
+    docs_url=None,  # Desabilita o Swagger UI padrão
+    redoc_url=None, # Desabilita o ReDoc padrão
+    openapi_url=f"{settings.API_V1_STR}/openapi.json", # Mantém o openapi.json público para clientes
 )
+
+# --- Rotas personalizadas para documentação protegida ---
+@app.get("/docs", include_in_schema=False)
+async def custom_swagger_ui_html(current_admin = Depends(get_current_admin_from_cookie)): # Protegido
+    return get_swagger_ui_html(
+        openapi_url=app.openapi_url,
+        title=app.title + " - Swagger UI",
+        swagger_favicon_url="/static/img/favicon.png" # Exemplo de favicon
+    )
+
+@app.get("/redoc", include_in_schema=False)
+async def custom_redoc_html(current_admin = Depends(get_current_admin_from_cookie)): # Protegido
+    return get_redoc_html(
+        openapi_url=app.openapi_url,
+        title=app.title + " - ReDoc",
+        redoc_favicon_url="/static/img/favicon.png" # Exemplo de favicon
+    )
 
 # --- EXCEPTION HANDLERS ---
 # Esses handlers garantem que erros acessem as páginas HTML personalizadas
@@ -56,7 +77,8 @@ async def custom_http_exception_handler(request: Request, exc: StarletteHTTPExce
     
     # Redireciona para login se não autenticado (401) ou proibido (403) em rotas HTML
     if exc.status_code in [401, 403]:
-        if "/admin" in request.url.path:
+        # Redireciona para login de admin se for docs, redoc ou qualquer rota admin
+        if request.url.path in ["/docs", "/redoc"] or "/admin" in request.url.path:
             return RedirectResponse(url="/admin", status_code=302)
         else:
             return RedirectResponse(url="/login", status_code=302)
