@@ -113,13 +113,11 @@ async def google_callback(
                 detail="Email não encontrado nas informações do Google"
             )
         
-        # Verificar se o usuário já existe no banco de dados
-        usuario = crud_usuario.get_usuario_by_email(db, email=google_email)
-        
         # Determinar se é novo cadastro ou login existente
-        is_new_user = usuario is None
-        
-        if not usuario:
+        usuario_existente = crud_usuario.get_usuario_by_email_all_status(db, email=google_email)
+        is_new_user = usuario_existente is None
+
+        if not usuario_existente:
             # Criar novo usuário OAuth
             usuario_in = UsuarioCreate(
                 nome=google_name,
@@ -128,12 +126,16 @@ async def google_callback(
                 senha=""  # Não é necessário para login OAuth
             )
             usuario = crud_usuario.create_usuario_oauth(db, usuario=usuario_in)
+            print(f"[OAuth] Novo usuário OAuth criado: {google_email} ({google_name})")
         else:
-            # Atualizar informações do usuário existente se necessário
-            if usuario.nome != google_name:
-                usuario.nome = google_name
-                db.commit()
-                db.refresh(usuario)
+            # Usuário já existe, atualiza informações conforme necessário
+            usuario_existente.ativo = True  # Reativar se estiver inativo
+            if usuario_existente.nome != google_name:
+                usuario_existente.nome = google_name
+            db.commit()
+            db.refresh(usuario_existente)
+            usuario = usuario_existente
+            print(f"[OAuth] Login OAuth existente: {google_email} ({google_name}) - ID: {usuario.id}")
         
         # Criar token de acesso JWT
         access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -156,6 +158,30 @@ async def google_callback(
         print(f"Request URL: {request.url}")
         import traceback
         traceback.print_exc()
+
+        # Verificar se é um erro de chave duplicada
+        error_msg = str(e).lower()
+        if "duplicate entry" in error_msg and "email" in error_msg:
+            # É um erro de e-mail duplicado - o usuário deve existir, então vamos buscar e usar
+            try:
+                print(f"[OAuth] Erro de duplicidade detectado para o e-mail: {google_email}")
+                usuario_existente = crud_usuario.get_usuario_by_email_all_status(db, email=google_email)
+                if usuario_existente:
+                    print(f"[OAuth] Usuário duplicado encontrado, usando existente: {google_email} - ID: {usuario_existente.id}")
+                    # Usuário já existe, vamos apenas gerar o token
+                    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+                    access_token = create_access_token(
+                        data={"sub": usuario_existente.email}, expires_delta=access_token_expires
+                    )
+
+                    redirect_url = f"{settings.BASE_URL}/dashboard?token={access_token}"
+                    return RedirectResponse(url=redirect_url)
+                else:
+                    print(f"[OAuth] Usuário não encontrado mesmo após erro de duplicidade: {google_email}")
+            except Exception as inner_e:
+                print(f"[OAuth] Erro ao tentar recuperar usuário existente após duplicidade: {inner_e}")
+                pass  # Se falhar, continuar com o erro original
+
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erro interno durante o processo de autenticação do Google: {str(e)}"

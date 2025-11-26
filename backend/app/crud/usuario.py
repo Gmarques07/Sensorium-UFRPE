@@ -9,6 +9,10 @@ def get_usuario(db: Session, usuario_id: int) -> Optional[Usuario]:
 def get_usuario_by_email(db: Session, email: str) -> Optional[Usuario]:
     return db.query(Usuario).filter(Usuario.email == email, Usuario.ativo == True).first()
 
+def get_usuario_by_email_all_status(db: Session, email: str) -> Optional[Usuario]:
+    """Obtém usuário por email, independentemente do status ativo/inativo"""
+    return db.query(Usuario).filter(Usuario.email == email).first()
+
 def get_usuarios(db: Session, skip: int = 0, limit: int = 100) -> List[Usuario]:
     return db.query(Usuario).offset(skip).limit(limit).all()
 
@@ -33,6 +37,19 @@ def create_usuario_oauth(db: Session, usuario: UsuarioCreate) -> Usuario:
     """
     Cria um usuário OAuth (sem senha, pois a autenticação é feita pelo provedor OAuth)
     """
+    # Verificar novamente se o usuário já existe para evitar problemas de concorrência
+    existing_usuario = db.query(Usuario).filter(Usuario.email == usuario.email).first()
+    if existing_usuario:
+        print(f"[OAuth] Usuário OAuth já existe para o email: {usuario.email}, reativando/atualizando")
+        # Se já existe, apenas reativar se estiver inativo
+        if not existing_usuario.ativo:
+            existing_usuario.ativo = True
+            existing_usuario.nome = usuario.nome
+            db.commit()
+            db.refresh(existing_usuario)
+        return existing_usuario
+
+    print(f"[OAuth] Criando novo usuário OAuth para o email: {usuario.email}")
     db_usuario = Usuario(
         nome=usuario.nome,
         email=usuario.email,
@@ -45,7 +62,7 @@ def create_usuario_oauth(db: Session, usuario: UsuarioCreate) -> Usuario:
     import string
     random_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(32))
     db_usuario.set_senha(random_password)  # A senha é definida mas não será usada
-    
+
     db.add(db_usuario)
     db.commit()
     db.refresh(db_usuario)
