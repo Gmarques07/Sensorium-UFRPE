@@ -57,9 +57,18 @@ function showSection(event, sectionId) {
     }
   }
 
-  // Se a seção de sensores for selecionada, carregar sensores para gerenciamento
+  // Se a seção de sensores for selecionada, decidir qual visualização mostrar
   if (sectionId === 'sensores') {
     setTimeout(() => {
+      // Verificar se já existe conteúdo de visualização detalhada
+      const container = document.getElementById('sensores-container');
+      const hasDetailView = container && container.querySelector('#visualizacao-sensores');
+
+      if (hasDetailView) {
+        // Se já temos visualização detalhada, mantemos ela
+        return;
+      }
+
       // Por padrão, mostrar a visualização de gerenciamento
       toggleSensorView('manage');
     }, 100); // Pequeno atraso para garantir que a seção está visível
@@ -241,7 +250,16 @@ function toggleSensorView(viewType) {
     // Carregar a visão de gerenciamento
     carregarSensoresGerenciamento();
   } else if (viewType === 'detailed') {
-    // Carregar a visão detalhada original
+    // Limpar o container antes de carregar a visão detalhada
+    container.innerHTML = `
+      <div class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Carregando...</span>
+        </div>
+        <p class="mt-2 text-muted">Carregando dados dos sensores...</p>
+      </div>
+    `;
+    // Carregar a visão detalhada com gráficos
     carregarDadosSensores();
   }
 }
@@ -734,13 +752,22 @@ function carregarDadosSensores() {
           selectDispositivos.appendChild(option);
         });
       }
-      // Verificar se a visualização atual não é de gerenciamento antes de renderizar
+      // Verificar se estamos na aba sensores e em modo de visualização detalhada
       const container = document.getElementById('sensores-container');
-      if (container && !container.querySelector('.sensor-card')) {
+      const isDetailedViewRequested = window.location.hash === '#sensores' &&
+        container &&
+        !container.querySelector('.sensor-card'); // Não há cards de gerenciamento visíveis
+
+      // Verificar se estamos vindo de toggleSensorView('detailed') - nesse caso, SEMPRE renderizar
+      const currentCallIsFromDetailed = container &&
+        (container.innerHTML.includes('selectDispositivo') || container.querySelector('#visualizacao-sensores'));
+
+      if (isDetailedViewRequested || currentCallIsFromDetailed) {
         renderizarSensores(data);
+      } else {
+        // Carregar a lista de sensores para gerenciamento
+        carregarSensoresGerenciamento();
       }
-      // Carregar também a lista de sensores para gerenciamento
-      carregarSensoresGerenciamento();
     })
     .catch(error => {
       console.error('Erro ao carregar dados dos sensores:', error);
@@ -753,10 +780,15 @@ function carregarDadosSensores() {
 
 function renderizarSensores(data) {
   const container = document.getElementById('sensores-container');
-  // Verificar se já existe conteúdo de gerenciamento de sensores
-  if (container && container.querySelector('.sensor-card')) {
-    // Não sobrescrever se já está mostrando os sensores para gerenciamento
-    return;
+  // Verificar se já existe conteúdo de gerenciamento de sensores e NÃO estamos vindo da chamada explícita
+  // Apenas retornar se estivermos em modo gerenciamento e a visualização detalhada já estiver presente
+  const isManagementView = container && container.querySelector('.sensor-card');
+  const isDetailedView = container && container.querySelector('#visualizacao-sensores');
+
+  if (isManagementView && !isDetailedView) {
+    // Estamos em modo gerenciamento e a visualização detalhada não está presente
+    // Isso é o comportamento esperado quando carregamos os dados dos sensores
+    // para preencher também a lista de gerenciamento
   }
 
   if (!data.dispositivos || data.dispositivos.length === 0) {
