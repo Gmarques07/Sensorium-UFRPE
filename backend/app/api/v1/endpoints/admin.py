@@ -180,6 +180,25 @@ async def listar_usuarios(
     usuarios = crud_usuario.get_multi(db, skip=skip, limit=limit)
     return usuarios
 
+@router.delete("/usuarios/{usuario_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def deletar_usuario(
+    usuario_id: int,
+    db: Session = Depends(get_db),
+    _: dict = Depends(get_current_admin)
+) -> None:
+    """
+    Remove (desativa) um usuário do sistema.
+    """
+    usuario = crud_usuario.get_usuario(db, usuario_id=usuario_id)
+    if not usuario:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuário não encontrado"
+        )
+    
+    crud_usuario.delete_usuario(db, usuario)
+    return None
+
 @router.get("/sensores", response_model=List[local_schemas.Local])
 async def listar_sensores(
     db: Session = Depends(get_db),
