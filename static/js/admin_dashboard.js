@@ -30,7 +30,21 @@ function showSection(event, sectionId) {
     });
 
     // 4. Mostra APENAS a seção desejada
-    const activePanel = document.getElementById(sectionId);
+    let activePanel = document.getElementById(sectionId);
+    
+    // Fallback: Se a seção não existir (hash inválido), voltar para o painel inicial
+    if (!activePanel) {
+        console.warn(`Seção "${sectionId}" não encontrada. Redirecionando para painel.`);
+        sectionId = 'painel';
+        activePanel = document.getElementById(sectionId);
+        history.replaceState({}, '', `#${sectionId}`);
+        
+        // Corrige a sidebar para refletir a mudança
+        allLinks.forEach(link => link.classList.remove('active'));
+        const targetLink = document.querySelector(`.nav-link[href="#${sectionId}"]`);
+        if (targetLink) targetLink.classList.add('active');
+    }
+
     if (activePanel) {
         activePanel.classList.add('active');
         activePanel.style.display = 'block'; // Garante visibilidade

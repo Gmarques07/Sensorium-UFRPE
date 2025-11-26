@@ -24,7 +24,22 @@ function showSection(event, sectionId) {
 
   // Troca os painéis visíveis
   document.querySelectorAll('.section-panel').forEach(panel => panel.classList.remove('active'));
-  const section = document.getElementById(sectionId);
+  
+  let section = document.getElementById(sectionId);
+  // Fallback: Se a seção não existir (ex: hash inválido na URL), voltar para o dashboard
+  if (!section) {
+      console.warn(`Seção "${sectionId}" não encontrada. Redirecionando para dashboard.`);
+      sectionId = 'dashboard';
+      section = document.getElementById(sectionId);
+      // Atualiza a URL para corrigir o hash inválido
+      history.replaceState({}, '', `#${sectionId}`);
+      
+      // Re-seleciona o link correto na sidebar
+      allLinks.forEach(link => link.classList.remove('active'));
+      const targetLink = document.querySelector(`.nav-link[href="#${sectionId}"]`);
+      if (targetLink) targetLink.classList.add('active');
+  }
+  
   if (section) section.classList.add('active');
 
   // Fecha o menu no mobile
@@ -400,6 +415,15 @@ if (dateElement) {
 
     if (Object.keys(payload).length === 0) return;
 
+    // Validação Frontend: Nome
+    if (payload.nome) {
+        const nomeLimpo = payload.nome.trim();
+        if (nomeLimpo.length < 3) {
+            alert("O nome deve ter pelo menos 3 caracteres válidos (sem contar espaços em branco).");
+            return;
+        }
+    }
+
     submitButton.disabled = true;
     submitButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...`;
 
@@ -512,6 +536,85 @@ if (dateElement) {
   });
 
   // Eventos Botões Exportação
+
+  // Botão Visualizar
+  document.getElementById('btnVisualizarRelatorio').addEventListener('click', function() {
+    const form = document.getElementById('formRelatorios');
+    if (!form.inicio.value || !form.fim.value) {
+      alert('Preencha a data inicial e final.');
+      return;
+    }
+
+    const btn = this;
+    const originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Carregando...`;
+
+    const qs = montarQueryRelatorio(form);
+    const url = `/api/v1/relatorios/visualizar?${qs}`;
+    
+    // Esconde resultados anteriores
+    document.getElementById('relatorio-visualizacao').classList.add('d-none');
+
+    fetch(url)
+      .then(response => {
+        if (!response.ok) throw new Error('Erro ao carregar dados do relatório.');
+        return response.json();
+      })
+      .then(data => {
+        const tbody = document.getElementById('tabela-relatorio-corpo');
+        tbody.innerHTML = '';
+
+        if (!data || data.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">
+                        <i class="bi bi-info-circle me-2"></i>Nenhum dado encontrado para o período selecionado.
+                    </td>
+                </tr>
+            `;
+        } else {
+            data.forEach(item => {
+                // Define cor do badge de status
+                let statusBadge = '';
+                if (item.tipo === 'pH') {
+                    const valor = parseFloat(item.valor);
+                    if (valor < 6.0 || valor > 8.0) statusBadge = '<span class="badge bg-warning text-dark">Atenção</span>';
+                    else statusBadge = '<span class="badge bg-success">Normal</span>';
+                } else {
+                    statusBadge = item.status === 'ALTO' 
+                        ? '<span class="badge bg-success">Normal</span>' 
+                        : '<span class="badge bg-warning text-dark">Baixo</span>';
+                }
+
+                const row = `
+                    <tr>
+                        <td class="ps-4">${item.data}</td>
+                        <td><span class="fw-semibold">${item.dispositivo}</span></td>
+                        <td>${item.tipo}</td>
+                        <td class="fw-bold text-primary">${item.valor}</td>
+                        <td>${statusBadge}</td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+
+        // Mostra a tabela
+        document.getElementById('relatorio-visualizacao').classList.remove('d-none');
+        // Scroll suave até o resultado
+        document.getElementById('relatorio-visualizacao').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      })
+      .catch(error => {
+        console.error('Erro:', error);
+        alert(error.message || 'Erro ao visualizar relatório.');
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+      });
+  });
+
   document.getElementById('btnExportCSV').addEventListener('click', function() {
     const form = document.getElementById('formRelatorios');
     if (!form.inicio.value || !form.fim.value) {
@@ -1169,4 +1272,11 @@ function excluirAlerta(alertaId) {
 function limparFormularioAlerta() {
   document.getElementById('formCriarAlerta').reset();
   document.getElementById('campoAlerta').innerHTML = '<option value="">Campo</option>';
+}
+
+function fecharVisualizacaoRelatorio() {
+  const container = document.getElementById('relatorio-visualizacao');
+  if (container) {
+    container.classList.add('d-none');
+  }
 }
