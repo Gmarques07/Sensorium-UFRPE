@@ -2,7 +2,8 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from starlette.responses import HTMLResponse, RedirectResponse
+from starlette.responses import HTMLResponse, RedirectResponse, JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi import Request
 from backend.app.core.config import settings
 from backend.app.api.v1 import api_router
@@ -20,6 +21,58 @@ app = FastAPI(
     description="API do sistema Sensorium UFRPE",
     version="1.0.0",
 )
+
+# --- EXCEPTION HANDLERS ---
+# Esses handlers garantem que erros acessem as páginas HTML personalizadas
+# mas mantêm o comportamento JSON para a API.
+
+BASE_DIR = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = BASE_DIR.parent
+TEMPLATES_DIR = PROJECT_ROOT / "templates"
+
+if TEMPLATES_DIR.exists():
+    templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+else:
+    # Fallback
+    fallback = PROJECT_ROOT / "templates"
+    if fallback.exists():
+        templates = Jinja2Templates(directory=str(fallback))
+    else:
+        warnings.warn(f"Templates directory not found.")
+        templates = Jinja2Templates(directory=str(TEMPLATES_DIR)) # Evita erro de variavel indefinida
+
+@app.exception_handler(StarletteHTTPException)
+async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
+    # Se for uma requisição para a API, retorna JSON (comportamento padrão)
+    if request.url.path.startswith("/api"):
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"detail": exc.detail},
+        )
+    
+    # Se for erro 404 no navegador, mostra a página 404.html
+    if exc.status_code == 404:
+        return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
+    
+    # Outros erros HTTP (401, 403, etc) podem ser tratados aqui ou cair no padrão
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+    )
+
+@app.exception_handler(500)
+async def custom_500_handler(request: Request, exc: Exception):
+    # Log do erro (pode ser melhorado com logger)
+    print(f"Erro interno (500): {str(exc)}")
+    
+    if request.url.path.startswith("/api"):
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Internal Server Error"},
+        )
+        
+    return templates.TemplateResponse("500.html", {"request": request}, status_code=500)
+
 
 # Health check endpoint
 @app.get("/health")
@@ -49,26 +102,12 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 
 print("API router included")
 
-BASE_DIR = Path(__file__).resolve().parents[1]
-PROJECT_ROOT = BASE_DIR.parent
 STATIC_DIR = PROJECT_ROOT / "static"
-TEMPLATES_DIR = PROJECT_ROOT / "templates"
 
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 else:
     warnings.warn(f"Static directory not found: {STATIC_DIR}. Skipping static mount.")
-
-if TEMPLATES_DIR.exists():
-    templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
-else:
-    # Fallback: tenta diretório na raiz do projeto
-    fallback = PROJECT_ROOT / "templates"
-    if fallback.exists():
-        templates = Jinja2Templates(directory=str(fallback))
-    else:
-        warnings.warn(f"Templates directory not found: {TEMPLATES_DIR} or {fallback}.")
-        templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 # Rotas para servir as páginas HTML
 @app.get("/", response_class=HTMLResponse)

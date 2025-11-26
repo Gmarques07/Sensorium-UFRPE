@@ -81,6 +81,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (logoutButton) {
         logoutButton.addEventListener('click', (e) => {
             e.preventDefault();
+            const modal = new bootstrap.Modal(document.getElementById('modalConfirmLogout'));
+            modal.show();
+        });
+    }
+
+    const confirmLogoutBtn = document.getElementById('btnConfirmLogout');
+    if (confirmLogoutBtn) {
+        confirmLogoutBtn.addEventListener('click', () => {
             localStorage.removeItem('adminAccessToken');
             window.location.href = '/login_admin.html';
         });

@@ -126,7 +126,8 @@ function atualizarListaSensoresUsuario(sensores) {
       <i class="bi bi-eye me-1"></i>Visualizar Dados
     </button>
   </div>
-  <div class="row g-4">`;
+  <div class="row g-4">
+`;
   sensores.forEach(sensor => {
     html += `
     <div class="col-md-6 col-lg-4" id="sensor-card-${sensor.id}">
@@ -620,8 +621,19 @@ if (dateElement) {
   if (logoutButton) {
     logoutButton.addEventListener('click', function(e) {
       e.preventDefault();
-      localStorage.removeItem('accessToken');
-      window.location.href = '/login_usuario.html';
+      // Show confirmation modal instead of logging out directly
+      const modal = new bootstrap.Modal(document.getElementById('modalConfirmLogout'));
+      modal.show();
+    });
+  }
+
+  // Listener for the confirm logout button in the modal
+  const confirmLogoutBtn = document.getElementById('btnConfirmLogout');
+  if (confirmLogoutBtn) {
+    confirmLogoutBtn.addEventListener('click', function() {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('user');
+        window.location.href = '/login_usuario.html';
     });
   }
 });
@@ -705,7 +717,8 @@ function renderizarSensores(data) {
   html += `</select></div>`;
 
   // Adiciona uma div para distinguir visualização de gerenciamento
-  html += `<div id="visualizacao-sensores" data-view="detailed">`;
+  html += `<div id="visualizacao-sensores" data-view="detailed">
+`;
 
   data.dispositivos.forEach((disp, index) => {
     const dispositivoId = disp.nome.replace(/\s/g, '_');
