@@ -1,4 +1,19 @@
 services:
+  caddy:
+    image: caddy:latest
+    container_name: sensorium_caddy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+  # --- APLICAÇÃO (FASTAPI) ---
   app:
     build:
       context: .
@@ -8,31 +23,21 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 400M
+    env_file:
+      - .env.prod
     environment:
-      MYSQL_HOST: mysql
-      MYSQL_USER: root
-      MYSQL_PASSWORD: rootpassword
-      MYSQL_DATABASE: sensorium_db
-      MYSQL_PORT: 3306
-      DATABASE_URL: "mysql+mysqlconnector://root:rootpassword@mysql:3306/sensorium_db?charset=utf8mb4"
-      SECRET_KEY: "chave_secreta_muito_longa_e_segura_para_jwt_tokens_aqui"
-      ACCESS_TOKEN_EXPIRE_MINUTES: "1440"
-      BACKEND_CORS_ORIGINS: '["*"]'
       PYTHONPATH: "/app"
       DISABLE_RATE_LIMITING: "true"
-      API_BASE_URL: "http://localhost:8003"
-      SMTP_HOST: "smtp.gmail.com"
-      SMTP_PORT: "587"
-      SMTP_USER: "equipesensorium@gmail.com"
-      SMTP_PASSWORD: "hbpl kcxg ndho zwra"
-      EMAILS_FROM_EMAIL: "equipesensorium@gmail.com"
       EMAILS_FROM_NAME: "Sensorium UFRPE"
     volumes:
       - .:/app
       - ./templates:/app/templates
       - ./static:/app/static
-    ports:
-      - "8001:8001"
+    
     command: >
       sh -c "
         set -e
@@ -43,14 +48,19 @@ services:
         echo 'Rodando todos os testes...'
         ENVIRONMENT=test pytest backend/tests/ -v --tb=short --cov=backend/app --cov-report=term-missing
         echo 'Testes concluídos com sucesso. Iniciando aplicação...'
-        uvicorn backend.app.main:app --host 0.0.0.0 --port 8001
+        uvicorn backend.app.main:app --host 0.0.0.0 --port 8001 --proxy-headers --forwarded-allow-ips '*'
       "
 
+  # --- BANCO DE DADOS ---
   mysql:
     image: mysql:8.0
     container_name: sensorium_mysql
     command: --default-authentication-plugin=mysql_native_password
     restart: "always"
+    deploy:
+      resources:
+        limits:
+          memory: 400M
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: sensorium_db
@@ -66,3 +76,5 @@ services:
 
 volumes:
   mysql_data:
+  caddy_data:
+  caddy_config:

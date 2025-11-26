@@ -1,11 +1,12 @@
 :root {
-    --primary-blue: #0066cc;
+    --primary-blue: #004183;
     --secondary-blue: #4FC3F7;
-    --dark-blue: #003366;
+    --dark-blue: #004183;
     --light-bg: #f8faff;
     --accent-color: #00E0C6; 
     --white: #ffffff;
     --border-color: #e9ecef;
+    --text-primary: #2c3e50;
 }
 
 body {
@@ -50,6 +51,11 @@ body {
 }
 
 /* Estilos da navbar */
+nav.navbar {
+    background-color: rgba(0, 65, 131, 0.95); /* Azul primário com transparência */
+    backdrop-filter: blur(10px);
+}
+
 nav.navbar .navbar-brand,
 nav.navbar .navbar-brand i.bi-cpu {
     color: var(--white);
@@ -239,13 +245,58 @@ body.dark-mode .alert-success {
     color: #00FF41;
 }
 
+/* Estilos do tema claro para a navbar */
+nav.navbar.navbar-light {
+    background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+nav.navbar.navbar-light .navbar-brand,
+nav.navbar.navbar-light .navbar-brand i.bi-cpu {
+    color: var(--dark-blue) !important;
+}
+
+nav.navbar.navbar-light .nav-link {
+    color: var(--text-primary) !important;
+}
+
+nav.navbar.navbar-light .nav-link:hover {
+    color: var(--primary-blue) !important;
+}
+
+nav.navbar.navbar-light #theme-toggle {
+    color: var(--text-primary);
+}
+
 /* Estilos do tema escuro para a navbar */
+body.dark-mode nav.navbar.navbar-dark {
+    background-color: rgba(30, 30, 30, 0.95) !important;
+}
+
 body.dark-mode nav.navbar .navbar-brand,
-body.dark-mode nav.navbar .navbar-brand i.bi-cpu {
-    color: var(--white);
+nav.navbar.navbar-dark .navbar-brand,
+body.dark-mode nav.navbar .navbar-brand i.bi-cpu,
+nav.navbar.navbar-dark .navbar-brand i.bi-cpu {
+    color: var(--white) !important;
 }
 
 body.dark-mode nav.navbar .navbar-brand:hover,
-body.dark-mode nav.navbar .navbar-brand:hover i.bi-cpu {
-    color: var(--accent-color);
+nav.navbar.navbar-dark .navbar-brand:hover,
+body.dark-mode nav.navbar .navbar-brand:hover i.bi-cpu,
+nav.navbar.navbar-dark .navbar-brand:hover i.bi-cpu {
+    color: var(--accent-color) !important;
+}
+
+body.dark-mode nav.navbar .nav-link,
+nav.navbar.navbar-dark .nav-link {
+    color: var(--white) !important;
+}
+
+body.dark-mode nav.navbar .nav-link:hover,
+nav.navbar.navbar-dark .nav-link:hover {
+    color: var(--accent-color) !important;
+}
+
+body.dark-mode nav.navbar #theme-toggle,
+nav.navbar.navbar-dark #theme-toggle {
+    color: var(--white);
 }

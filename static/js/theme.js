@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const themeToggleButton = document.getElementById('theme-toggle');
+    const navbar = document.getElementById('main-navbar');
     const sunIcon = themeToggleButton.querySelector('.bi-sun-fill');
     const moonIcon = themeToggleButton.querySelector('.bi-moon-fill');
 

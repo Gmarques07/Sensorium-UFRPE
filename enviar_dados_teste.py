@@ -12,7 +12,7 @@ def enviar_dados_teste():
 
     # ID do dispositivo (substitua pelo ID do seu sensor real)
     dispositivo_id = int(os.getenv("SENSORIUM_DISPOSITIVO_ID", "1"))
-
+    
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json"

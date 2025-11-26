@@ -1,113 +1,144 @@
-// Função para carregar os dados do dashboard
-async function carregarDadosDashboard() {
-    try {
-        const accessToken = localStorage.getItem('adminAccessToken');
-        if (!accessToken) {
-            window.location.href = '/login_admin.html';
-            return;
-        }
+// --- 1. LÓGICA DE NAVEGAÇÃO (UI) - Roda independente de login ---
 
-        const response = await fetch('/api/v1/admin/dashboard', {
-            headers: {
-                'Authorization': `Bearer ${accessToken}`
-            }
-        });
+// Função Global para ser chamada pelo HTML
+function showSection(event, sectionId) {
+    if (event) event.preventDefault();
 
-        if (!response.ok) {
-            if (response.status === 401) {
-                // Token inválido ou expirado
-                localStorage.removeItem('adminAccessToken');
-                window.location.href = '/login_admin.html';
-                return;
-            }
-            throw new Error('Erro ao carregar dados do dashboard');
-        }
+    console.log("Navegando para:", sectionId); // Debug para saber se clicou
 
-        const data = await response.json();
-        
-        // Atualizar estatísticas
-        const totalUsuariosEl = document.querySelector('[data-stat="total-usuarios"]');
-        const totalNotificacoesEl = document.querySelector('[data-stat="total-notificacoes"]');
-        
-        if (totalUsuariosEl) {
-            totalUsuariosEl.textContent = data.stats.total_usuarios || 0;
-        }
-        
-        if (totalNotificacoesEl) {
-            totalNotificacoesEl.textContent = data.stats.total_notificacoes || 0;
-        }
+    // 1. Remove classe 'active' de TODOS os links da sidebar
+    const allLinks = document.querySelectorAll('.sidebar-container .nav-link');
+    allLinks.forEach(link => {
+        link.classList.remove('active');
+        link.style.borderLeft = ''; // Limpa sujeira visual
+    });
 
-        // Atualizar lista de usuários apenas se não estiver usando template e se houver dados
-        const tabelaUsuarios = document.querySelector('#usuarios table tbody');
-        if (tabelaUsuarios && data.usuarios_recentes && data.usuarios_recentes.length > 0) {
-            tabelaUsuarios.innerHTML = data.usuarios_recentes.map(usuario => `
-                <tr>
-                    <td><i class="bi bi-person-circle text-primary me-2"></i>${usuario.nome || ''}</td>
-                    <td>${usuario.email || ''}</td>
-                    <td>${usuario.endereco || ''}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary btn-visualizar-usuario" data-id="${usuario.id}"><i class="bi bi-eye"></i></button>
-                        <a href="/gerenciar_sensores/${usuario.id}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
-                        <button class="btn btn-sm btn-danger btn-excluir-usuario" data-id="${usuario.id}"><i class="bi bi-trash"></i></button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        // Atualizar notificações apenas se não estiver usando template
-        const tabelaNotificacoes = document.querySelector('#notificacoes-lista');
-        if (tabelaNotificacoes && data.ultimas_notificacoes) {
-            tabelaNotificacoes.innerHTML = data.ultimas_notificacoes.map(notif => `
-                <tr data-id="${notif.id}" class="${!notif.lida ? 'table-warning' : ''}">
-                    <td>${notif.tipo || ''}</td>
-                    <td>${notif.titulo || ''}</td>
-                    <td>${notif.mensagem || ''}</td>
-                    <td>${notif.data_criacao ? new Date(notif.data_criacao).toLocaleDateString() : ''}</td>
-                    <td>
-                        <span class="badge ${notif.lida ? 'bg-success' : 'bg-warning'}">
-                            ${notif.lida ? 'Lida' : 'Não lida'}
-                        </span>
-                    </td>
-                    <td>
-                        ${!notif.lida ? `
-                            <button class="btn btn-sm btn-success btn-marcar-lida"><i class="bi bi-check-lg"></i></button>
-                        ` : ''}
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        // Atualizar configurações apenas se não estiver usando template
-        const configContainer = document.querySelector('#form-configuracoes');
-        if (configContainer && data.configuracoes) {
-            configContainer.innerHTML = data.configuracoes.map(config => `
-                <div class="mb-4">
-                    <label class="form-label">${config.descricao || config.chave}</label>
-                    <input type="text" class="form-control" data-chave="${config.chave}" value="${config.valor || ''}">
-                </div>
-            `).join('') + '<button type="submit" class="btn btn-primary">Salvar Configurações</button>';
-        }
-
-    } catch (error) {
-        console.error('Erro:', error);
-        // Only show alert if we're not using server-side rendering
-        if (!document.querySelector('#usuarios table tbody tr')) {
-            alert('Erro ao carregar dados do dashboard: ' + error.message);
-        }
+    // 2. Adiciona 'active' no botão clicado (ou correspondente ao ID)
+    if (event && event.currentTarget) {
+        event.currentTarget.classList.add('active');
+    } else {
+        const targetLink = document.querySelector(`.nav-link[href="#${sectionId}"]`);
+        if (targetLink) targetLink.classList.add('active');
     }
+
+    // 3. Esconde TODAS as seções de conteúdo
+    const allPanels = document.querySelectorAll('.section-panel');
+    allPanels.forEach(panel => {
+        panel.classList.remove('active'); 
+        // Força display none via style para garantir, caso o CSS falhe
+        panel.style.display = 'none'; 
+    });
+
+    // 4. Mostra APENAS a seção desejada
+    const activePanel = document.getElementById(sectionId);
+    if (activePanel) {
+        activePanel.classList.add('active');
+        activePanel.style.display = 'block'; // Garante visibilidade
+    } else {
+        console.warn("Seção não encontrada:", sectionId);
+    }
+
+    // 5. Fecha menu mobile
+    const sidebarEl = document.getElementById('sidebarMenu');
+    if (sidebarEl && sidebarEl.classList.contains('show') && window.bootstrap) {
+        const bsOffcanvas = bootstrap.Offcanvas.getInstance(sidebarEl);
+        if (bsOffcanvas) bsOffcanvas.hide();
+    }
+
+    // Atualiza URL
+    history.pushState({}, '', `#${sectionId}`);
 }
 
-// Carregar dados quando a página carregar
-document.addEventListener('DOMContentLoaded', () => {
-    carregarDadosDashboard();
-    
-    // Recarregar dados a cada 30 segundos
-    setInterval(carregarDadosDashboard, 30000);
+// Inicialização da Interface
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Admin Dashboard: UI Iniciada");
+
+    // A. Data no Header
+    try {
+        const dateElement = document.getElementById('current-date');
+        if (dateElement) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const today = new Date().toLocaleDateString('pt-BR', options);
+            dateElement.textContent = today.charAt(0).toUpperCase() + today.slice(1);
+        }
+    } catch (e) { console.error(e); }
+
+    // B. Inicializa a Aba Correta
+    const hash = window.location.hash.slice(1) || 'painel';
+    showSection(null, hash);
+
+    // C. Adiciona clicks manuais nos links (Garantia extra)
+    const navLinks = document.querySelectorAll('.sidebar-container .nav-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            const href = this.getAttribute('href').substring(1);
+            showSection(e, href);
+        });
+    });
+
+    // D. Logout
+    const logoutButton = document.getElementById('logout-button');
+    if (logoutButton) {
+        logoutButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('adminAccessToken');
+            window.location.href = '/login_admin.html';
+        });
+    }
+
+    // --- 2. LÓGICA DE DADOS (API) - Roda depois da UI ---
+    iniciarCarregamentoDados();
 });
 
-// Adicionar funcionalidade de logout
-document.getElementById('logout-button').addEventListener('click', (e) => {
-    e.preventDefault();
-    localStorage.removeItem('adminAccessToken');
-    window.location.href = '/login_admin.html';
-});
+
+// Função separada para dados (Token Required)
+function iniciarCarregamentoDados() {
+    const accessToken = localStorage.getItem('adminAccessToken');
+    
+    if (!accessToken) {
+        console.warn("Sem token de admin. Funcionalidades de API limitadas.");
+        // Não redirecionamos imediatamente para não quebrar a UI se o Jinja já renderizou os dados
+        return; 
+    }
+
+    // Interceptor de Fetch Global
+    const originalFetch = window.fetch;
+    window.fetch = function(input, init = {}) {
+        const url = typeof input === 'string' ? input : input.url;
+        const headers = new Headers(init.headers || (typeof input !== 'string' && input.headers) || {});
+        headers.set('Authorization', `Bearer ${accessToken}`);
+        let newInit = { ...init, headers };
+        let newRequest = typeof input === 'string' ? new Request(input, newInit) : new Request(input, newInit);
+        return originalFetch(newRequest);
+    };
+
+    // Configura botões de ação (Excluir, Editar)
+    setupActionButtons();
+}
+
+function setupActionButtons() {
+    document.querySelectorAll('.btn-excluir-usuario').forEach(btn => {
+        // Clone para remover listeners antigos e evitar duplicidade
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+        
+        newBtn.addEventListener('click', async (e) => {
+            const id = newBtn.dataset.id;
+            if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
+            
+            try {
+                const res = await fetch(`/api/v1/admin/usuarios/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    newBtn.closest('tr').remove();
+                    const counter = document.querySelector('[data-stat="total-usuarios"]');
+                    if(counter) counter.innerText = Math.max(0, parseInt(counter.innerText) - 1);
+                } else {
+                    alert('Erro ao excluir usuário. Verifique se você está logado.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Erro de conexão.');
+            }
+        });
+    });
+}

@@ -8,7 +8,7 @@ def enviar_dados_cisterna_principal(token, dispositivo_id=1):
     """
     Envia dados aleatórios a cada 15 segundos para o sensor da cisterna principal
     """
-    url = "http://localhost:8001/api/v1/leituras/"
+    url = f"{os.getenv('SENSORIUM_API_BASE_URL', 'http://localhost:8001')}/api/v1/leituras/"
     headers = {
         "Authorization": token,
         "Content-Type": "application/json"
@@ -86,8 +86,8 @@ def enviar_dados_cisterna_principal(token, dispositivo_id=1):
         print("Teste concluído.")
 
 # Configurações - ATUALIZE ESTES VALORES COM SEUS DADOS
-TOKEN = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlbWFpbHRlc3RlMDFAaG90bWFpbC5jb20iLCJleHAiOjE3NjIzNzM1MjR9.FM1b6NhpyXbS9ChGSTVAxeUiLdDM0ktBen1qou0mdlU"  # Ex: "Bearer seu_token_aqui"
-DISPOSITIVO_ID = 1  # Atualize com o ID do seu sensor de cisterna
+TOKEN = os.getenv("SENSORIUM_TOKEN", "INSIRA_SEU_TOKEN_AQUI")  # Ex: "Bearer seu_token_aqui"
+DISPOSITIVO_ID = int(os.getenv("SENSORIUM_DISPOSITIVO_ID", "1"))  # Atualize com o ID do seu sensor de cisterna
 
 if __name__ == "__main__":
     print("Script para envio contínuo de dados para cisterna principal")

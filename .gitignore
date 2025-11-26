@@ -166,7 +166,18 @@ cython_debug/
 *.iws
 
 # VS Code
-.vscode/
+.vscode
+.env
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+.pytest_cache
+.coverage
+htmlcov
+.pytest_cache/
+.cov/
 *.code-workspace
 
 # Local History for Visual Studio Code
@@ -230,6 +241,8 @@ config.ini
 .env.local
 .env.production
 .env.staging
+.env.dev
+.env.prod
 
 # Backup files
 *.bak
