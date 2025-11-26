@@ -480,9 +480,52 @@
         </div>
     </div>
 </div>
+<!-- Modal de Sucesso no Cadastro de Sensor -->
+<div class="modal fade" id="modalSucessoSensor" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false" style="z-index: 10000 !important;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body text-center pb-4">
+                <div class="mb-3">
+                    <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                        <i class="bi bi-check-lg text-success fs-1"></i>
+                    </div>
+                </div>
+                <h4 class="fw-bold mb-3 text-dark">Sensor Registrado!</h4>
+                <p class="text-muted small mb-4">Copie a chave de API abaixo. Você precisará dela para configurar o hardware do seu dispositivo.</p>
+                
+                <div class="bg-light p-3 rounded mb-3 border">
+                    <label class="form-label small text-muted text-start w-100 fw-bold">Chave de API:</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control font-monospace" id="modalApiKeyInput" readonly>
+                        <button class="btn btn-outline-primary" type="button" onclick="copiarChaveModal()">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                    <div class="form-text text-start small mt-2">
+                        <i class="bi bi-lock me-1"></i> Mantenha esta chave segura.
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-primary rounded-pill px-5" data-bs-dismiss="modal">Entendi, fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
 <script src="{{ url_for('static', path='js/dashboard_usuario.js') }}?v=logout_fix"></script>
-<script src="{{ url_for('static', path='js/sensor_registro.js') }}"></script>
+<script src="{{ url_for('static', path='js/sensor_registro.js') }}?v=sensor_fix"></script>
+<script>
+    function copiarChaveModal() {
+        const input = document.getElementById('modalApiKeyInput');
+        input.select();
+        document.execCommand('copy');
+        mostrarNotificacao('Chave copiada!', 'success');
+    }
+</script>
 {% endblock %}

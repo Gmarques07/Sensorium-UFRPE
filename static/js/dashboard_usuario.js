@@ -159,11 +159,11 @@ function atualizarListaSensoresUsuario(sensores) {
                 <i class="bi bi-three-dots"></i>
               </button>
               <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#" onclick="copiarChaveSensor('${sensor.chave_api}')">
+                <li><a class="dropdown-item" href="javascript:void(0)" onclick="copiarChaveSensor('${sensor.chave_api}')">
                   <i class="bi bi-key me-2"></i>Copiar Chave API
                 </a></li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-danger" href="#" onclick="excluirSensor(${sensor.id}, '${sensor.nome}')">
+                <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="excluirSensor(${sensor.id}, '${sensor.nome}')">
                   <i class="bi bi-trash me-2"></i>Excluir Sensor
                 </a></li>
               </ul>
@@ -195,66 +195,41 @@ function atualizarListaSensoresUsuario(sensores) {
 // Função para copiar a chave de API de um sensor existente
 function copiarChaveSensor(chaveApi) {
   navigator.clipboard.writeText(chaveApi).then(() => {
-    mostrarAlerta('Chave API copiada para a área de transferência!', 'success');
+    mostrarNotificacao('Chave API copiada para a área de transferência!', 'success');
   }).catch(err => {
-    mostrarAlerta('Erro ao copiar chave API', 'danger');
+    mostrarNotificacao('Erro ao copiar chave API', 'danger');
     console.error('Erro ao copiar chave API:', err);
   });
 }
 
 // Função para excluir um sensor
 async function excluirSensor(sensorId, sensorNome) {
-  if (!confirm(`Tem certeza que deseja excluir o sensor "${sensorNome}"? Esta ação não pode ser desfeita.`)) {
-    return;
-  }
+  confirmarAcao('Excluir Sensor', `Tem certeza que deseja excluir o sensor "${sensorNome}"? Esta ação não pode ser desfeita.`, async () => {
+      try {
+        const response = await fetch(`/api/v1/locais/${sensorId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          }
+        });
 
-  try {
-    const response = await fetch(`/api/v1/locais/${sensorId}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        if (response.ok) {
+          mostrarAlertaModal('Sensor excluído com sucesso!', 'Sucesso', 'success');
+          // Remover o card do sensor da interface
+          const sensorCard = document.getElementById(`sensor-card-${sensorId}`);
+          if (sensorCard) {
+            sensorCard.remove();
+          }
+          // Recarregar a lista de sensores para manter a consistência
+          carregarDadosSensores();
+        } else {
+          const error = await response.json();
+          mostrarAlertaModal(`Erro ao excluir sensor: ${error.detail || 'Erro desconhecido'}`, 'Erro', 'danger');
+        }
+      } catch (error) {
+        mostrarAlertaModal(`Erro de conexão: ${error.message}`, 'Erro de Conexão', 'danger');
       }
-    });
-
-    if (response.ok) {
-      mostrarAlerta('Sensor excluído com sucesso!', 'success');
-      // Remover o card do sensor da interface
-      const sensorCard = document.getElementById(`sensor-card-${sensorId}`);
-      if (sensorCard) {
-        sensorCard.remove();
-      }
-      // Recarregar a lista de sensores para manter a consistência
-      carregarDadosSensores();
-    } else {
-      const error = await response.json();
-      mostrarAlerta(`Erro ao excluir sensor: ${error.detail || 'Erro desconhecido'}`, 'danger');
-    }
-  } catch (error) {
-    mostrarAlerta(`Erro de conexão: ${error.message}`, 'danger');
-  }
-}
-
-// Função para mostrar alertas
-function mostrarAlerta(mensagem, tipo) {
-  // Criar elemento de alerta
-  const alertDiv = document.createElement('div');
-  alertDiv.className = `alert alert-${tipo} alert-dismissible fade show`;
-  alertDiv.role = 'alert';
-  alertDiv.innerHTML = `
-      ${mensagem}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  `;
-
-  // Adicionar ao container principal
-  const main = document.querySelector('main');
-  main.insertBefore(alertDiv, main.firstChild);
-
-  // Remover após 5 segundos
-  setTimeout(() => {
-      if (alertDiv.parentNode) {
-          alertDiv.remove();
-      }
-  }, 5000);
+  });
 }
 
 // Função para alternar entre visualizações de sensores
@@ -419,7 +394,7 @@ if (dateElement) {
     if (payload.nome) {
         const nomeLimpo = payload.nome.trim();
         if (nomeLimpo.length < 3) {
-            alert("O nome deve ter pelo menos 3 caracteres válidos (sem contar espaços em branco).");
+            mostrarNotificacao("O nome deve ter pelo menos 3 caracteres válidos.", 'warning');
             return;
         }
     }
@@ -436,32 +411,18 @@ if (dateElement) {
         if (response.ok) {
             const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditarPerfil'));
             modal.hide();
-            const alertDiv = document.createElement('div');
-            alertDiv.className = 'alert alert-success alert-dismissible fade show';
-            alertDiv.role = 'alert';
-            alertDiv.innerHTML = `Perfil atualizado com sucesso!<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>`;
-            document.querySelector('main').insertBefore(alertDiv, document.querySelector('main').firstChild);
+            mostrarAlertaModal('Perfil atualizado com sucesso!', 'Sucesso', 'success');
 
             if (payload.nome) {
               document.querySelector('#welcome-message').textContent = `Olá, ${payload.nome}!`;
             }
-
-            setTimeout(() => alertDiv.remove(), 3000);
         } else {
             const errorData = await response.json();
-            const alertDiv = document.createElement('div');
-            alertDiv.className = 'alert alert-danger alert-dismissible fade show';
-            alertDiv.role = 'alert';
-            alertDiv.innerHTML = `${errorData.detail || 'Erro ao atualizar o perfil.'}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>`;
-            document.querySelector('#modalEditarPerfil .modal-body').prepend(alertDiv);
+            mostrarAlertaModal(errorData.detail || 'Erro ao atualizar o perfil.', 'Erro', 'danger');
         }
     })
     .catch(() => {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-danger alert-dismissible fade show';
-        alertDiv.role = 'alert';
-        alertDiv.innerHTML = `Erro de conexão. Tente novamente.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>`;
-        document.querySelector('#modalEditarPerfil .modal-body').prepend(alertDiv);
+        mostrarAlertaModal('Erro de conexão. Tente novamente.', 'Erro de Conexão', 'danger');
     })
     .finally(() => {
         submitButton.disabled = false;
@@ -500,29 +461,14 @@ if (dateElement) {
       if (response.ok) {
         form.reset();
         carregarAlertasConfigurados();
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-success alert-dismissible fade show';
-        alertDiv.role = 'alert';
-        alertDiv.innerHTML = `Alerta criado com sucesso!<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>`;
-        document.querySelector('main').insertBefore(alertDiv, document.querySelector('main').firstChild);
-        setTimeout(() => alertDiv.remove(), 3000);
+        mostrarAlertaModal('Alerta criado com sucesso!', 'Sucesso', 'success');
       } else {
         const errorData = await response.json();
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-danger alert-dismissible fade show';
-        alertDiv.role = 'alert';
-        alertDiv.innerHTML = `${errorData.detail || 'Erro ao criar alerta.'}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>`;
-        document.querySelector('#formCriarAlerta').prepend(alertDiv);
-        setTimeout(() => alertDiv.remove(), 5000);
+        mostrarAlertaModal(errorData.detail || 'Erro ao criar alerta.', 'Erro', 'danger');
       }
     })
     .catch(() => {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-danger alert-dismissible fade show';
-        alertDiv.role = 'alert';
-        alertDiv.innerHTML = `Erro de conexão. Tente novamente.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>`;
-        document.querySelector('#formCriarAlerta').prepend(alertDiv);
-        setTimeout(() => alertDiv.remove(), 5000);
+        mostrarAlertaModal('Erro de conexão. Tente novamente.', 'Erro de Conexão', 'danger');
     })
     .finally(() => {
         submitButton.disabled = false;
@@ -541,7 +487,7 @@ if (dateElement) {
   document.getElementById('btnVisualizarRelatorio').addEventListener('click', function() {
     const form = document.getElementById('formRelatorios');
     if (!form.inicio.value || !form.fim.value) {
-      alert('Preencha a data inicial e final.');
+      mostrarNotificacao('Preencha a data inicial e final.', 'warning');
       return;
     }
 
@@ -607,7 +553,7 @@ if (dateElement) {
       })
       .catch(error => {
         console.error('Erro:', error);
-        alert(error.message || 'Erro ao visualizar relatório.');
+        mostrarNotificacao(error.message || 'Erro ao visualizar relatório.', 'danger');
       })
       .finally(() => {
         btn.disabled = false;
@@ -618,7 +564,7 @@ if (dateElement) {
   document.getElementById('btnExportCSV').addEventListener('click', function() {
     const form = document.getElementById('formRelatorios');
     if (!form.inicio.value || !form.fim.value) {
-      alert('Preencha a data inicial e final.');
+      mostrarNotificacao('Preencha a data inicial e final.', 'warning');
       return;
     }
 
@@ -643,7 +589,7 @@ if (dateElement) {
       })
       .catch(error => {
         console.error('Erro:', error);
-        alert(error.message || 'Erro ao exportar relatório.');
+        mostrarNotificacao(error.message || 'Erro ao exportar relatório.', 'danger');
       })
       .finally(() => {
         btn.disabled = false;
@@ -654,7 +600,7 @@ if (dateElement) {
   document.getElementById('btnExportPDF').addEventListener('click', function() {
     const form = document.getElementById('formRelatorios');
     if (!form.inicio.value || !form.fim.value) {
-      alert('Preencha a data inicial e final.');
+      mostrarNotificacao('Preencha a data inicial e final.', 'warning');
       return;
     }
 
@@ -679,7 +625,7 @@ if (dateElement) {
       })
       .catch(error => {
         console.error('Erro:', error);
-        alert(error.message || 'Erro ao exportar relatório.');
+        mostrarNotificacao(error.message || 'Erro ao exportar relatório.', 'danger');
       })
       .finally(() => {
         btn.disabled = false;
@@ -690,7 +636,7 @@ if (dateElement) {
   document.getElementById('btnEnviarEmail').addEventListener('click', function() {
     const form = document.getElementById('formRelatorios');
     if (!form.inicio.value || !form.fim.value) {
-      alert('Preencha a data inicial e final.');
+      mostrarNotificacao('Preencha a data inicial e final.', 'warning');
       return;
     }
 
@@ -708,11 +654,11 @@ if (dateElement) {
         return response.json();
       })
       .then(data => {
-        alert(data.message || 'Relatório enviado com sucesso!');
+        mostrarAlertaModal(data.message || 'Relatório enviado com sucesso!', 'Sucesso', 'success');
       })
       .catch(error => {
         console.error('Erro:', error);
-        alert(error.message || 'Erro ao enviar e-mail.');
+        mostrarAlertaModal(error.message || 'Erro ao enviar e-mail.', 'Erro', 'danger');
       })
       .finally(() => {
         btn.disabled = false;
@@ -1247,36 +1193,24 @@ function obterNomeSensor(localId) {
 }
 
 function excluirAlerta(alertaId) {
-  if (!confirm('Tem certeza que deseja excluir este alerta?')) {
-    return;
-  }
-
-  fetch(`/api/v1/regras-alerta/${alertaId}`, {
-    method: 'DELETE'
-  })
-  .then(response => {
-    if (response.ok) {
-      carregarAlertasConfigurados();
-      const alertDiv = document.createElement('div');
-      alertDiv.className = 'alert alert-success alert-dismissible fade show';
-      alertDiv.role = 'alert';
-      alertDiv.innerHTML = `Alerta excluído com sucesso!<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>`;
-      document.querySelector('main').insertBefore(alertDiv, document.querySelector('main').firstChild);
-      setTimeout(() => alertDiv.remove(), 3000);
-    } else {
-      return response.json().then(data => {
-        throw new Error(data.detail || 'Erro ao excluir alerta');
+  confirmarAcao('Excluir Alerta', 'Tem certeza que deseja excluir este alerta?', () => {
+      fetch(`/api/v1/regras-alerta/${alertaId}`, {
+        method: 'DELETE'
+      })
+      .then(response => {
+        if (response.ok) {
+          carregarAlertasConfigurados();
+          mostrarAlertaModal('Alerta excluído com sucesso!', 'Sucesso', 'success');
+        } else {
+          return response.json().then(data => {
+            throw new Error(data.detail || 'Erro ao excluir alerta');
+          });
+        }
+      })
+      .catch(error => {
+        console.error('Erro:', error);
+        mostrarAlertaModal(error.message || 'Erro ao excluir alerta.', 'Erro', 'danger');
       });
-    }
-  })
-  .catch(error => {
-    console.error('Erro:', error);
-    const alertDiv = document.createElement('div');
-    alertDiv.className = 'alert alert-danger alert-dismissible fade show';
-    alertDiv.role = 'alert';
-    alertDiv.innerHTML = `${error.message || 'Erro ao excluir alerta.'}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>`;
-    document.querySelector('main').insertBefore(alertDiv, document.querySelector('main').firstChild);
-    setTimeout(() => alertDiv.remove(), 5000);
   });
 }
 

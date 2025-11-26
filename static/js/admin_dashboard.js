@@ -154,23 +154,25 @@ function setupActionButtons() {
         const newBtn = btn.cloneNode(true);
         btn.parentNode.replaceChild(newBtn, btn);
         
-        newBtn.addEventListener('click', async (e) => {
+        newBtn.addEventListener('click', (e) => {
             const id = newBtn.dataset.id;
-            if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
             
-            try {
-                const res = await fetch(`/api/v1/admin/usuarios/${id}`, { method: 'DELETE' });
-                if (res.ok) {
-                    newBtn.closest('tr').remove();
-                    const counter = document.querySelector('[data-stat="total-usuarios"]');
-                    if(counter) counter.innerText = Math.max(0, parseInt(counter.innerText) - 1);
-                } else {
-                    alert('Erro ao excluir usuário. Verifique se você está logado.');
+            confirmarAcao('Excluir Usuário', 'Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.', async () => {
+                try {
+                    const res = await fetch(`/api/v1/admin/usuarios/${id}`, { method: 'DELETE' });
+                    if (res.ok) {
+                        newBtn.closest('tr').remove();
+                        const counter = document.querySelector('[data-stat="total-usuarios"]');
+                        if(counter) counter.innerText = Math.max(0, parseInt(counter.innerText) - 1);
+                        mostrarAlertaModal('Usuário excluído com sucesso.', 'Sucesso', 'success');
+                    } else {
+                        mostrarAlertaModal('Erro ao excluir usuário.', 'Erro', 'danger');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    mostrarAlertaModal('Erro de conexão.', 'Erro de Conexão', 'danger');
                 }
-            } catch (err) {
-                console.error(err);
-                alert('Erro de conexão.');
-            }
+            });
         });
     });
 }

@@ -6,74 +6,150 @@
 <style>
     :root {
         --primary-blue: #004183;
-        --secondary-blue: #4FC3F7;
         --dark-blue: #004183;
+        --accent-error: #FF6F00; /* Laranja/Âmbar para Erro */
         --light-bg: #f8faff;
         --text-color: #333;
-        --accent-color: #00E0C6;
     }
 
+    /* Estrutura de Layout Vertical */
     body {
-        background-color: var(--light-bg);
+        min-height: 100vh;
         display: flex;
         flex-direction: column;
-        min-height: 100vh;
+        padding-top: 0;
+    }
+    
+    /* 1. Estilo do Bloco Visual 500 */
+    .error-visual {
+        /* Limpo e sem borda */
+        padding: 0; 
+        border-radius: 0;
+        border: none;
+        background: transparent; 
+        box-shadow: none;
+        display: inline-block;
+        margin-bottom: 2.5rem; 
+    }
+    
+    /* Estilo do Código de Erro (500) */
+    .error-code {
+        font-size: 8rem; 
+        font-weight: 800;
+        /* Cor de aviso/erro: Âmbar/Laranja */
+        color: var(--accent-error);
+        line-height: 1;
+        opacity: 0.9;
+        text-shadow: 0 4px 10px rgba(255, 111, 0, 0.2);
+    }
+    
+    /* Título Secundário */
+    .error-subtitle {
+        color: var(--dark-blue);
     }
 
-    /* Navbar com fundo escuro para contraste com o fundo claro da página */
-    .navbar {
+    /* Branding Header */
+    .brand-header {
+        color: var(--primary-blue);
+        margin-bottom: 3rem;
+    }
+    .brand-header .logo-icon {
+        font-size: 2.5rem;
+    }
+
+    /* --- FOOTER ANCORADO E ESTILIZADO --- */
+    .footer-anchor-style {
         background-color: var(--dark-blue) !important;
+        color: rgba(255, 255, 255, 0.7);
+        width: 100%;
+        margin-top: auto; 
+        padding-top: 3rem;
+        padding-bottom: 2rem;
+        box-shadow: 0 -5px 15px rgba(0,0,0,0.2);
+    }
+    
+    /* Corrigindo o Texto de Copyright */
+    .footer-anchor-style .text-light-emphasis {
+        color: rgba(255, 255, 255, 0.5) !important;
     }
 
-    /* Ajuste para Dark Mode */
-    body.dark-mode {
-        background-color: #101010;
+    /* Estilizando o Conteúdo do Footer */
+    .footer-anchor-style a {
+        color: var(--secondary-blue);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    .footer-anchor-style a:hover {
+        color: var(--accent-color);
+    }
+
+    /* Dark Mode Overrides */
+    body.dark-mode .error-code {
+        color: var(--accent-error);
+    }
+    body.dark-mode .error-subtitle,
+    body.dark-mode .error-text {
         color: #F5F5F5;
     }
-
-    .content-wrap {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding-top: 80px;
-        width: 100%;
-    }
-
-    /* ... estilos intermediários ... */
-
-    footer {
-        width: 100%;
-        margin-top: auto;
+    body.dark-mode .footer-anchor-style {
+        background-color: #090909 !important;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-    <!-- Navbar -->
     {% include 'partials/navbar.html' %}
 
-    <div class="content-wrap">
-        <section class="error-section">
-            <div class="container">
-                <div data-aos="fade-up">
-                    <div class="error-icon">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
-                    </div>
-                    <h1 class="error-title">500</h1>
-                    <h2 class="error-subtitle">Oops! Algo deu errado.</h2>
-                    <p class="error-text">
-                        Nossa equipe já foi notificada e está trabalhando para corrigir o problema.
-                        Por favor, tente novamente mais tarde.
-                    </p>
-                    <a href="/" class="btn-action">
-                        <i class="bi bi-house-door me-2"></i>Voltar para o Início
-                    </a>
+    <main class="flex-grow-1 d-flex align-items-center justify-content-center py-5">
+        <div class="container text-center" style="max-width: 700px;">
+            
+            <div class="brand-header" data-aos="fade-down">
+                <i class="bi bi-cpu logo-icon me-2 display-4 text-primary"></i> 
+                <h3 class="fw-bold d-inline-block display-5 text-primary">Sensorium</h3>
+            </div>
+
+            <div class="error-visual mx-auto" data-aos="zoom-in" data-aos-delay="100">
+                <h1 class="error-code mb-0">500</h1>
+            </div>
+            
+            <h2 class="error-subtitle h3 fw-medium mt-4 mb-3" data-aos="fade-up" data-aos-delay="200">
+                Erro Interno do Servidor
+            </h2>
+            
+            <p class="error-text text-secondary mb-5" data-aos="fade-up" data-aos-delay="300">
+                <i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i>
+                Houve um problema inesperado no servidor. Nossa equipe já foi notificada e está trabalhando para corrigir.
+                Por favor, tente novamente mais tarde.
+            </p>
+            
+            <a href="/" class="btn btn-primary btn-lg rounded-pill" data-aos="zoom-in" data-aos-delay="400">
+                <i class="bi bi-house-door me-2"></i> Voltar para o Início
+            </a>
+        </div>
+    </main>
+    
+    <footer class="mt-auto footer-anchor-style">
+        <div class="container text-start">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <p class="fw-bold text-light mb-2">Links Rápidos</p>
+                    <ul class="list-unstyled small">
+                        <li><a href="/sobre.html" class="text-decoration-none">Sobre Nós</a></li>
+                        <li><a href="/cadastro.html" class="text-decoration-none">Cadastro</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <p class="fw-bold text-light mb-2">Contato</p>
+                    <ul class="list-unstyled small">
+                        <li><i class="bi bi-geo-alt-fill me-2"></i>Belo Jardim, PE</li>
+                        <li><i class="bi bi-envelope-fill me-2"></i><a href="mailto:equipesensorium@gmail.com" class="text-decoration-none">equipesensorium@gmail.com</a></li>
+                        <li><i class="bi bi-instagram me-2"></i><a href="#" class="text-decoration-none">@sensoriumtech</a></li>
+                    </ul>
                 </div>
             </div>
-        </section>
-    </div>
-
-    <!-- Footer -->
-    {% include 'partials/footer.html' %}
+            <div class="text-center pt-3 small text-light-emphasis border-top border-secondary">
+                © 2025 Sensorium. Todos os direitos reservados.
+            </div>
+        </div>
+    </footer>
 {% endblock %}
