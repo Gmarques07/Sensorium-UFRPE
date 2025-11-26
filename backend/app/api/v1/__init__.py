@@ -25,3 +25,9 @@ api_router.include_router(oauth_router, prefix="/oauth", tags=["oauth"])
 api_router.include_router(leituras_router, prefix="/leituras", tags=["leituras"])
 api_router.include_router(regra_alerta_router, prefix="/regras-alerta", tags=["regras-alerta"])
 
+
+
+
+
+
+
