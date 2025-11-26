@@ -13,7 +13,7 @@ router = APIRouter()
     response_model=schemas_sensor_registro.SensorRegistroResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Registrar Novo Sensor pelo Usuário",
-    response_description="Sensor criado e associado ao usuário com chave de API",
+    response_description="Sensor criado e associado ao usuário",
     tags=["sensores"]
 )
 async def registrar_sensor(
@@ -22,13 +22,13 @@ async def registrar_sensor(
     current_user: Usuario = Depends(get_current_user)
 ) -> Any:
     """
-    Permite que um usuário registre um novo sensor (local) e obtenha uma chave de API única.
+    Permite que um usuário registre um novo sensor (local).
     O sensor é automaticamente associado à conta do usuário.
     """
     try:
         return crud_sensor_registro.criar_sensor_para_usuario(
-            db, 
-            sensor_registro, 
+            db,
+            sensor_registro,
             current_user.id
         )
     except Exception as e:

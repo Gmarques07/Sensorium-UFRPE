@@ -94,12 +94,18 @@
                         <span>{{ sensor.descricao or 'Não informada' }}</span>
                     </li>
                     <li class="list-group-item px-0">
-                        <strong class="text-muted">Chave API:</strong> 
+                        <strong class="text-muted">Chave API:</strong>
                         <div class="input-group mt-2">
-                            <input type="text" class="form-control" value="{{ sensor.chave_api }}" readonly>
+                            <input type="text" class="form-control" value="{{ sensor.chave_api or 'Não disponível' }}" readonly>
+                            {% if sensor.chave_api %}
                             <button class="btn btn-outline-secondary" type="button" id="btnCopiarChave" data-chave="{{ sensor.chave_api }}">
                                 <i class="bi bi-copy"></i>
                             </button>
+                            {% else %}
+                            <button class="btn btn-outline-secondary" type="button" disabled title="Chave API não disponível">
+                                <i class="bi bi-copy"></i>
+                            </button>
+                            {% endif %}
                         </div>
                     </li>
                 </ul>

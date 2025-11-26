@@ -35,10 +35,14 @@ async function registrarNovoSensor() {
             const data = await response.json();
             mostrarAlerta('Sensor registrado com sucesso!', 'success');
 
-            // Mostrar chave de API para o usuário copiar
-            document.getElementById('chaveApiGerada').value = data.chave_api;
+            // Mostrar chave de API para o usuário copiar (se disponível)
+            if (data.chave_api) {
+                document.getElementById('chaveApiGerada').value = data.chave_api;
+                document.getElementById('chaveApiContainer').classList.remove('d-none');
+            } else {
+                document.getElementById('chaveApiContainer').classList.add('d-none');
+            }
             document.getElementById('resultadoRegistro').classList.remove('d-none');
-            document.getElementById('chaveApiContainer').classList.remove('d-none');
 
             // Limpar o formulário
             document.getElementById('formRegistrarSensor').reset();

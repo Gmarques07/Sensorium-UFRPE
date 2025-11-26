@@ -6,14 +6,11 @@ from backend.app.schemas import LocalCreate, PhNivelCreate, BoiaNivelCreate
 from backend.app.utils.api_key_generator import generate_unique_api_key
 
 def criar_local(db: Session, local: LocalCreate) -> Local:
-    # Generate a unique API key for the sensor
-    api_key = generate_unique_api_key(db)
-
     db_local = Local(
         nome=local.nome,
         tipo=local.tipo,
         descricao=local.descricao,
-        chave_api=api_key
+        chave_api=None  # Não será mais gerada chave API ao criar local
     )
     db.add(db_local)
     db.commit()
@@ -22,9 +19,7 @@ def criar_local(db: Session, local: LocalCreate) -> Local:
 
 def criar_local_com_chave(db: Session, local: LocalCreate, chave_api: str = None) -> Local:
     """Cria um local com uma chave de API específica (usado para o registro do sensor pelo usuário)"""
-    if not chave_api:
-        chave_api = generate_unique_api_key(db)
-
+    # Se nenhuma chave for fornecida, não geramos uma nova
     db_local = Local(
         nome=local.nome,
         tipo=local.tipo,

@@ -12,7 +12,7 @@ class SensorRegistroResponse(BaseModel):
     nome: str
     tipo: str
     descricao: Optional[str]
-    chave_api: str
+    chave_api: Optional[str] = None
     data_criacao: datetime
 
     class Config:

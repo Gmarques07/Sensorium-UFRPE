@@ -159,11 +159,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     const chaveApiGerada = document.getElementById('chaveApiGerada');
 
                     if (chaveApiGerada) {
-                        chaveApiGerada.value = data.chave_api;
-                    }
-
-                    if (chaveApiContainer) {
-                        chaveApiContainer.classList.remove('d-none');
+                        if (data.chave_api) {
+                            chaveApiGerada.value = data.chave_api;
+                            if (chaveApiContainer) {
+                                chaveApiContainer.classList.remove('d-none');
+                            }
+                        } else {
+                            // Esconder o container de chave API se não houver chave
+                            if (chaveApiContainer) {
+                                chaveApiContainer.classList.add('d-none');
+                            }
+                        }
                     }
 
                     if (resultadoRegistro) {

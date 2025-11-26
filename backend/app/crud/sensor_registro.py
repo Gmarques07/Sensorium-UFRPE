@@ -5,40 +5,40 @@ from backend.app.models.local import Local
 from backend.app.schemas.usuario_sensor import UsuarioSensorCreate
 from backend.app.schemas.local import LocalCreate
 from backend.app.schemas.sensor_registro import SensorRegistroResponse
-from backend.app.crud.local import criar_local_com_chave
+from backend.app.crud.local import criar_local
 
 
 def criar_sensor_para_usuario(
-    db: Session, 
-    local_create: LocalCreate, 
+    db: Session,
+    local_create: LocalCreate,
     usuario_id: int
 ) -> SensorRegistroResponse:
     """
     Cria um novo sensor e o associa ao usuário.
-    
+
     Args:
         db: Sessão do banco de dados
         local_create: Dados para criação do local/sensor
         usuario_id: ID do usuário que está criando o sensor
-    
+
     Returns:
-        SensorRegistroResponse: Informações do sensor criado com a chave de API
+        SensorRegistroResponse: Informações do sensor criado
     """
-    # Cria o local/sensor com uma chave de API
-    db_local = criar_local_com_chave(db, local_create)
-    
+    # Cria o local/sensor sem chave de API
+    db_local = criar_local(db, local_create)
+
     # Cria a associação entre usuário e sensor
     usuario_sensor = UsuarioSensor(usuario_id=usuario_id, sensor_id=db_local.id)
     db.add(usuario_sensor)
     db.commit()
-    
-    # Retorna a resposta com a chave de API
+
+    # Retorna a resposta (chave_api será None)
     return SensorRegistroResponse(
         id=db_local.id,
         nome=db_local.nome,
         tipo=db_local.tipo,
         descricao=db_local.descricao,
-        chave_api=db_local.chave_api,
+        chave_api=db_local.chave_api,  # Será None
         data_criacao=db_local.data_criacao
     )
 
