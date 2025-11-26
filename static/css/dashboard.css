@@ -310,3 +310,68 @@ body.dark-mode .form-select option {
     background-color: #2d2d2d;
     color: #ffffff;
 }
+
+/* --- 6. NOTIFICAÇÕES E MODAIS (DARK MODE FIX) --- */
+
+/* Central Alert (Flash) */
+body.dark-mode #alertaFlashCentral {
+    background-color: var(--card-bg) !important;
+    border-right: 1px solid #333;
+    border-top: 1px solid #333;
+    border-bottom: 1px solid #333;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+}
+
+body.dark-mode #alertaFlashCentral .text-secondary {
+    color: #b0b0b0 !important;
+}
+
+body.dark-mode #alertaFlashCentral .text-dark,
+body.dark-mode #alertaFlashCentral .fw-bold {
+    color: #ffffff !important;
+}
+
+/* Modais (Genérico) */
+body.dark-mode .modal-content {
+    border: 1px solid #333;
+    background-color: var(--card-bg); /* #1e1e1e */
+}
+
+body.dark-mode .modal-content .text-dark {
+    color: #ffffff !important;
+}
+
+body.dark-mode .modal-content .text-muted {
+    color: #a0a0a0 !important;
+}
+
+body.dark-mode .modal-content .bg-light {
+    background-color: #2d2d2d !important;
+    border-color: #444 !important;
+}
+
+body.dark-mode .modal-content .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* Toasts */
+body.dark-mode .toast {
+    background-color: var(--card-bg);
+    color: #ffffff;
+    border: 1px solid #333;
+}
+
+body.dark-mode .toast .text-dark,
+body.dark-mode .toast .fw-medium {
+    color: #ffffff !important;
+}
+
+body.dark-mode .toast .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* Ajuste de cores de texto nos alertas e notificações para melhor contraste no dark */
+body.dark-mode .text-success { color: #4ade80 !important; }
+body.dark-mode .text-danger { color: #f87171 !important; }
+body.dark-mode .text-warning { color: #facc15 !important; }
+body.dark-mode .text-primary { color: #60a5fa !important; }

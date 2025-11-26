@@ -277,31 +277,8 @@
             }
         });
 
-        // Tema escuro
-        document.addEventListener('DOMContentLoaded', () => {
-            const themeToggle = document.getElementById('theme-toggle');
-            const sunIcon = document.querySelector('.bi-sun-fill');
-            const moonIcon = document.querySelector('.bi-moon-fill');
-            
-            // Verificar tema salvo
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark') {
-                document.body.classList.add('dark-mode');
-                sunIcon.classList.remove('d-none');
-                moonIcon.classList.add('d-none');
-            }
-
-            // Alternar tema
-            themeToggle.addEventListener('click', (e) => {
-                e.preventDefault();
-                document.body.classList.toggle('dark-mode');
-                sunIcon.classList.toggle('d-none');
-                moonIcon.classList.toggle('d-none');
-                
-                // Salvar preferência
-                const isDark = document.body.classList.contains('dark-mode');
-                localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            });
-        });
+        // Este script inline estava duplicando a lógica de tema já presente em static/js/theme.js.
+        // Removido para evitar conflitos e garantir que a funcionalidade global de tema opere corretamente.
+        // O script theme.js já é carregado via partials/base.html
     </script>
 {% endblock %}
