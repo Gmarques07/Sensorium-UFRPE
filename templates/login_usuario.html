@@ -271,7 +271,7 @@
     </div>
 
     <div class="mb-4">
-        <a href="{{ url_for('homepage') }}" class="link-secondary back-link">
+        <a href="/" class="link-secondary back-link">
             <i class="bi bi-arrow-left me-2"></i>Voltar à Página Inicial
         </a>
     </div>
@@ -322,7 +322,7 @@
         <div class="text-center">
             <p class="mb-0">
                 Ainda não tem uma conta?
-                <a href="{{ url_for('cadastro') }}" class="link-secondary ms-1">Cadastre-se aqui</a>
+                <a href="/cadastro" class="link-secondary ms-1">Cadastre-se aqui</a>
             </p>
         </div>
     </form>
@@ -341,7 +341,7 @@
             // Limpar token da URL
             window.history.replaceState({}, document.title, window.location.pathname);
             // Redirecionar para o dashboard
-            window.location.href = '/dashboard_usuario.html';
+            window.location.href = '/dashboard';
             return;
         }
 
@@ -380,7 +380,7 @@
                     localStorage.setItem('accessToken', result.access_token);
                     
                     // Redirecionar para o dashboard do usuário
-                    window.location.href = '/dashboard_usuario.html';
+                    window.location.href = '/dashboard';
                 } else {
                     const errorMessage = result.detail || 'Ocorreu um erro ao tentar fazer login.';
                     const alertHTML = `

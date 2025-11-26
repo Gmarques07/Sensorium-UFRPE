@@ -458,8 +458,10 @@
             </form>
         </div>
     </div>
+</div>
+
 <!-- Modal de Confirmação de Logout -->
-<div class="modal fade" id="modalConfirmLogout" tabindex="-1" aria-labelledby="modalConfirmLogoutLabel" aria-hidden="true">
+<div class="modal fade" id="modalConfirmLogout" tabindex="-1" aria-labelledby="modalConfirmLogoutLabel" aria-hidden="true" style="z-index: 10000 !important;">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -468,7 +470,7 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body text-dark">
                 Tem certeza que deseja sair da sua conta?
             </div>
             <div class="modal-footer">
@@ -481,6 +483,6 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', path='js/dashboard_usuario.js') }}"></script>
+<script src="{{ url_for('static', path='js/dashboard_usuario.js') }}?v=logout_fix"></script>
 <script src="{{ url_for('static', path='js/sensor_registro.js') }}"></script>
 {% endblock %}

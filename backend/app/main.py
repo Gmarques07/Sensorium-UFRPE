@@ -114,6 +114,45 @@ else:
 async def homepage(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+# Rotas Limpas (Aliases)
+@app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard_clean(request: Request):
+    return templates.TemplateResponse("dashboard_usuario.html", {"request": request})
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_clean(request: Request):
+    return templates.TemplateResponse("login_usuario.html", {"request": request})
+
+@app.get("/cadastro", response_class=HTMLResponse)
+async def cadastro_clean(request: Request):
+    return templates.TemplateResponse("cadastro.html", {"request": request})
+
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_login_clean(request: Request):
+    return templates.TemplateResponse("login_admin.html", {"request": request})
+
+@app.get("/admin/dashboard", response_class=HTMLResponse)
+async def admin_dashboard_clean(request: Request, db: Session = Depends(get_db)):
+    # Reutiliza a lógica da rota original
+    return await admin_dashboard(request, db)
+
+@app.get("/admin/sensores/{usuario_id}", response_class=HTMLResponse)
+async def gerenciar_sensores_clean(request: Request, usuario_id: int, db: Session = Depends(get_db)):
+    return await gerenciar_sensores(request, usuario_id, db)
+
+@app.get("/sobre", response_class=HTMLResponse)
+async def sobre_clean(request: Request):
+    return templates.TemplateResponse("sobre.html", {"request": request})
+
+@app.get("/404", response_class=HTMLResponse)
+async def not_found_clean(request: Request):
+    return templates.TemplateResponse("404.html", {"request": request})
+
+@app.get("/500", response_class=HTMLResponse)
+async def server_error_clean(request: Request):
+    return templates.TemplateResponse("500.html", {"request": request})
+
+# Rotas Legadas (.html) - Mantidas para compatibilidade
 @app.get("/index.html", response_class=HTMLResponse)
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})

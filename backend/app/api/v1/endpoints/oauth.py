@@ -142,7 +142,7 @@ async def google_callback(
         )
         
         # Redirecionar sempre para o dashboard, independente de ser novo usuário ou não
-        redirect_url = f"{settings.BASE_URL}/dashboard_usuario.html?token={access_token}"
+        redirect_url = f"{settings.BASE_URL}/dashboard?token={access_token}"
         
         # Retornar redirecionamento
         return RedirectResponse(url=redirect_url)

@@ -95,8 +95,18 @@ document.addEventListener('DOMContentLoaded', function() {
     if (logoutButton) {
         logoutButton.addEventListener('click', (e) => {
             e.preventDefault();
-            const modal = new bootstrap.Modal(document.getElementById('modalConfirmLogout'));
-            modal.show();
+            const modalEl = document.getElementById('modalConfirmLogout');
+            if (modalEl) {
+                const modal = new bootstrap.Modal(modalEl);
+                modal.show();
+            } else {
+                console.error("Modal de logout não encontrado!");
+                // Fallback para garantir que o usuário consiga sair
+                if(confirm("Deseja sair do sistema?")) {
+                    localStorage.removeItem('adminAccessToken');
+                    window.location.href = '/admin';
+                }
+            }
         });
     }
 
@@ -104,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (confirmLogoutBtn) {
         confirmLogoutBtn.addEventListener('click', () => {
             localStorage.removeItem('adminAccessToken');
-            window.location.href = '/login_admin.html';
+            window.location.href = '/admin';
         });
     }
 

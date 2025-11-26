@@ -136,7 +136,7 @@
                                     <button class="btn btn-primary btn-action-lg btn-visualizar-usuario" data-id="{{ usuario.id }}" title="Ver">
                                         <i class="bi bi-eye"></i>
                                     </button>
-                                    <a href="/gerenciar_sensores/{{ usuario.id }}" class="btn btn-warning text-white btn-action-lg" title="Editar">
+                                    <a href="/admin/sensores/{{ usuario.id }}" class="btn btn-warning text-white btn-action-lg" title="Editar">
                                         <i class="bi bi-pencil"></i>
                                     </a>
                                     <button class="btn btn-danger btn-action-lg btn-excluir-usuario" data-id="{{ usuario.id }}" title="Excluir">
@@ -185,9 +185,9 @@
                                     <span class="badge bg-success badge-lg">Ativo</span>
                                 </td>
                                 <td class="text-end pe-4">
-                                    <a href="/gerenciar_sensores/{{ sensor.id }}" class="btn btn-info text-white btn-pill-lg">
-                                        <i class="bi bi-gear-fill me-2"></i> Gerenciar
-                                    </a>
+                                    <button class="btn btn-info text-white btn-pill-lg" onclick="alert('Edição de sensor direto em desenvolvimento. Utilize a aba Usuários para gerenciar vínculos.')">
+                                        <i class="bi bi-gear-fill me-2"></i> Detalhes
+                                    </button>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -295,7 +295,7 @@
 </main>
 
 <!-- Modal de Confirmação de Logout -->
-<div class="modal fade" id="modalConfirmLogout" tabindex="-1" aria-labelledby="modalConfirmLogoutLabel" aria-hidden="true">
+<div class="modal fade" id="modalConfirmLogout" tabindex="-1" aria-labelledby="modalConfirmLogoutLabel" aria-hidden="true" style="z-index: 10000 !important;">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -304,7 +304,7 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body text-dark">
                 Tem certeza que deseja sair da área administrativa?
             </div>
             <div class="modal-footer">
@@ -317,5 +317,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', path='js/admin_dashboard.js') }}"></script>
+<script src="{{ url_for('static', path='js/admin_dashboard.js') }}?v=logout_fix"></script>
 {% endblock %}

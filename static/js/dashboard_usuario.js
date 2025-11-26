@@ -340,7 +340,7 @@ if (dateElement) {
   const accessToken = localStorage.getItem('accessToken');
 
   if (!accessToken) {
-    window.location.href = '/login_usuario.html';
+    window.location.href = '/login';
     return;
   }
 
@@ -365,7 +365,7 @@ if (dateElement) {
     .then(response => {
       if (!response.ok) {
         localStorage.removeItem('accessToken');
-        window.location.href = '/login_usuario.html';
+        window.location.href = '/login';
         throw new Error('Token inválido ou expirado');
       }
       return response.json();
@@ -724,9 +724,20 @@ if (dateElement) {
   if (logoutButton) {
     logoutButton.addEventListener('click', function(e) {
       e.preventDefault();
-      // Show confirmation modal instead of logging out directly
-      const modal = new bootstrap.Modal(document.getElementById('modalConfirmLogout'));
-      modal.show();
+      
+      const modalEl = document.getElementById('modalConfirmLogout');
+      if (modalEl) {
+          const modal = new bootstrap.Modal(modalEl);
+          modal.show();
+      } else {
+          console.error("Modal de logout não encontrado!");
+          // Fallback seguro
+          if(confirm("Deseja sair da sua conta?")) {
+              localStorage.removeItem('accessToken');
+              localStorage.removeItem('user');
+              window.location.href = '/login';
+          }
+      }
     });
   }
 
@@ -736,7 +747,7 @@ if (dateElement) {
     confirmLogoutBtn.addEventListener('click', function() {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('user');
-        window.location.href = '/login_usuario.html';
+        window.location.href = '/login';
     });
   }
 });
