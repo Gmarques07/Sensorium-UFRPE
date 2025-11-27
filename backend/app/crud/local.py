@@ -1,7 +1,7 @@
 from typing import List, Optional, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
-from backend.app.models import Local, Leitura, PhNivel, BoiaNivel
+from backend.app.models import Local, Leitura, PhNivel, BoiaNivel, UmidadeNivel
 from backend.app.schemas import LocalCreate, PhNivelCreate, BoiaNivelCreate
 from backend.app.utils.api_key_generator import generate_unique_api_key
 
@@ -72,13 +72,21 @@ def obter_ultimo_nivel_boia(db: Session, local_id: int) -> Optional[BoiaNivel]:
 def obter_historico_nivel_boia(db: Session, local_id: int, limit: int = 10) -> List[BoiaNivel]:
     return db.query(BoiaNivel).join(Leitura).filter(Leitura.local_id == local_id).order_by(desc(Leitura.data)).limit(limit).all()
 
-def obter_dados_cisterna(db: Session, local_id: int, limite_historico: int = 10) -> Tuple[Optional[PhNivel], List[PhNivel], Optional[BoiaNivel], List[BoiaNivel]]:
+def obter_ultimo_umidade(db: Session, local_id: int) -> Optional[UmidadeNivel]:
+    return db.query(UmidadeNivel).join(Leitura).filter(Leitura.local_id == local_id).order_by(desc(Leitura.data)).first()
+
+def obter_historico_umidade(db: Session, local_id: int, limit: int = 10) -> List[UmidadeNivel]:
+    return db.query(UmidadeNivel).join(Leitura).filter(Leitura.local_id == local_id).order_by(desc(Leitura.data)).limit(limit).all()
+
+def obter_dados_cisterna(db: Session, local_id: int, limite_historico: int = 10) -> Tuple[Optional[PhNivel], List[PhNivel], Optional[BoiaNivel], List[BoiaNivel], Optional[UmidadeNivel], List[UmidadeNivel]]:
     ph_atual = obter_ultimo_ph(db, local_id)
     historico_ph = obter_historico_ph(db, local_id, limite_historico)
     nivel_atual = obter_ultimo_nivel_boia(db, local_id)
     historico_nivel = obter_historico_nivel_boia(db, local_id, limite_historico)
+    umidade_atual = obter_ultimo_umidade(db, local_id)
+    historico_umidade = obter_historico_umidade(db, local_id, limite_historico)
 
-    return ph_atual, historico_ph, nivel_atual, historico_nivel
+    return ph_atual, historico_ph, nivel_atual, historico_nivel, umidade_atual, historico_umidade
 
 def deletar_local(db: Session, local_id: int) -> bool:
     """Deleta um local pelo ID e todas as suas associações e leituras associadas."""

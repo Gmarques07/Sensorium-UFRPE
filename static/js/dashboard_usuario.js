@@ -98,6 +98,9 @@ function atualizarListaSensoresUsuario(sensores) {
   let html = `
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="mb-0">Meus Sensores</h5>
+    <button type="button" class="btn btn-sm btn-outline-primary" onclick="toggleSensorView('detailed')">
+      <i class="bi bi-eye me-1"></i>Visualizar Dados
+    </button>
   </div>
   <div class="row g-4">`;
   sensores.forEach(sensor => {
@@ -110,13 +113,22 @@ function atualizarListaSensoresUsuario(sensores) {
               <h5 class="card-title">${sensor.nome}</h5>
               <span class="badge bg-primary">${sensor.tipo}</span>
             </div>
-            <button class="btn btn-sm btn-outline-primary" onclick="visualizarDadosSensor(${sensor.id})" title="Visualizar dados do sensor">
-              <i class="bi bi-eye"></i>
-            </button>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-three-dots"></i></button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="javascript:void(0)" onclick="copiarChaveSensor('${sensor.chave_api}')"><i class="bi bi-key me-2"></i>Copiar Chave API</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="excluirSensor(${sensor.id}, '${sensor.nome}')"><i class="bi bi-trash me-2"></i>Excluir Sensor</a></li>
+              </ul>
+            </div>
           </div>
           ${sensor.descricao ? `<p class="card-text text-muted">${sensor.descricao}</p>` : ''}
           <div class="mt-3">
             <small class="text-muted"><i class="bi bi-calendar me-1"></i>Criado em: ${new Date(sensor.data_criacao).toLocaleDateString('pt-BR')}</small>
+            <div class="mt-2">
+              <small class="text-muted d-block">Chave API:</small>
+              <code class="small" style="word-break: break-all;">${sensor.chave_api || 'Não gerada'}</code>
+            </div>
           </div>
         </div>
       </div>
@@ -124,39 +136,6 @@ function atualizarListaSensoresUsuario(sensores) {
   });
   html += '</div>';
   container.innerHTML = html;
-}
-
-function visualizarDadosSensor(sensorId) {
-  // Encontrar o sensor específico
-  const sensores = JSON.parse(localStorage.getItem('sensores')) || [];
-  const sensor = sensores.find(s => s.id == sensorId);
-  
-  if (!sensor) {
-    mostrarAlertaModal('Sensor não encontrado.', 'Erro', 'danger');
-    return;
-  }
-  
-  // Selecionar o sensor no dropdown de visualização detalhada
-  const select = document.getElementById('selectDispositivo');
-  if (select) {
-    select.value = sensor.nome;
-    // Ativar a visualização detalhada de sensores
-    toggleSensorView('detailed');
-    // Mostrar o painel do dispositivo selecionado
-    setTimeout(() => {
-      mostrarDispositivoSelecionado();
-    }, 100);
-  } else {
-    // Se o select não existir ainda, mudar para a visualização detalhada e selecionar o sensor
-    toggleSensorView('detailed');
-    setTimeout(() => {
-      const newSelect = document.getElementById('selectDispositivo');
-      if (newSelect) {
-        newSelect.value = sensor.nome;
-        mostrarDispositivoSelecionado();
-      }
-    }, 500);
-  }
 }
 
 function copiarChaveSensor(chaveApi) {
@@ -272,8 +251,9 @@ function renderizarSensores(data) {
   <div class="mb-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <label for="selectDispositivo" class="form-label fw-semibold">Selecione o Dispositivo:</label>
-      <div>
+      <div class="d-flex gap-2">
         <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleSensorView('manage')"><i class="bi bi-gear me-1"></i>Gerenciar Sensores</button>
+        <button type="button" class="btn btn-sm btn-outline-primary" onclick="showAddSensorSection()"><i class="bi bi-plus me-1"></i>Adicionar Novo</button>
       </div>
     </div>
     <select class="form-select w-auto d-inline-block" id="selectDispositivo" onchange="mostrarDispositivoSelecionado()">`;
@@ -284,62 +264,117 @@ function renderizarSensores(data) {
     const dispositivoId = disp.nome.replace(/\s/g, '_');
     const phData = data.ph_por_dispositivo[disp.nome];
     const nivelData = data.nivel_por_dispositivo[disp.nome];
+    const umidadeData = data.umidade_por_dispositivo[disp.nome];
 
     html += `<div class="dispositivo-panel" id="panel-${dispositivoId}" style="display: ${index === 0 ? 'block' : 'none'};">
-        <div class="row g-4">
-          <div class="col-md-6 mb-4">
-            <div class="card border-0 shadow-sm h-100">
-              <div class="card-header bg-primary text-white"><i class="bi bi-droplet-half me-2"></i>pH da Água</div>
-              <div class="card-body">`;
-    if (phData && phData.atual) {
-      const ph = phData.atual.ph;
-      const badgeClass = ph < 6.5 ? 'bg-danger' : (ph > 8.5 ? 'bg-warning' : 'bg-success');
-      const status = ph < 6.5 ? 'Ácido' : (ph > 8.5 ? 'Alcalino' : 'Neutro');
-      html += `<div class="text-center mb-4">
-          <div class="display-4 text-primary mb-2">${ph}</div>
-          <span class="badge ${badgeClass} fs-6">${status}</span>
-          <p class="text-muted mt-3 mb-0"><i class="bi bi-clock me-1"></i>Última atualização: ${phData.atual.data}</p>
-        </div>
-        <div class="mt-4 position-relative" style="width: 100%; height: 200px;"><canvas id="phChart-${dispositivoId}"></canvas></div>`;
-    } else {
-      html += `<div class="text-center py-5"><i class="bi bi-exclamation-circle fs-1 text-muted mb-3"></i><p class="text-muted mb-0">Nenhum dado de pH disponível.</p></div>`;
+        <div class="row g-4">`;
+
+    // pH Card
+    if (phData) {
+        html += `<div class="col-12 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-primary text-white"><i class="bi bi-droplet-half me-2"></i>pH da Água</div>
+                    <div class="card-body">`;
+        if (phData && phData.atual) {
+            const ph = phData.atual.ph;
+            const badgeClass = ph < 6.5 ? 'bg-danger' : (ph > 8.5 ? 'bg-warning' : 'bg-success');
+            const status = ph < 6.5 ? 'Ácido' : (ph > 8.5 ? 'Alcalino' : 'Neutro');
+            html += `<div class="text-center mb-4">
+                        <div class="display-4 text-primary mb-2">${ph}</div>
+                        <span class="badge ${badgeClass} fs-6">${status}</span>
+                        <p class="text-muted mt-3 mb-0"><i class="bi bi-clock me-1"></i>Última atualização: ${phData.atual.data}</p>
+                    </div>
+                    <div class="mt-4 position-relative" style="width: 100%; height: 100px;"><canvas id="phChart-${dispositivoId}"></canvas></div>`;
+        } else {
+            html += `<div class="text-center py-5"><i class="bi bi-exclamation-circle fs-1 text-muted mb-3"></i><p class="text-muted mb-0">Nenhum dado de pH disponível.</p></div>`;
+        }
+        html += `</div></div></div>`;
     }
-    html += `</div></div></div><div class="col-md-6 mb-4">
-            <div class="card border-0 shadow-sm h-100">
-              <div class="card-header bg-primary text-white"><i class="bi bi-water me-2"></i>Nível de Água</div>
-              <div class="card-body">`;
-    if (nivelData && nivelData.atual) {
-      const status = nivelData.atual.status;
-      const boia = nivelData.atual.boia;
-      const statusClass = status === 'ALTO' ? 'text-success' : 'text-warning';
-      const badgeClass = status === 'ALTO' ? 'bg-success' : 'bg-warning';
-      const boiaClass = boia === 1 ? 'bg-primary' : 'bg-secondary';
-      const boiaText = boia === 1 ? 'Ativada' : 'Desativada';
-      html += `<div class="text-center mb-4">
-          <div class="mb-4"><i class="bi bi-water fs-1 ${statusClass}"></i></div>
-          <div class="display-6 mb-2"><span class="badge ${badgeClass} fs-5">${status}</span></div>
-          <div class="mt-4"><p class="mb-2">Status da Boia:</p><span class="badge ${boiaClass} fs-6">${boiaText}</span></div>
-          <p class="text-muted mt-4 mb-0"><i class="bi bi-clock me-1"></i>Última atualização: ${nivelData.atual.data}</p>
-        </div>
-        <div class="mt-4 position-relative" style="width: 100%; height: 200px;"><canvas id="nivelChart-${dispositivoId}"></canvas></div>`;
-    } else {
-      html += `<div class="text-center py-5"><i class="bi bi-exclamation-circle fs-1 text-muted mb-3"></i><p class="mb-0">Nenhum dado de nível disponível.</p></div>`;
+
+    // pH History Card
+    if (phData) {
+        html += `<div class="col-12 mb-4"><div class="card border-0 shadow-sm"><div class="card-header bg-primary text-white"><i class="bi bi-graph-up me-2"></i>Histórico de pH</div><div class="card-body"><ul class="list-group list-group-flush">`;
+        if (phData && phData.historico && phData.historico.length > 0) {
+            phData.historico.forEach(item => { html += `<li class="list-group-item d-flex justify-content-between align-items-center"><span><i class="bi bi-calendar me-2"></i>${item.data}</span><span class="badge bg-primary">pH ${item.ph}</span></li>`; });
+        } else {
+            html += `<li class="list-group-item text-muted">Nenhum registro encontrado</li>`;
+        }
+        html += `</ul></div></div></div>`;
     }
-    html += `</div></div></div>
-        <div class="row g-4 mt-2">
-          <div class="col-md-6"><div class="card border-0 shadow-sm"><div class="card-header bg-primary text-white"><i class="bi bi-graph-up me-2"></i>Histórico de pH</div><div class="card-body"><ul class="list-group list-group-flush">`;
-    if (phData && phData.historico && phData.historico.length > 0) {
-      phData.historico.forEach(item => { html += `<li class="list-group-item d-flex justify-content-between align-items-center"><span><i class="bi bi-calendar me-2"></i>${item.data}</span><span class="badge bg-primary">pH ${item.ph}</span></li>`; });
-    } else {
-      html += `<li class="list-group-item text-muted">Nenhum registro encontrado</li>`;
+
+    // Nível Card
+    if (nivelData) {
+        html += `<div class="col-12 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-primary text-white"><i class="bi bi-water me-2"></i>Nível de Água</div>
+                    <div class="card-body">`;
+        if (nivelData && nivelData.atual) {
+            const status = nivelData.atual.status;
+            const boia = nivelData.atual.boia;
+            const statusClass = status === 'ALTO' ? 'text-success' : 'text-warning';
+            const badgeClass = status === 'ALTO' ? 'bg-success' : 'bg-warning';
+            const boiaClass = boia === 1 ? 'bg-primary' : 'bg-secondary';
+            const boiaText = boia === 1 ? 'Ativada' : 'Desativada';
+            html += `<div class="text-center mb-4">
+                        <div class="mb-4"><i class="bi bi-water fs-1 ${statusClass}"></i></div>
+                        <div class="display-6 mb-2"><span class="badge ${badgeClass} fs-5">${status}</span></div>
+                        <div class="mt-4"><p class="mb-2">Status da Boia:</p><span class="badge ${boiaClass} fs-6">${boiaText}</span></div>
+                        <p class="text-muted mt-4 mb-0"><i class="bi bi-clock me-1"></i>Última atualização: ${nivelData.atual.data}</p>
+                    </div>
+                    <div class="mt-4 position-relative" style="width: 100%; height: 100px;"><canvas id="nivelChart-${dispositivoId}"></canvas></div>`;
+        } else {
+            html += `<div class="text-center py-5"><i class="bi bi-exclamation-circle fs-1 text-muted mb-3"></i><p class="text-muted mb-0">Nenhum dado de nível disponível.</p></div>`;
+        }
+        html += `</div></div></div>`;
     }
-    html += `</ul></div></div></div><div class="col-md-6"><div class="card border-0 shadow-sm"><div class="card-header bg-primary text-white"><i class="bi bi-clock-history me-2"></i>Histórico de Nível</div><div class="card-body"><ul class="list-group list_group_flush">`;
-    if (nivelData && nivelData.historico && nivelData.historico.length > 0) {
-      nivelData.historico.forEach(item => { const badgeClass = item.status === 'ALTO' ? 'bg-success' : 'bg-warning'; html += `<li class="list-group-item d-flex justify_content_between align-items-center"><span><i class="bi bi_calendar me-2"></i>${item.data}</span><span class="badge ${badgeClass}">${item.status}</span></li>`; });
-    } else {
-      html += `<li class="list-group-item text-muted">Nenhum registro encontrado</li>`;
+
+    // Nível History Card
+    if (nivelData) {
+        html += `<div class="col-12 mb-4"><div class="card border-0 shadow-sm"><div class="card-header bg-primary text-white"><i class="bi bi-clock-history me-2"></i>Histórico de Nível</div><div class="card-body"><ul class="list-group list_group_flush">`;
+        if (nivelData && nivelData.historico && nivelData.historico.length > 0) {
+            nivelData.historico.forEach(item => { const badgeClass = item.status === 'ALTO' ? 'bg-success' : 'bg-warning'; html += `<li class="list-group-item d-flex justify_content_between align-items-center"><span><i class="bi bi_calendar me-2"></i>${item.data}</span><span class="badge ${badgeClass}">${item.status}</span></li>`; });
+        } else {
+            html += `<li class="list-group-item text-muted">Nenhum registro encontrado</li>`;
+        }
+        html += `</ul></div></div></div>`;
     }
-    html += `</ul></div></div></div></div></div>`;
+
+    // Umidade Card
+    if (umidadeData) {
+        html += `<div class="col-12 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-primary text-white"><i class="bi bi-moisture me-2"></i>Umidade</div>
+                    <div class="card-body">`;
+        if (umidadeData && umidadeData.atual) {
+            const umidade = umidadeData.atual.umidade_percentual;
+            const status = umidadeData.atual.status;
+            let badgeClass = 'bg-success';
+            if (status === 'SECO') badgeClass = 'bg-warning';
+            if (status === 'ENCHARCADO') badgeClass = 'bg-danger';
+            html += `<div class="text-center mb-4">
+                        <div class="display-4 text-primary mb-2">${umidade.toFixed(1)}<small class="fs-4">%</small></div>
+                        <span class="badge ${badgeClass} fs-6">${status}</span>
+                        <p class="text-muted mt-3 mb-0"><i class="bi bi-clock me-1"></i>Última atualização: ${umidadeData.atual.data}</p>
+                    </div>
+                    <div class="mt-4 position-relative" style="width: 100%; height: 100px;"><canvas id="umidadeChart-${dispositivoId}"></canvas></div>`;
+        } else {
+            html += `<div class="text-center py-5"><i class="bi bi-exclamation-circle fs-1 text-muted mb-3"></i><p class="text-muted mb-0">Nenhum dado de umidade disponível.</p></div>`;
+        }
+        html += `</div></div></div>`;
+    }
+
+    // Umidade History Card
+    if (umidadeData) {
+        html += `<div class="col-12 mb-4"><div class="card border-0 shadow-sm"><div class="card-header bg-primary text-white"><i class="bi bi-moisture me-2"></i>Histórico de Umidade</div><div class="card-body"><ul class="list-group list_group_flush">`;
+        if (umidadeData && umidadeData.historico && umidadeData.historico.length > 0) {
+            umidadeData.historico.forEach(item => { html += `<li class="list-group-item d-flex justify-content-between align-items-center"><span><i class="bi bi-calendar me-2"></i>${item.data}</span><span class="badge bg-info">${item.umidade_percentual.toFixed(1)}%</span></li>`; });
+        } else {
+            html += `<li class="list-group-item text-muted">Nenhum registro encontrado</li>`;
+        }
+        html += `</ul></div></div></div>`;
+    }
+
+    html += `</div></div>`; // Close .row and .dispositivo-panel
   });
 
   html += `</div>`;
@@ -360,17 +395,45 @@ function criarGraficos(data) {
     const dispositivoId = disp.nome.replace(/\s/g, '_');
     const phData = data.ph_por_dispositivo[disp.nome];
     const nivelData = data.nivel_por_dispositivo[disp.nome];
+    const umidadeData = data.umidade_por_dispositivo[disp.nome];
 
     const configComum = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(0, 0, 0, 0.8)', titleFont: { family: "'Poppins', sans-serif" }, bodyFont: { family: "'Poppins', sans-serif" }, padding: 12, cornerRadius: 8, displayColors: false } }, scales: { y: { beginAtZero: false, grid: { color: 'rgba(0, 0, 0, 0.05)' }, ticks: { font: { family: "'Poppins', sans-serif" } } }, x: { grid: { display: false }, ticks: { font: { family: "'Poppins', sans-serif" } } } }, animation: { duration: 2000, easing: 'easeOutQuart' }, interaction: { intersect: false, mode: 'index' } };
+    
     const phCtx = document.getElementById(`phChart-${dispositivoId}`);
     if (phCtx && phData && phData.historico) {
       const historicoPh = phData.historico.reverse();
       new Chart(phCtx, { type: 'line', data: { labels: historicoPh.map(item => item.data), datasets: [{ label: 'Histórico de pH', data: historicoPh.map(item => item.ph), borderColor: '#004183', backgroundColor: 'rgba(0,65,131,0.1)', borderWidth: 3, pointBackgroundColor: '#004183', pointBorderColor: '#fff', pointRadius: 6, pointHoverRadius: 8, fill: true, tension: 0.4 }] }, options: configComum });
     }
+
     const nivelCtx = document.getElementById(`nivelChart-${dispositivoId}`);
     if (nivelCtx && nivelData && nivelData.historico) {
       const historicoNivel = nivelData.historico.reverse();
       new Chart(nivelCtx, { type: 'line', data: { labels: historicoNivel.map(item => item.data), datasets: [{ label: 'Histórico de Nível', data: historicoNivel.map(item => item.status === 'ALTO' ? 2 : (item.status === 'BAIXO' ? 1 : 0)), borderColor: '#34c759', backgroundColor: 'rgba(52,199,89,0.1)', borderWidth: 3, pointBackgroundColor: '#34c759', pointBorderColor: '#fff', pointRadius: 6, pointHoverRadius: 8, fill: true, tension: 0.4 }] }, options: { ...configComum, scales: { ...configComum.scales, y: { beginAtZero: true, min: 0, max: 2, grid: { color: 'rgba(0, 0, 0, 0.05)' }, ticks: { callback: function(value) { if (value === 2) return 'ALTO'; if (value === 1) return 'BAIXO'; return ''; } } } } } });
+    }
+
+    const umidadeCtx = document.getElementById(`umidadeChart-${dispositivoId}`);
+    if (umidadeCtx && umidadeData && umidadeData.historico) {
+        const historicoUmidade = umidadeData.historico.reverse();
+        new Chart(umidadeCtx, {
+            type: 'line',
+            data: {
+                labels: historicoUmidade.map(item => item.data),
+                datasets: [{
+                    label: 'Histórico de Umidade',
+                    data: historicoUmidade.map(item => item.umidade_percentual),
+                    borderColor: '#8a6d3b', // Cor terrosa/marrom
+                    backgroundColor: 'rgba(138, 109, 59, 0.1)',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#8a6d3b',
+                    pointBorderColor: '#fff',
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: { ...configComum, scales: { ...configComum.scales, y: { ...configComum.scales.y, beginAtZero: true, suggestedMax: 100 } } }
+        });
     }
   });
 }

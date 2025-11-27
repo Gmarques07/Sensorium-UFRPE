@@ -66,12 +66,14 @@ async def obter_dados_atuais(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user_from_cookie)
 ) -> Any:
-    ph_atual, historico_ph, nivel_atual, historico_nivel = crud_local.obter_dados_cisterna(db, local_id)
+    ph_atual, historico_ph, nivel_atual, historico_nivel, umidade_atual, historico_umidade = crud_local.obter_dados_cisterna(db, local_id)
     return schemas_leitura.DadosCisternaResponse(
         ph_atual=ph_atual,
         nivel_atual=nivel_atual,
+        umidade_atual=umidade_atual,
         historico_ph=historico_ph,
-        historico_nivel=historico_nivel
+        historico_nivel=historico_nivel,
+        historico_umidade=historico_umidade
     )
 
 @router.get(
@@ -90,12 +92,14 @@ async def obter_dados_atuais_compatibilidade(
     local = db.query(LocalModel).first()
     if not local:
         raise HTTPException(status_code=404, detail="Nenhum local encontrado")
-    ph_atual, historico_ph, nivel_atual, historico_nivel = crud_local.obter_dados_cisterna(db, local.id)
+    ph_atual, historico_ph, nivel_atual, historico_nivel, umidade_atual, historico_umidade = crud_local.obter_dados_cisterna(db, local.id)
     return schemas_leitura.DadosCisternaResponse(
         ph_atual=ph_atual,
         nivel_atual=nivel_atual,
+        umidade_atual=umidade_atual,
         historico_ph=historico_ph,
-        historico_nivel=historico_nivel
+        historico_nivel=historico_nivel,
+        historico_umidade=historico_umidade
     )
 
 @router.get(

@@ -66,8 +66,10 @@ class EstadoLuz(EstadoLuzBase):
 class DadosCisternaResponse(BaseModel):
     ph_atual: Optional[PhNivel]
     nivel_atual: Optional[BoiaNivel]
+    umidade_atual: Optional[UmidadeNivel]
     historico_ph: List[PhNivel]
     historico_nivel: List[BoiaNivel]
+    historico_umidade: List[UmidadeNivel]
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -75,4 +77,7 @@ class LeituraPayload(BaseModel):
     ph: float
     boia: int
     status_boia: str
+    umidade_raw: Optional[int] = None
+    umidade_percentual: Optional[float] = None
+    umidade_status: Optional[str] = None
     dispositivo_id: int

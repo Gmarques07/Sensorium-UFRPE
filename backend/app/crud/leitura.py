@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from backend.app.models.leitura import Leitura, PhNivel, BoiaNivel
+from backend.app.models.leitura import Leitura, PhNivel, BoiaNivel, UmidadeNivel
 from backend.app.models.local import Local
 from backend.app.models.usuario import Usuario
 from backend.app.schemas.leitura import LeituraPayload
@@ -11,7 +11,7 @@ from ..utils.email_alertas import send_alerta_violacao_regra
 
 def create_leitura_from_payload(db: Session, *, payload: LeituraPayload) -> None:
     """
-    Creates Leitura, PhNivel, and BoiaNivel records from a payload.
+    Creates Leitura, PhNivel, BoiaNivel, and optionally UmidadeNivel records from a payload.
     """
     local = db.query(Local).filter(Local.id == payload.dispositivo_id).first()
     if not local:
@@ -47,32 +47,45 @@ def create_leitura_from_payload(db: Session, *, payload: LeituraPayload) -> None
         status=payload.status_boia.upper()
     )
     db.add(boia_nivel)
-    
-    # Verificar regras de alerta para pH
-    leitura_ph_dados = {
-        'ph': payload.ph
+
+    # Create Leitura for Umidade if data is present
+    if payload.umidade_raw is not None and payload.umidade_percentual is not None and payload.umidade_status is not None:
+        leitura_umidade = Leitura(
+            local_id=local.id,
+            sensor_tipo='UMIDADE'
+        )
+        db.add(leitura_umidade)
+        db.flush()
+
+        umidade_nivel = UmidadeNivel(
+            leitura_id=leitura_umidade.id,
+            raw=payload.umidade_raw,
+            umidade_percentual=payload.umidade_percentual,
+            status=payload.umidade_status.upper()
+        )
+        db.add(umidade_nivel)
+
+    # Consolidate data for alert checking
+    leitura_dados = {
+        'ph': payload.ph,
+        'valor': payload.boia,
     }
-    regras_ph_violadas = get_regras_alerta_violadas(db, local.id, leitura_ph_dados)
-    
-    # Verificar regras de alerta para Boia
-    leitura_boia_dados = {
-        'valor': payload.boia
-    }
-    regras_boia_violadas = get_regras_alerta_violadas(db, local.id, leitura_boia_dados)
-    
-    # Combinar regras violadas
-    regras_violadas = regras_ph_violadas + regras_boia_violadas
-    
+    if payload.umidade_percentual is not None:
+        leitura_dados['umidade_percentual'] = payload.umidade_percentual
+
+    # Check for violated alert rules
+    regras_violadas = get_regras_alerta_violadas(db, local.id, leitura_dados)
+
     for regra in regras_violadas:
-        # Determinar a mensagem do alerta
+        # Determine the alert message
         mensagem = regra.mensagem_alerta or f"Regra de alerta violada: {regra.campo_sensor} {regra.operador} {regra.valor_limite} no local {local.nome}"
         
-        # Obter informações do usuário para envio de e-mail
+        # Get user info for email sending
         usuario = db.query(Usuario).filter(Usuario.email == regra.usuario_email).first()
         if usuario:
-            # Enviar e-mail de alerta
+            # Send alert email
             descricao_regra = f"{regra.campo_sensor} {regra.operador} {regra.valor_limite}"
-            valor_atual = leitura_ph_dados.get(regra.campo_sensor) or leitura_boia_dados.get(regra.campo_sensor)
+            valor_atual = leitura_dados.get(regra.campo_sensor)
             
             send_alerta_violacao_regra(
                 email_to=regra.usuario_email,
@@ -83,7 +96,7 @@ def create_leitura_from_payload(db: Session, *, payload: LeituraPayload) -> None
                 mensagem_alerta=regra.mensagem_alerta
             )
         
-        # Criar notificação para o usuário que criou a regra (mantendo compatibilidade)
+        # Create notification for the user who created the rule
         notificacao_data = NotificacaoCreate(
             mensagem=mensagem,
             local_id=local.id,

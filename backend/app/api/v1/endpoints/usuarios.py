@@ -174,13 +174,14 @@ def obter_dados_dashboard(
 ) -> Any:
     """
     Retorna os dados dos sensores para o dashboard do usuário.
-    Inclui dados de pH e nível de água dos locais atribuídos ao usuário.
+    Inclui dados de pH, nível de água e umidade dos locais atribuídos ao usuário.
 
     Returns:
         dict: Dados dos sensores organizados por dispositivo
             - dispositivos: Lista de dispositivos/locais atribuídos ao usuário
             - ph_por_dispositivo: Dados de pH por dispositivo
             - nivel_por_dispositivo: Dados de nível por dispositivo
+            - umidade_por_dispositivo: Dados de umidade por dispositivo
             
     Raises:
         HTTPException:
@@ -199,6 +200,7 @@ def obter_dados_dashboard(
     dispositivos = []
     ph_por_dispositivo = {}
     nivel_por_dispositivo = {}
+    umidade_por_dispositivo = {}
     
     for local_id_tuple in local_ids:
         local_id = local_id_tuple[0]
@@ -210,8 +212,8 @@ def obter_dados_dashboard(
                 "tipo": local.tipo
             })
             
-            # Carregar dados de pH e nível para este local específico
-            ph_atual, historico_ph, nivel_atual, historico_nivel = crud_local.obter_dados_cisterna(db, local_id=local.id)
+            # Carregar dados de todos os sensores para este local
+            ph_atual, historico_ph, nivel_atual, historico_nivel, umidade_atual, historico_umidade = crud_local.obter_dados_cisterna(db, local_id=local.id)
             
             ph_por_dispositivo[local.nome if local.nome else f"Local {local.id}"] = {
                 "atual": {
@@ -240,16 +242,32 @@ def obter_dados_dashboard(
                 ]
             }
 
+            umidade_por_dispositivo[local.nome if local.nome else f"Local {local.id}"] = {
+                "atual": {
+                    "umidade_percentual": umidade_atual.umidade_percentual if umidade_atual and hasattr(umidade_atual, 'umidade_percentual') else 0.0,
+                    "status": umidade_atual.status if umidade_atual and hasattr(umidade_atual, 'status') else "SECO",
+                    "data": umidade_atual.leitura.data.astimezone(ZoneInfo("America/Sao_Paulo")).strftime("%Y-%m-%d %H:%M:%S") if umidade_atual and hasattr(umidade_atual, 'leitura') and umidade_atual.leitura and hasattr(umidade_atual.leitura, 'data') else "N/A"
+                } if umidade_atual else None,
+                "historico": [
+                    {
+                        "umidade_percentual": item.umidade_percentual,
+                        "data": item.leitura.data.astimezone(ZoneInfo("America/Sao_Paulo")).strftime("%Y-%m-%d %H:%M:%S")
+                    } for item in historico_umidade
+                ]
+            }
+
     # Se não há locais atribuídos, retornar dados vazios
     if not dispositivos:
         return {
             "dispositivos": [],
             "ph_por_dispositivo": {},
-            "nivel_por_dispositivo": {}
+            "nivel_por_dispositivo": {},
+            "umidade_por_dispositivo": {}
         }
     
     return {
         "dispositivos": dispositivos,
         "ph_por_dispositivo": ph_por_dispositivo,
-        "nivel_por_dispositivo": nivel_por_dispositivo
+        "nivel_por_dispositivo": nivel_por_dispositivo,
+        "umidade_por_dispositivo": umidade_por_dispositivo
     }
