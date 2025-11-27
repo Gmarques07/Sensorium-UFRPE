@@ -14,9 +14,9 @@ class Local(Base):
 
     # Relacionamentos
     notificacoes = relationship("Notificacao", foreign_keys="[Notificacao.local_id]")
-    usuarios_atribuidos = relationship("UsuarioSensor", back_populates="sensor")
-    leituras = relationship("Leitura", back_populates="local")
-    regras_alerta = relationship("RegraAlerta", back_populates="local")
+    usuarios_atribuidos = relationship("UsuarioSensor", back_populates="sensor", cascade="all, delete-orphan")
+    leituras = relationship("Leitura", back_populates="local", cascade="all, delete-orphan")
+    regras_alerta = relationship("RegraAlerta", back_populates="local", cascade="all, delete-orphan")
 
     def to_dict(self):
         return {
