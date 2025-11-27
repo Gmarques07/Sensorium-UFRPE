@@ -98,9 +98,6 @@ function atualizarListaSensoresUsuario(sensores) {
   let html = `
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="mb-0">Meus Sensores</h5>
-    <button type="button" class="btn btn-sm btn-outline-primary" onclick="toggleSensorView('detailed')">
-      <i class="bi bi-eye me-1"></i>Visualizar Dados
-    </button>
   </div>
   <div class="row g-4">`;
   sensores.forEach(sensor => {
@@ -113,22 +110,13 @@ function atualizarListaSensoresUsuario(sensores) {
               <h5 class="card-title">${sensor.nome}</h5>
               <span class="badge bg-primary">${sensor.tipo}</span>
             </div>
-            <div class="dropdown">
-              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-three-dots"></i></button>
-              <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="javascript:void(0)" onclick="copiarChaveSensor('${sensor.chave_api}')"><i class="bi bi-key me-2"></i>Copiar Chave API</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="excluirSensor(${sensor.id}, '${sensor.nome}')"><i class="bi bi-trash me-2"></i>Excluir Sensor</a></li>
-              </ul>
-            </div>
+            <button class="btn btn-sm btn-outline-primary" onclick="visualizarDadosSensor(${sensor.id})" title="Visualizar dados do sensor">
+              <i class="bi bi-eye"></i>
+            </button>
           </div>
           ${sensor.descricao ? `<p class="card-text text-muted">${sensor.descricao}</p>` : ''}
           <div class="mt-3">
             <small class="text-muted"><i class="bi bi-calendar me-1"></i>Criado em: ${new Date(sensor.data_criacao).toLocaleDateString('pt-BR')}</small>
-            <div class="mt-2">
-              <small class="text-muted d-block">Chave API:</small>
-              <code class="small" style="word-break: break-all;">${sensor.chave_api || 'Não gerada'}</code>
-            </div>
           </div>
         </div>
       </div>
@@ -136,6 +124,39 @@ function atualizarListaSensoresUsuario(sensores) {
   });
   html += '</div>';
   container.innerHTML = html;
+}
+
+function visualizarDadosSensor(sensorId) {
+  // Encontrar o sensor específico
+  const sensores = JSON.parse(localStorage.getItem('sensores')) || [];
+  const sensor = sensores.find(s => s.id == sensorId);
+  
+  if (!sensor) {
+    mostrarAlertaModal('Sensor não encontrado.', 'Erro', 'danger');
+    return;
+  }
+  
+  // Selecionar o sensor no dropdown de visualização detalhada
+  const select = document.getElementById('selectDispositivo');
+  if (select) {
+    select.value = sensor.nome;
+    // Ativar a visualização detalhada de sensores
+    toggleSensorView('detailed');
+    // Mostrar o painel do dispositivo selecionado
+    setTimeout(() => {
+      mostrarDispositivoSelecionado();
+    }, 100);
+  } else {
+    // Se o select não existir ainda, mudar para a visualização detalhada e selecionar o sensor
+    toggleSensorView('detailed');
+    setTimeout(() => {
+      const newSelect = document.getElementById('selectDispositivo');
+      if (newSelect) {
+        newSelect.value = sensor.nome;
+        mostrarDispositivoSelecionado();
+      }
+    }, 500);
+  }
 }
 
 function copiarChaveSensor(chaveApi) {
@@ -251,9 +272,8 @@ function renderizarSensores(data) {
   <div class="mb-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <label for="selectDispositivo" class="form-label fw-semibold">Selecione o Dispositivo:</label>
-      <div class="d-flex gap-2">
+      <div>
         <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleSensorView('manage')"><i class="bi bi-gear me-1"></i>Gerenciar Sensores</button>
-        <button type="button" class="btn btn-sm btn-outline-primary" onclick="showAddSensorSection()"><i class="bi bi-plus me-1"></i>Adicionar Novo</button>
       </div>
     </div>
     <select class="form-select w-auto d-inline-block" id="selectDispositivo" onchange="mostrarDispositivoSelecionado()">`;
