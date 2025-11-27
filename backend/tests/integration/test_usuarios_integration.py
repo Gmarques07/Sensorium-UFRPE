@@ -47,4 +47,4 @@ def test_delete_account(client: TestClient, user_auth_headers: Dict[str, str], t
     # Verifica que o usuário não consegue mais fazer login
     login_data = {"email": test_user.email, "senha": "testpassword"}
     r_login = client.post("/api/v1/auth/login", json=login_data)
-    assert r_login.status_code == 401  # Unauthorized
+    assert r_login.status_code == 400  # Bad Request (Usuário inativo)

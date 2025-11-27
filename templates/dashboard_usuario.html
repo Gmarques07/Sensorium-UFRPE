@@ -33,19 +33,19 @@
         </div>
 
         <nav class="nav nav-pills flex-column gap-2">
-            <a class="nav-link text-white d-flex align-items-center gap-2 active" href="#dashboard" onclick="showSection(event, 'dashboard')" role="button">
+            <a class="nav-link text-white d-flex align-items-center gap-2 active" href="#dashboard" role="button">
                 <i class="bi bi-house-door"></i> <span>Dashboard</span>
             </a>
 
-            <a class="nav-link text-white d-flex align-items-center gap-2" href="#relatorios" onclick="showSection(event, 'relatorios')" role="button">
+            <a class="nav-link text-white d-flex align-items-center gap-2" href="#relatorios" role="button">
                 <i class="bi bi-graph-up"></i> <span>Relatórios</span>
             </a>
 
-            <a class="nav-link text-white d-flex align-items-center gap-2" href="#sensores" onclick="showSection(event, 'sensores')" role="button">
+            <a class="nav-link text-white d-flex align-items-center gap-2" href="#sensores" role="button">
                 <i class="bi bi-cpu"></i> <span>Sensores</span>
             </a>
 
-            <a class="nav-link text-white d-flex align-items-center gap-2" href="#alertas" onclick="showSection(event, 'alertas')" role="button">
+            <a class="nav-link text-white d-flex align-items-center gap-2" href="#alertas" role="button">
                 <i class="bi bi-bell"></i> <span>Alertas</span>
             </a>
 
@@ -103,7 +103,7 @@
                     <h2 class="h5 mb-3">Dispositivos Conectados</h2>
                     <div class="fs-2 fw-bold text-primary" id="total-dispositivos">0</div>
                     <p class="text-muted mb-0">Total de dispositivos monitorados</p>
-                    <a href="#sensores" onclick="showSection(event, 'sensores')" class="stretched-link"></a>
+                    <a href="#sensores" class="stretched-link"></a>
                 </div>
             </div>
 
@@ -113,7 +113,7 @@
                     <h2 class="h5 mb-3">Métricas Ativas</h2>
                     <div class="fs-2 fw-bold text-success">2</div>
                     <p class="text-muted mb-0">pH da água e nível</p>
-                    <a href="#sensores" onclick="showSection(event, 'sensores')" class="stretched-link"></a>
+                    <a href="#sensores" class="stretched-link"></a>
                 </div>
             </div>
 
@@ -123,7 +123,7 @@
                     <h2 class="h5 mb-3">Relatórios</h2>
                     <div class="fs-5 fw-bold text-primary mb-2">Gere relatórios na aba Relatórios</div>
                     <p class="text-muted mb-0">Exportação em CSV/PDF</p>
-                    <a href="#relatorios" onclick="showSection(event, 'relatorios')" class="stretched-link"></a>
+                    <a href="#relatorios" class="stretched-link"></a>
                 </div>
             </div>
         </div>
@@ -217,84 +217,6 @@
             </div>
           </div>
 
-          <!-- Formulário de Registro de Novo Sensor -->
-          <div class="card border-0 shadow-sm mb-4" data-aos="fade-up" data-aos-delay="100">
-            <div class="card-body">
-              <h5 class="card-title mb-3">
-                <i class="bi bi-plus-circle me-2"></i>Registrar Novo Sensor
-              </h5>
-
-              <div id="alertasContainer"></div>
-
-              <form id="formRegistrarSensor">
-                <div class="row g-3">
-                  <div class="col-md-6">
-                    <label for="nomeSensor" class="form-label fw-semibold">
-                      <i class="bi bi-tag me-2"></i>Nome do Sensor
-                    </label>
-                    <input type="text" class="form-control" id="nomeSensor" name="nome" placeholder="Ex: Cisterna Principal, Aquário Sala de Estar" required>
-                    <div class="form-text">Nome identificador para o seu sensor</div>
-                  </div>
-                  <div class="col-md-3">
-                    <label for="tipoSensor" class="form-label fw-semibold">
-                      <i class="bi bi-cpu me-2"></i>Tipo de Sensor
-                    </label>
-                    <select class="form-select" id="tipoSensor" name="tipo" required>
-                      <option value="">Selecione...</option>
-                      <option value="CISTERNA">Cisterna</option>
-                      <option value="AQUARIO">Aquário</option>
-                      <option value="CASA">Casa</option>
-                      <option value="SALA">Sala</option>
-                      <option value="JARDIM">Jardim</option>
-                      <option value="OUTRO">Outro</option>
-                    </select>
-                    <div class="form-text">Tipo do local onde o sensor será instalado</div>
-                  </div>
-                  <div class="col-md-3">
-                    <label for="descricaoSensor" class="form-label fw-semibold">
-                      <i class="bi bi-info-circle me-2"></i>Descrição (Opcional)
-                    </label>
-                    <input type="text" class="form-control" id="descricaoSensor" name="descricao" placeholder="Localização específica">
-                  </div>
-                </div>
-
-                <div class="mt-3 text-end">
-                  <button type="submit" class="btn btn-primary" id="btnRegistrarSensor">
-                    <i class="bi bi-plus-lg me-2"></i>Registrar Sensor
-                  </button>
-                </div>
-              </form>
-
-              <!-- Resultado do Registro -->
-              <div id="resultadoRegistro" class="mt-4 d-none">
-                <div class="alert alert-success alert-dismissible fade show">
-                  <h6 class="alert-heading">
-                    <i class="bi bi-check-circle me-2"></i>Sensor registrado com sucesso!
-                  </h6>
-                  <p>Guarde sua chave de API abaixo e configure-a no seu dispositivo Arduino para que ele possa enviar dados para o sistema:</p>
-
-                  <div id="chaveApiContainer" class="d-none">
-                    <div class="input-group">
-                      <input type="text" class="form-control" id="chaveApiGerada" readonly>
-                      <button class="btn btn-outline-secondary" type="button" id="btnCopiarChaveApi" onclick="copiarChaveApi()">
-                        <i class="bi bi-copy"></i> Copiar
-                      </button>
-                    </div>
-                    <div class="form-text mt-2">
-                      <i class="bi bi-shield-lock me-1"></i> Esta chave é única e confidencial. Use-a para autenticar seu dispositivo Arduino.
-                    </div>
-                  </div>
-                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Lista de Sensores -->
-          <div class="d-flex align-items-center mb-3" data-aos="fade-up">
-            <i class="bi bi-list-check fs-5 text-primary me-2"></i>
-            <h2 class="h5 mb-0">Meus Sensores</h2>
-          </div>
 
         <div id="sensores-container">
             <div class="text-center py-4">
@@ -494,20 +416,7 @@
                     </div>
                 </div>
                 <h4 class="fw-bold mb-3 text-dark">Sensor Registrado!</h4>
-                <p class="text-muted small mb-4">Copie a chave de API abaixo. Você precisará dela para configurar o hardware do seu dispositivo.</p>
-                
-                <div class="bg-light p-3 rounded mb-3 border">
-                    <label class="form-label small text-muted text-start w-100 fw-bold">Chave de API:</label>
-                    <div class="input-group">
-                        <input type="text" class="form-control font-monospace" id="modalApiKeyInput" readonly>
-                        <button class="btn btn-outline-primary" type="button" onclick="copiarChaveModal()">
-                            <i class="bi bi-clipboard"></i>
-                        </button>
-                    </div>
-                    <div class="form-text text-start small mt-2">
-                        <i class="bi bi-lock me-1"></i> Mantenha esta chave segura.
-                    </div>
-                </div>
+                <p class="text-muted small mb-4">O sensor foi registrado com sucesso. A configuração do dispositivo será feita separadamente.</p>
 
                 <button type="button" class="btn btn-primary rounded-pill px-5" data-bs-dismiss="modal">Entendi, fechar</button>
             </div>
@@ -518,14 +427,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', path='js/dashboard_usuario.js') }}?v=logout_fix"></script>
-<script src="{{ url_for('static', path='js/sensor_registro.js') }}?v=sensor_fix"></script>
-<script>
-    function copiarChaveModal() {
-        const input = document.getElementById('modalApiKeyInput');
-        input.select();
-        document.execCommand('copy');
-        mostrarNotificacao('Chave copiada!', 'success');
-    }
-</script>
+<script src="{{ url_for('static', path='js/dashboard_usuario.js') }}?v=alerts_fix_3"></script>
 {% endblock %}

@@ -1,5 +1,5 @@
-from typing import Any
-from fastapi import APIRouter, HTTPException, status, Depends, Request
+from typing import Any, Optional
+from fastapi import APIRouter, HTTPException, status, Depends, Request, Query
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from urllib.parse import urlencode
@@ -43,12 +43,29 @@ async def google_login():
 @router.get("/google/callback")
 async def google_callback(
     request: Request,
-    code: str, 
+    code: Optional[str] = Query(None), # Make code optional
+    error: Optional[str] = Query(None), # Add error parameter
     db: Session = Depends(get_db)
 ):
     """
     Callback para processar a resposta do Google OAuth e redirecionar adequadamente
     """
+    # Early exit for cancellation/errors
+    if code is None or error is not None:
+        # User cancelled or an error occurred during Google OAuth
+        print(f"Google OAuth cancelled or error: code={code}, error={error}") # For debugging
+        # Determine message based on error type
+        message_type = "google_error" # Default generic error
+        if code is None: # If 'code' is missing, it's likely a user-initiated cancellation or an early failure
+            message_type = "google_cancelled" # Treat missing code as a cancellation
+        elif error == "access_denied": # If 'code' is present but 'access_denied' is also there, it's an access denial from Google
+            message_type = "google_access_denied"
+        elif error is not None: # Any other specific error from Google
+            message_type = "google_error"
+            
+        redirect_url = f"{settings.BASE_URL}/login?message={message_type}"
+        return RedirectResponse(url=redirect_url, status_code=status.HTTP_302_FOUND)
+    
     try:
         # Verificar se as credenciais do Google estão configuradas
         if not settings.GOOGLE_CLIENT_ID or not settings.GOOGLE_CLIENT_SECRET:
@@ -80,9 +97,9 @@ async def google_callback(
             )
         
         token_json = token_response.json()
-        access_token = token_json.get("access_token")
+        access_token_google = token_json.get("access_token") # Renomeado para evitar conflito
         
-        if not access_token:
+        if not access_token_google:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Token de acesso não encontrado na resposta do Google"
@@ -91,7 +108,7 @@ async def google_callback(
         # Obter informações do usuário do Google
         user_info_response = requests.get(
             "https://www.googleapis.com/oauth2/v2/userinfo",
-            headers={"Authorization": f"Bearer {access_token}"}
+            headers={"Authorization": f"Bearer {access_token_google}"}
         )
         
         if user_info_response.status_code != 200:
@@ -113,13 +130,11 @@ async def google_callback(
                 detail="Email não encontrado nas informações do Google"
             )
         
-        # Verificar se o usuário já existe no banco de dados
-        usuario = crud_usuario.get_usuario_by_email(db, email=google_email)
-        
         # Determinar se é novo cadastro ou login existente
-        is_new_user = usuario is None
-        
-        if not usuario:
+        usuario_existente = crud_usuario.get_usuario_by_email_all_status(db, email=google_email)
+        is_new_user = usuario_existente is None
+
+        if not usuario_existente:
             # Criar novo usuário OAuth
             usuario_in = UsuarioCreate(
                 nome=google_name,
@@ -128,12 +143,16 @@ async def google_callback(
                 senha=""  # Não é necessário para login OAuth
             )
             usuario = crud_usuario.create_usuario_oauth(db, usuario=usuario_in)
+            print(f"[OAuth] Novo usuário OAuth criado: {google_email} ({google_name})")
         else:
-            # Atualizar informações do usuário existente se necessário
-            if usuario.nome != google_name:
-                usuario.nome = google_name
-                db.commit()
-                db.refresh(usuario)
+            # Usuário já existe, atualiza informações conforme necessário
+            usuario_existente.ativo = True  # Reativar se estiver inativo
+            if usuario_existente.nome != google_name:
+                usuario_existente.nome = google_name
+            db.commit()
+            db.refresh(usuario_existente)
+            usuario = usuario_existente
+            print(f"[OAuth] Login OAuth existente: {google_email} ({google_name}) - ID: {usuario.id}")
         
         # Criar token de acesso JWT
         access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -141,11 +160,23 @@ async def google_callback(
             data={"sub": usuario.email}, expires_delta=access_token_expires
         )
         
-        # Redirecionar sempre para o dashboard, independente de ser novo usuário ou não
-        redirect_url = f"{settings.BASE_URL}/dashboard?token={access_token}"
+        # Criar a resposta de redirecionamento PRIMEIRO
+        redirect_url = f"{settings.BASE_URL}/dashboard"
+        redirect_response = RedirectResponse(url=redirect_url, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
+
+        # Definir o cookie DIRETAMENTE na resposta de redirecionamento
+        redirect_response.set_cookie(
+            key="access_token",
+            value=f"Bearer {access_token}",
+            httponly=True,
+            max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+            expires=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+            samesite="lax",
+            secure=False,  # Alterar para True em produção com HTTPS
+            path="/"
+        )
         
-        # Retornar redirecionamento
-        return RedirectResponse(url=redirect_url)
+        return redirect_response
         
     except HTTPException:
         # Re-lançar HTTPExceptions para manter os códigos de erro apropriados
@@ -156,6 +187,45 @@ async def google_callback(
         print(f"Request URL: {request.url}")
         import traceback
         traceback.print_exc()
+
+        # Verificar se é um erro de chave duplicada
+        error_msg = str(e).lower()
+        if "duplicate entry" in error_msg and "email" in error_msg:
+            # É um erro de e-mail duplicado - o usuário deve existir, então vamos buscar e usar
+            try:
+                print(f"[OAuth] Erro de duplicidade detectado para o e-mail: {google_email}")
+                usuario_existente = crud_usuario.get_usuario_by_email_all_status(db, email=google_email)
+                if usuario_existente:
+                    print(f"[OAuth] Usuário duplicado encontrado, usando existente: {google_email} - ID: {usuario_existente.id}")
+                    # Usuário já existe, vamos apenas gerar o token
+                    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+                    access_token = create_access_token(
+                        data={"sub": usuario_existente.email}, expires_delta=access_token_expires
+                    )
+
+                    # Criar a resposta de redirecionamento PRIMEIRO
+                    redirect_url = f"{settings.BASE_URL}/dashboard"
+                    redirect_response = RedirectResponse(url=redirect_url, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
+
+                    # Definir o cookie DIRETAMENTE na resposta de redirecionamento
+                    redirect_response.set_cookie(
+                        key="access_token",
+                        value=f"Bearer {access_token}",
+                        httponly=True,
+                        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+                        expires=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+                        samesite="lax",
+                        secure=False, # Alterar para True em produção com HTTPS
+                        path="/"
+                    )
+
+                    return redirect_response
+                else:
+                    print(f"[OAuth] Usuário não encontrado mesmo após erro de duplicidade: {google_email}")
+            except Exception as inner_e:
+                print(f"[OAuth] Erro ao tentar recuperar usuário existente após duplicidade: {inner_e}")
+                pass  # Se falhar, continuar com o erro original
+
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erro interno durante o processo de autenticação do Google: {str(e)}"

@@ -162,6 +162,84 @@
             <h4 class="mb-0 fw-bold">Gerenciamento de Sensores</h4>
         </div>
 
+        <!-- Formulário de Registro de Novo Sensor -->
+        <div class="card border-0 shadow-sm mb-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="card-body">
+                <h5 class="card-title mb-3">
+                    <i class="bi bi-plus-circle me-2"></i>Registrar Novo Sensor
+                </h5>
+
+                <div id="alertasContainer"></div>
+
+                <form id="formRegistrarSensor">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="nomeSensor" class="form-label fw-semibold">
+                                <i class="bi bi-tag me-2"></i>Nome do Sensor
+                            </label>
+                            <input type="text" class="form-control" id="nomeSensor" name="nome" placeholder="Ex: Cisterna Principal, Aquário Sala de Estar" required>
+                            <div class="form-text">Nome identificador para o sensor</div>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="tipoSensor" class="form-label fw-semibold">
+                                <i class="bi bi-cpu me-2"></i>Tipo de Sensor
+                            </label>
+                            <select class="form-select" id="tipoSensor" name="tipo" required>
+                                <option value="">Selecione...</option>
+                                <option value="CISTERNA">Cisterna</option>
+                                <option value="AQUARIO">Aquário</option>
+                                <option value="CASA">Casa</option>
+                                <option value="SALA">Sala</option>
+                                <option value="JARDIM">Jardim</option>
+                                <option value="OUTRO">Outro</option>
+                            </select>
+                            <div class="form-text">Tipo do local onde o sensor será instalado</div>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="descricaoSensor" class="form-label fw-semibold">
+                                <i class="bi bi-info-circle me-2"></i>Descrição (Opcional)
+                            </label>
+                            <input type="text" class="form-control" id="descricaoSensor" name="descricao" placeholder="Localização específica">
+                        </div>
+                    </div>
+
+                    <div class="mt-3 text-end">
+                        <button type="submit" class="btn btn-primary" id="btnRegistrarSensor">
+                            <i class="bi bi-plus-lg me-2"></i>Registrar Sensor
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Resultado do Registro -->
+                <div id="resultadoRegistro" class="mt-4 d-none">
+                    <div class="alert alert-success alert-dismissible fade show">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-check-circle me-2"></i>Sensor registrado com sucesso!
+                        </h6>
+                        <p>Guarde a chave de API abaixo e configure-a no dispositivo Arduino:</p>
+
+                        <div id="chaveApiContainer" class="d-none">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="chaveApiGerada" readonly>
+                                <button class="btn btn-outline-secondary" type="button" id="btnCopiarChaveApi" onclick="copiarChaveApi()">
+                                    <i class="bi bi-copy"></i> Copiar
+                                </button>
+                            </div>
+                            <div class="form-text mt-2">
+                                <i class="bi bi-shield-lock me-1"></i> Chave única e confidencial para autenticação do dispositivo.
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center mb-3" data-aos="fade-up">
+            <i class="bi bi-list-check fs-5 text-primary me-2"></i>
+            <h4 class="mb-0 fw-bold">Sensores Cadastrados</h4>
+        </div>
+
         <div class="dashboard-card p-0 overflow-hidden">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
@@ -169,7 +247,8 @@
                         <tr>
                             <th class="ps-4">ID</th>
                             <th>Nome</th>
-                            <th>Localização</th>
+                            <th>Tipo</th>
+                            <th>Descrição</th>
                             <th>Status</th>
                             <th class="text-end pe-4">Ações</th>
                         </tr>
@@ -180,20 +259,28 @@
                             <tr>
                                 <td class="ps-4 fw-bold text-muted">#{{ sensor.id }}</td>
                                 <td class="fw-bold text-primary fs-6">{{ sensor.nome }}</td>
-                                <td>{{ sensor.latitude }}, {{ sensor.longitude }}</td>
+                                <td>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
+                                        {{ sensor.tipo }}
+                                    </span>
+                                </td>
+                                <td class="text-muted small">{{ sensor.descricao or '-' }}</td>
                                 <td>
                                     <span class="badge bg-success badge-lg">Ativo</span>
                                 </td>
                                 <td class="text-end pe-4">
-                                    <button class="btn btn-info text-white btn-pill-lg" onclick="mostrarAlertaModal('Esta funcionalidade de edição direta está em desenvolvimento. Por favor, utilize a aba Usuários para gerenciar os vínculos de sensores.', 'Em Desenvolvimento')">
-                                        <i class="bi bi-gear-fill me-2"></i> Detalhes
-                                    </button>
+                                    <a href="/admin/sensores/{{ sensor.id }}/detalhes" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-gear me-1"></i> Gerenciar
+                                    </a>
                                 </td>
                             </tr>
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td colspan="5" class="text-center py-5 text-muted">Nenhum sensor cadastrado.</td>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                    Nenhum sensor cadastrado.
+                                </td>
                             </tr>
                         {% endif %}
                     </tbody>
@@ -317,5 +404,174 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', path='js/admin_dashboard.js') }}?v=logout_fix"></script>
+<script src="{{ url_for('static', path='js/admin_dashboard.js') }}?v=alerts_fix_3"></script>
+<script>
+    // Função para registrar um novo sensor pelo admin
+    async function registrarNovoSensor() {
+        // Obter os dados do formulário
+        const nome = document.getElementById('nomeSensor').value;
+        const tipo = document.getElementById('tipoSensor').value;
+        const descricao = document.getElementById('descricaoSensor').value;
+
+        // Validar campos obrigatórios
+        if (!nome || !tipo) {
+            mostrarAlertaModal('Preencha todos os campos obrigatórios!', 'Atenção', 'warning');
+            return;
+        }
+
+        // Mostrar spinner de carregamento
+        const btn = document.getElementById('btnRegistrarSensor');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Registrando...';
+        btn.disabled = true;
+
+        try {
+            // Usar o token de admin armazenado
+            const accessToken = localStorage.getItem('adminAccessToken');
+
+            if (!accessToken) {
+                mostrarAlertaModal('Token de admin não encontrado. Faça login novamente.', 'Erro', 'danger');
+                window.location.href = '/login_admin.html';
+                return;
+            }
+
+            const response = await fetch('/api/v1/admin/sensores/registrar-sensor', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({
+                    nome: nome,
+                    tipo: tipo,
+                    descricao: descricao
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+
+                // Preencher e mostrar o campo com a chave da API
+                const chaveApiInput = document.getElementById('chaveApiGerada');
+                if (chaveApiInput) {
+                    chaveApiInput.value = data.chave_api;
+                    document.getElementById('chaveApiContainer').classList.remove('d-none');
+                    document.getElementById('resultadoRegistro').classList.remove('d-none');
+                }
+
+                // Limpar o formulário
+                document.getElementById('formRegistrarSensor').reset();
+
+                // Atualizar a lista de sensores
+                carregarSensores();
+
+                mostrarAlertaModal('Sensor registrado com sucesso!', 'Sucesso', 'success');
+
+            } else {
+                const error = await response.json();
+                mostrarAlertaModal(`Erro ao registrar sensor: ${error.detail || 'Erro desconhecido'}`, 'Erro', 'danger');
+            }
+        } catch (error) {
+            mostrarAlertaModal(`Erro de conexão: ${error.message}`, 'Erro de Conexão', 'danger');
+        } finally {
+            // Restaurar o botão
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    // Função para copiar a chave de API
+    function copiarChaveApi() {
+        const input = document.getElementById('chaveApiGerada');
+        input.select();
+        document.execCommand('copy');
+        mostrarAlertaModal('Chave API copiada para a área de transferência!', 'Sucesso', 'success');
+    }
+
+    // Função para carregar sensores
+    async function carregarSensores() {
+        try {
+            const accessToken = localStorage.getItem('adminAccessToken');
+
+            if (!accessToken) {
+                mostrarAlertaModal('Token de admin não encontrado. Faça login novamente.', 'Erro', 'danger');
+                window.location.href = '/login_admin.html';
+                return;
+            }
+
+            const response = await fetch('/api/v1/locais/', {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+
+            if (response.ok) {
+                const sensores = await response.json();
+
+                // Atualizar contadores e estatísticas se necessário
+                // Atualizar a lista de sensores na tabela (mesmo comportamento de renderização)
+                // A página pode ser recarregada ou a seção de sensores pode ser atualizada
+                window.location.reload(); // Como solução temporária para atualizar a lista
+            } else {
+                console.error('Erro ao carregar sensores:', response.status);
+            }
+        } catch (error) {
+            console.error('Erro de conexão ao carregar sensores:', error);
+        }
+    }
+
+    // Função para excluir um sensor
+    async function excluirSensor(sensorId, sensorNome) {
+        confirmarAcao('Excluir Sensor', `Tem certeza que deseja excluir o sensor "${sensorNome}"? Esta ação não pode ser desfeita.`, async () => {
+            try {
+                const accessToken = localStorage.getItem('adminAccessToken');
+
+                if (!accessToken) {
+                    mostrarAlertaModal('Token de admin não encontrado. Faça login novamente.', 'Erro', 'danger');
+                    window.location.href = '/login_admin.html';
+                    return;
+                }
+
+                const response = await fetch(`/api/v1/admin/sensores/${sensorId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    mostrarAlertaModal('Sensor excluído com sucesso!', 'Sucesso', 'success');
+                    // Recarregar a lista de sensores para manter a consistência
+                    carregarSensores();
+                } else {
+                    const error = await response.json();
+                    mostrarAlertaModal(`Erro ao excluir sensor: ${error.detail || 'Erro desconhecido'}`, 'Erro', 'danger');
+                }
+            } catch (error) {
+                mostrarAlertaModal(`Erro de conexão: ${error.message}`, 'Erro de Conexão', 'danger');
+            }
+        });
+    }
+
+    // Adicionar evento de submissão ao formulário quando o DOM estiver carregado
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('formRegistrarSensor');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                registrarNovoSensor();
+            });
+        }
+
+        // Event listener para botões de remover sensor
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('btn-remover-sensor') || e.target.closest('.btn-remover-sensor')) {
+                const button = e.target.classList.contains('btn-remover-sensor') ? e.target : e.target.closest('.btn-remover-sensor');
+                const sensorId = button.getAttribute('data-id');
+                const sensorNome = button.getAttribute('data-nome');
+                excluirSensor(sensorId, sensorNome);
+            }
+        });
+    });
+</script>
 {% endblock %}

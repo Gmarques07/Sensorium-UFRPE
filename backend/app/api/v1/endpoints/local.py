@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from backend.app.crud import local as crud_local
 from backend.app.schemas import local as schemas_local, leitura as schemas_leitura
-from backend.app.api.deps import get_db, get_current_user
+from backend.app.api.deps import get_db, get_current_user_from_cookie
 from backend.app.models.usuario import Usuario
 from backend.app.models import Local as LocalModel
 
@@ -19,7 +19,7 @@ router = APIRouter()
 )
 async def listar_locais_do_usuario(
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user_from_cookie)
 ) -> Any:
     # Importar localmente para evitar loops de importação
     from backend.app.models.usuario_sensor import UsuarioSensor
@@ -49,7 +49,7 @@ async def listar_locais_do_usuario(
 async def criar_local(
     local: schemas_local.LocalCreate,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user_from_cookie)
 ) -> Any:
     return crud_local.criar_local(db, local)
 
@@ -64,7 +64,7 @@ async def criar_local(
 async def obter_dados_atuais(
     local_id: int,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user_from_cookie)
 ) -> Any:
     ph_atual, historico_ph, nivel_atual, historico_nivel = crud_local.obter_dados_cisterna(db, local_id)
     return schemas_leitura.DadosCisternaResponse(
@@ -84,7 +84,7 @@ async def obter_dados_atuais(
 )
 async def obter_dados_atuais_compatibilidade(
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user_from_cookie)
 ) -> Any:
     # Assuming the first local is the target for compatibility
     local = db.query(LocalModel).first()
@@ -110,7 +110,7 @@ async def obter_historico_ph(
     local_id: int,
     limite: int = 10,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user_from_cookie)
 ) -> Any:
     return crud_local.obter_historico_ph(db, local_id, limite)
 
@@ -126,7 +126,7 @@ async def obter_historico_nivel_boia(
     local_id: int,
     limite: int = 10,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user_from_cookie)
 ) -> Any:
     return crud_local.obter_historico_nivel_boia(db, local_id, limite)
 
@@ -142,7 +142,7 @@ async def registrar_leitura_ph(
     local_id: int,
     leitura: schemas_leitura.PhNivelCreate,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user_from_cookie)
 ) -> Any:
     return crud_local.criar_ph_nivel(db, leitura, local_id=local_id)
 
@@ -158,7 +158,7 @@ async def registrar_leitura_boia(
     local_id: int,
     leitura: schemas_leitura.BoiaNivelCreate,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user_from_cookie)
 ) -> Any:
     return crud_local.criar_boia_nivel(db, leitura, local_id=local_id)
 
@@ -172,7 +172,7 @@ async def registrar_leitura_boia(
 async def excluir_local(
     local_id: int,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user_from_cookie)
 ) -> None:
     # Verificar se o local está associado ao usuário atual
     from backend.app.models.usuario_sensor import UsuarioSensor

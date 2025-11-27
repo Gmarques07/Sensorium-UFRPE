@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
 from ....crud import usuario as crud_usuario
 from ....schemas import usuario as schemas
-from ....api.deps import get_db, get_current_user
+from ....api.deps import get_db, get_current_user_from_cookie
 from ....core.security import get_password_hash, verify_password
 from ....models.usuario import Usuario
 from ....core.limiter import rate_limit
@@ -18,7 +18,7 @@ router = APIRouter()
               response_description="Dados do perfil do usuário",
               tags=["usuários"])
 def obter_perfil(
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user_from_cookie)
 ) -> Any:
     """
     Retorna o perfil completo do usuário autenticado.
@@ -55,7 +55,7 @@ def obter_perfil(
 def editar_perfil(
     dados_atualizacao: schemas.UsuarioUpdate,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user_from_cookie)
 ) -> Any:
     """
     Atualiza os dados do perfil do usuário autenticado.
@@ -116,7 +116,7 @@ def editar_perfil(
 @router.post("/validar-senha")
 def validar_senha(
     senha: str,
-    current_user: Usuario = Depends(get_current_user),
+    current_user: Usuario = Depends(get_current_user_from_cookie),
     __rl: None = Depends(rate_limit(5, 60, "validar-senha"))
 ) -> Any:
     """
@@ -139,7 +139,7 @@ def validar_senha(
 def excluir_conta(
     senha: str,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user_from_cookie)
 ):
     """
     Desativa a conta do usuário atual (soft delete).
@@ -170,7 +170,7 @@ def excluir_conta(
               tags=["usuários"])
 def obter_dados_dashboard(
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user_from_cookie)
 ) -> Any:
     """
     Retorna os dados dos sensores para o dashboard do usuário.

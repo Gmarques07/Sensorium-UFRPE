@@ -65,6 +65,7 @@ from .usuario_sensor import (
 from .sensor_registro import (
     SensorRegistroCreate,
     SensorRegistroResponse,
+    SensorDetalhesResponse,
 )
 
 __all__ = [
@@ -122,4 +123,5 @@ __all__ = [
     "UsuarioSensor",
     "SensorRegistroCreate",
     "SensorRegistroResponse",
+    "SensorDetalhesResponse",
 ]
