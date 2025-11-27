@@ -12,7 +12,10 @@ class LocalCreate(LocalBase):
 
 class Local(LocalBase):
     id: int
-    chave_api: Optional[str] = None
     data_criacao: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+class LocalWithKey(Local):
+    chave_api: Optional[str] = None
+

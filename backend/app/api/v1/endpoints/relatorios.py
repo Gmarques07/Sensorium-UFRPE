@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import Optional, Dict, List, Tuple
 from datetime import datetime, date
 from collections import defaultdict
-from backend.app.api.deps import get_db, get_current_user
+from backend.app.api.deps import get_db, get_current_user_from_cookie
 from backend.app.models import Usuario, Local, Leitura, PhNivel, BoiaNivel
 # from app.utils.email import send_relatorio_por_email
 from backend.app.utils.email_yagmail import send_relatorio_por_email_yagmail as send_relatorio_por_email
@@ -38,7 +38,7 @@ def visualizar_relatorio(
     fim: date = Query(..., description="Data final no formato YYYY-MM-DD"),
     dispositivo: Optional[str] = Query(None, description="Nome do dispositivo (opcional)"),
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user_from_cookie)
 ):
     """
     Retorna os dados do relatório em formato JSON para visualização no frontend.
@@ -408,7 +408,7 @@ def exportar_relatorio_csv(
     fim: date = Query(..., description="Data final no formato YYYY-MM-DD"),
     dispositivo: Optional[str] = Query(None, description="Nome do dispositivo (opcional)"),
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user_from_cookie)
 ):
     """
     Exporta os dados do relatório no formato CSV.
@@ -459,7 +459,7 @@ def exportar_relatorio_pdf_endpoint(
     fim: date = Query(..., description="Data final no formato YYYY-MM-DD"),
     dispositivo: Optional[str] = Query(None, description="Nome do dispositivo (opcional)"),
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user_from_cookie)
 ):
     """
     Exporta os dados do relat฀rio no formato PDF.
@@ -482,7 +482,7 @@ def enviar_relatorio_por_email(
     fim: date = Query(..., description="Data final no formato YYYY-MM-DD"),
     dispositivo: Optional[str] = Query(None, description="Nome do dispositivo (opcional)"),
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user_from_cookie)
 ):
     """
     Gera o relatório e envia por e-mail para o usuário.

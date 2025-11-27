@@ -40,7 +40,7 @@ async def listar_locais_do_usuario(
 
 @router.post(
     "/",
-    response_model=schemas_local.Local,
+    response_model=schemas_local.LocalWithKey,
     status_code=status.HTTP_201_CREATED,
     summary="Criar Novo Local",
     response_description="Local criado com sucesso",

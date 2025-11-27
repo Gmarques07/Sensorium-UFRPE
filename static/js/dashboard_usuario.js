@@ -116,8 +116,6 @@ function atualizarListaSensoresUsuario(sensores) {
             <div class="dropdown">
               <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-three-dots"></i></button>
               <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="javascript:void(0)" onclick="copiarChaveSensor('${sensor.chave_api}')"><i class="bi bi-key me-2"></i>Copiar Chave API</a></li>
-                <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="excluirSensor(${sensor.id}, '${sensor.nome}')"><i class="bi bi-trash me-2"></i>Excluir Sensor</a></li>
               </ul>
             </div>
@@ -125,10 +123,6 @@ function atualizarListaSensoresUsuario(sensores) {
           ${sensor.descricao ? `<p class="card-text text-muted">${sensor.descricao}</p>` : ''}
           <div class="mt-3">
             <small class="text-muted"><i class="bi bi-calendar me-1"></i>Criado em: ${new Date(sensor.data_criacao).toLocaleDateString('pt-BR')}</small>
-            <div class="mt-2">
-              <small class="text-muted d-block">Chave API:</small>
-              <code class="small" style="word-break: break-all;">${sensor.chave_api || 'Não gerada'}</code>
-            </div>
           </div>
         </div>
       </div>
@@ -632,19 +626,117 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   document.getElementById('btnVisualizarRelatorio')?.addEventListener('click', function() {
-    // ...
+    const form = document.getElementById('formRelatorios');
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    const btn = this;
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Carregando...';
+    btn.disabled = true;
+
+    const queryString = montarQueryRelatorio(form);
+    
+    fetch(`/api/v1/relatorios/visualizar?${queryString}`, {
+      credentials: 'include'
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Erro ao carregar relatório');
+      return response.json();
+    })
+    .then(data => {
+      const tbody = document.getElementById('tabela-relatorio-corpo');
+      tbody.innerHTML = '';
+      
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">Nenhum registro encontrado para o período.</td></tr>';
+      } else {
+        data.forEach(item => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="ps-4">${item.data}</td>
+            <td>${item.dispositivo}</td>
+            <td><span class="badge bg-light text-dark border">${item.tipo}</span></td>
+            <td class="fw-bold">${item.valor}</td>
+            <td>${item.status !== '-' ? `<span class="badge ${item.status === 'ALTO' || item.status === 'NORMAL' ? 'bg-success' : 'bg-warning'}">${item.status}</span>` : '-'}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+      
+      const container = document.getElementById('relatorio-visualizacao');
+      container.classList.remove('d-none');
+      
+      // Scroll suave até o resultado
+      container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    })
+    .catch(error => {
+      console.error('Erro:', error);
+      mostrarAlertaModal('Erro ao carregar dados do relatório.', 'Erro', 'danger');
+    })
+    .finally(() => {
+      btn.innerHTML = originalContent;
+      btn.disabled = false;
+    });
   });
   
   document.getElementById('btnExportCSV')?.addEventListener('click', function() {
-    // ...
+    const form = document.getElementById('formRelatorios');
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+    const queryString = montarQueryRelatorio(form);
+    window.open(`/api/v1/relatorios/exportar.csv?${queryString}`, '_blank');
   });
 
   document.getElementById('btnExportPDF')?.addEventListener('click', function() {
-    // ...
+    const form = document.getElementById('formRelatorios');
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+    const queryString = montarQueryRelatorio(form);
+    window.open(`/api/v1/relatorios/exportar.pdf?${queryString}`, '_blank');
   });
 
   document.getElementById('btnEnviarEmail')?.addEventListener('click', function() {
-    // ...
+    const form = document.getElementById('formRelatorios');
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    if(!confirm('Deseja enviar este relatório para o seu e-mail cadastrado?')) return;
+
+    const btn = this;
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Enviando...';
+    btn.disabled = true;
+
+    const queryString = montarQueryRelatorio(form);
+
+    fetch(`/api/v1/relatorios/enviar-por-email?${queryString}`, {
+      method: 'POST',
+      credentials: 'include'
+    })
+    .then(response => {
+      if (response.ok) {
+        mostrarAlertaModal('Relatório enviado para o seu e-mail com sucesso!', 'Sucesso', 'success');
+      } else {
+        return response.json().then(err => { throw new Error(err.detail || 'Erro ao enviar e-mail'); });
+      }
+    })
+    .catch(error => {
+      console.error('Erro:', error);
+      mostrarAlertaModal(error.message || 'Erro ao enviar relatório por e-mail.', 'Erro', 'danger');
+    })
+    .finally(() => {
+      btn.innerHTML = originalContent;
+      btn.disabled = false;
+    });
   });
 
   const logoutButton = document.getElementById('logout-button');
