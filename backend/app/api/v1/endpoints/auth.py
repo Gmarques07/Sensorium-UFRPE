@@ -88,7 +88,8 @@ async def login(
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         expires=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         samesite="lax",
-        secure=False  # Alterar para True em produção com HTTPS
+        secure=(settings.ENVIRONMENT == "production"),  # Usar secure=True em produção com HTTPS
+        path="/"
     )
     
     return {

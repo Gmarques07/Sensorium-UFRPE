@@ -25,9 +25,9 @@ async def google_login():
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Credenciais do Google não configuradas corretamente. Verifique o arquivo .env."
         )
-    
+
     google_auth_url = "https://accounts.google.com/o/oauth2/auth"
-    
+
     params = {
         "client_id": settings.GOOGLE_CLIENT_ID,
         "redirect_uri": settings.google_redirect_uri,
@@ -36,7 +36,7 @@ async def google_login():
         "access_type": "offline",
         "prompt": "consent"
     }
-    
+
     auth_url = f"{google_auth_url}?{urlencode(params)}"
     return RedirectResponse(url=auth_url)
 
@@ -62,10 +62,10 @@ async def google_callback(
             message_type = "google_access_denied"
         elif error is not None: # Any other specific error from Google
             message_type = "google_error"
-            
+
         redirect_url = f"{settings.BASE_URL}/login?message={message_type}"
         return RedirectResponse(url=redirect_url, status_code=status.HTTP_302_FOUND)
-    
+
     try:
         # Verificar se as credenciais do Google estão configuradas
         if not settings.GOOGLE_CLIENT_ID or not settings.GOOGLE_CLIENT_SECRET:
@@ -73,13 +73,13 @@ async def google_callback(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Chave secreta do Google não configurada. Verifique o arquivo .env e adicione GOOGLE_CLIENT_SECRET."
             )
-        
+
         # Usar o redirect_uri baseado no ambiente
         redirect_uri = settings.google_redirect_uri
-        
+
         # Trocar o código de autorização por um token de acesso
         token_url = "https://oauth2.googleapis.com/token"
-        
+
         token_data = {
             "client_id": settings.GOOGLE_CLIENT_ID,
             "client_secret": settings.GOOGLE_CLIENT_SECRET,
@@ -87,49 +87,49 @@ async def google_callback(
             "grant_type": "authorization_code",
             "redirect_uri": redirect_uri,
         }
-        
+
         token_response = requests.post(token_url, data=token_data)
-        
+
         if token_response.status_code != 200:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Erro ao obter token de acesso do Google. Status: {token_response.status_code}, Resposta: {token_response.text}"
             )
-        
+
         token_json = token_response.json()
         access_token_google = token_json.get("access_token") # Renomeado para evitar conflito
-        
+
         if not access_token_google:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Token de acesso não encontrado na resposta do Google"
             )
-        
+
         # Obter informações do usuário do Google
         user_info_response = requests.get(
             "https://www.googleapis.com/oauth2/v2/userinfo",
             headers={"Authorization": f"Bearer {access_token_google}"}
         )
-        
+
         if user_info_response.status_code != 200:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Erro ao obter informações do usuário do Google. Status: {user_info_response.status_code}"
             )
-        
+
         user_info = user_info_response.json()
-        
+
         # Extrair informações do usuário
         google_email = user_info.get("email")
         google_name = user_info.get("name", "")
         google_id = user_info.get("id", "")
-        
+
         if not google_email:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Email não encontrado nas informações do Google"
             )
-        
+
         # Determinar se é novo cadastro ou login existente
         usuario_existente = crud_usuario.get_usuario_by_email_all_status(db, email=google_email)
         is_new_user = usuario_existente is None
@@ -153,13 +153,13 @@ async def google_callback(
             db.refresh(usuario_existente)
             usuario = usuario_existente
             print(f"[OAuth] Login OAuth existente: {google_email} ({google_name}) - ID: {usuario.id}")
-        
+
         # Criar token de acesso JWT
         access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(
             data={"sub": usuario.email}, expires_delta=access_token_expires
         )
-        
+
         # Criar a resposta de redirecionamento PRIMEIRO
         redirect_url = f"{settings.BASE_URL}/dashboard"
         redirect_response = RedirectResponse(url=redirect_url, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
@@ -172,12 +172,12 @@ async def google_callback(
             max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
             expires=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
             samesite="lax",
-            secure=False,  # Alterar para True em produção com HTTPS
+            secure=(settings.ENVIRONMENT == "production"),  # Usar secure=True em produção com HTTPS
             path="/"
         )
-        
+
         return redirect_response
-        
+
     except HTTPException:
         # Re-lançar HTTPExceptions para manter os códigos de erro apropriados
         raise
@@ -215,7 +215,7 @@ async def google_callback(
                         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
                         expires=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
                         samesite="lax",
-                        secure=False, # Alterar para True em produção com HTTPS
+                        secure=(settings.ENVIRONMENT == "production"),  # Usar secure=True em produção com HTTPS
                         path="/"
                     )
 
