@@ -350,21 +350,15 @@
                             headers: { 'Authorization': `Bearer ${accessToken}` }
                         });
 
-                                                                if (res.ok) {
-
-                                                                    window.location.reload();
-
-                                                                } else {
-
-                                                                    mostrarAlertaModal('Erro ao remover sensor.', 'Erro', 'danger');
-
-                                                                }
-
-                                                            } catch (err) {
-
-                                                                mostrarAlertaModal('Erro de conexão.', 'Erro de Conexão', 'danger');
-
-                                                            }                });
+                        if (res.ok) {
+                            window.location.reload();
+                        } else {
+                            mostrarAlertaModal('Erro ao remover sensor.', 'Erro', 'danger');
+                        }
+                    } catch (err) {
+                        mostrarAlertaModal('Erro de conexão.', 'Erro de Conexão', 'danger');
+                    }
+                });
             }
         });
 

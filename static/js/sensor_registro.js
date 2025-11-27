@@ -7,7 +7,7 @@ async function registrarNovoSensor() {
 
     // Validar campos obrigatórios
     if (!nome || !tipo) {
-        mostrarNotificacao('Preencha todos os campos obrigatórios!', 'warning');
+        mostrarAlertaModal('Preencha todos os campos obrigatórios!', 'Atenção', 'warning');
         return;
     }
 
@@ -42,7 +42,7 @@ async function registrarNovoSensor() {
                 modal.show();
             } else {
                 // Fallback se o modal não existir (improvável)
-                mostrarNotificacao('Sensor registrado! Chave: ' + data.chave_api, 'success');
+                mostrarAlertaModal('Sensor registrado! Chave: ' + data.chave_api, 'Sucesso', 'success');
             }
 
             // Limpar o formulário
@@ -58,10 +58,10 @@ async function registrarNovoSensor() {
 
         } else {
             const error = await response.json();
-            mostrarNotificacao(`Erro ao registrar sensor: ${error.detail || 'Erro desconhecido'}`, 'danger');
+            mostrarAlertaModal(`Erro ao registrar sensor: ${error.detail || 'Erro desconhecido'}`, 'Erro', 'danger');
         }
     } catch (error) {
-        mostrarNotificacao(`Erro de conexão: ${error.message}`, 'danger');
+        mostrarAlertaModal(`Erro de conexão: ${error.message}`, 'Erro de Conexão', 'danger');
     } finally {
         // Restaurar o botão
         btn.innerHTML = originalText;

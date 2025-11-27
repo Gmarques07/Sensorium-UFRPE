@@ -381,7 +381,7 @@ if (dateElement) {
     if (payload.nome) {
         const nomeLimpo = payload.nome.trim();
         if (nomeLimpo.length < 3) {
-            mostrarNotificacao("O nome deve ter pelo menos 3 caracteres válidos.", 'warning');
+            mostrarAlertaModal("O nome deve ter pelo menos 3 caracteres válidos.", 'Atenção', 'warning');
             return;
         }
     }
@@ -474,7 +474,7 @@ if (dateElement) {
   document.getElementById('btnVisualizarRelatorio').addEventListener('click', function() {
     const form = document.getElementById('formRelatorios');
     if (!form.inicio.value || !form.fim.value) {
-      mostrarNotificacao('Preencha a data inicial e final.', 'warning');
+      mostrarAlertaModal('Preencha a data inicial e final.', 'Atenção', 'warning');
       return;
     }
 
@@ -540,7 +540,7 @@ if (dateElement) {
       })
       .catch(error => {
         console.error('Erro:', error);
-        mostrarNotificacao(error.message || 'Erro ao visualizar relatório.', 'danger');
+        mostrarAlertaModal(error.message || 'Erro ao visualizar relatório.', 'Erro', 'danger');
       })
       .finally(() => {
         btn.disabled = false;
@@ -551,7 +551,7 @@ if (dateElement) {
   document.getElementById('btnExportCSV').addEventListener('click', function() {
     const form = document.getElementById('formRelatorios');
     if (!form.inicio.value || !form.fim.value) {
-      mostrarNotificacao('Preencha a data inicial e final.', 'warning');
+      mostrarAlertaModal('Preencha a data inicial e final.', 'Atenção', 'warning');
       return;
     }
 
@@ -571,12 +571,9 @@ if (dateElement) {
       .then(blob => {
         const link = document.createElement('a');
         link.href = window.URL.createObjectURL(blob);
-        link.download = `relatorio_${form.inicio.value}_${form.fim.value}.csv`;
-        link.click();
-      })
       .catch(error => {
         console.error('Erro:', error);
-        mostrarNotificacao(error.message || 'Erro ao exportar relatório.', 'danger');
+        mostrarAlertaModal(error.message || 'Erro ao exportar relatório.', 'Erro', 'danger');
       })
       .finally(() => {
         btn.disabled = false;
@@ -587,7 +584,7 @@ if (dateElement) {
   document.getElementById('btnExportPDF').addEventListener('click', function() {
     const form = document.getElementById('formRelatorios');
     if (!form.inicio.value || !form.fim.value) {
-      mostrarNotificacao('Preencha a data inicial e final.', 'warning');
+      mostrarAlertaModal('Preencha a data inicial e final.', 'Atenção', 'warning');
       return;
     }
 
@@ -612,7 +609,7 @@ if (dateElement) {
       })
       .catch(error => {
         console.error('Erro:', error);
-        mostrarNotificacao(error.message || 'Erro ao exportar relatório.', 'danger');
+        mostrarAlertaModal(error.message || 'Erro ao exportar relatório.', 'Erro', 'danger');
       })
       .finally(() => {
         btn.disabled = false;
@@ -623,7 +620,7 @@ if (dateElement) {
   document.getElementById('btnEnviarEmail').addEventListener('click', function() {
     const form = document.getElementById('formRelatorios');
     if (!form.inicio.value || !form.fim.value) {
-      mostrarNotificacao('Preencha a data inicial e final.', 'warning');
+      mostrarAlertaModal('Preencha a data inicial e final.', 'Atenção', 'warning');
       return;
     }
 
