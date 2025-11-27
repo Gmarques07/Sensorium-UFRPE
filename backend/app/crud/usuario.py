@@ -19,7 +19,7 @@ def get_usuarios(db: Session, skip: int = 0, limit: int = 100) -> List[Usuario]:
     return db.query(Usuario).offset(skip).limit(limit).all()
 
 def get_multi(db: Session, skip: int = 0, limit: int = 100) -> List[Usuario]:
-    return db.query(Usuario).order_by(Usuario.created_at.desc()).offset(skip).limit(limit).all()
+    return db.query(Usuario).filter(Usuario.ativo == True).order_by(Usuario.created_at.desc()).offset(skip).limit(limit).all()
 
 def create_usuario(db: Session, usuario: UsuarioCreate) -> Usuario:
     db_usuario = Usuario(

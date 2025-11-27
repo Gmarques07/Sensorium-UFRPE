@@ -49,7 +49,9 @@ def get_current_user(
     return user
 
 def get_current_admin(
-    db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
+    db: Session = Depends(get_db), 
+    token: str = Depends(oauth2_scheme),
+    admin_access_token: Optional[str] = Cookie(None)
 ) -> Admin:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -57,7 +59,10 @@ def get_current_admin(
         headers={"WWW-Authenticate": "Bearer"},
     )
     
-    # Verificar se o token foi fornecido
+    # Verificar se o token foi fornecido via header ou cookie
+    if not token and admin_access_token:
+        token = admin_access_token.replace("Bearer ", "")
+
     if not token:
         raise credentials_exception
     

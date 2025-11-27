@@ -136,9 +136,7 @@ function iniciarCarregamentoDados() {
     const accessToken = localStorage.getItem('adminAccessToken');
     
     if (!accessToken) {
-        console.warn("Sem token de admin. Funcionalidades de API limitadas.");
-        // Não redirecionamos imediatamente para não quebrar a UI se o Jinja já renderizou os dados
-        return; 
+        console.warn("Sem token de admin. Tentando usar autenticação via Cookie.");
     }
 
     // Interceptor de Fetch Global
@@ -146,7 +144,11 @@ function iniciarCarregamentoDados() {
     window.fetch = function(input, init = {}) {
         const url = typeof input === 'string' ? input : input.url;
         const headers = new Headers(init.headers || (typeof input !== 'string' && input.headers) || {});
-        headers.set('Authorization', `Bearer ${accessToken}`);
+        
+        if (accessToken) {
+            headers.set('Authorization', `Bearer ${accessToken}`);
+        }
+        
         let newInit = { ...init, headers };
         let newRequest = typeof input === 'string' ? new Request(input, newInit) : new Request(input, newInit);
         return originalFetch(newRequest);
