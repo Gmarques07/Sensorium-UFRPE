@@ -2,6 +2,8 @@ from typing import Optional, List
 from sqlalchemy.orm import Session
 from backend.app.models.usuario import Usuario
 from backend.app.schemas.usuario import UsuarioCreate, UsuarioUpdate
+from sqlalchemy.exc import IntegrityError
+from fastapi import HTTPException
 
 def get_usuario(db: Session, usuario_id: int) -> Optional[Usuario]:
     return db.query(Usuario).filter(Usuario.id == usuario_id).first()
@@ -27,10 +29,17 @@ def create_usuario(db: Session, usuario: UsuarioCreate) -> Usuario:
     )
     db_usuario.set_senha(usuario.senha)
     
-    db.add(db_usuario)
-    db.commit()
-    db.refresh(db_usuario)
-    return db_usuario
+    try:
+        db.add(db_usuario)
+        db.commit()
+        db.refresh(db_usuario)
+        return db_usuario
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="Já existe uma conta com este email.",
+        )
 
 
 def create_usuario_oauth(db: Session, usuario: UsuarioCreate) -> Usuario:

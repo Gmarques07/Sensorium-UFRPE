@@ -148,9 +148,15 @@ async def homepage(request: Request):
 async def dashboard_clean(request: Request, current_user=Depends(get_current_user_from_cookie)):
     return templates.TemplateResponse("dashboard_usuario.html", {"request": request})
 
+from typing import Optional # Adicionar esta importação
+# ...
+
 @app.get("/login", response_class=HTMLResponse)
-async def login_clean(request: Request):
-    return templates.TemplateResponse("login_usuario.html", {"request": request})
+async def login_clean(request: Request, message: Optional[str] = None): # Aceitar parâmetro opcional message
+    context = {"request": request}
+    if message:
+        context["message"] = message # Passar message para o template
+    return templates.TemplateResponse("login_usuario.html", context)
 
 @app.get("/cadastro", response_class=HTMLResponse)
 async def cadastro_clean(request: Request):

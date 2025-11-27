@@ -5,6 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from backend.app.crud import usuario as crud_usuario
 from backend.app.schemas import auth as schemas_auth
+from backend.app.schemas.usuario import UsuarioCreate
 from backend.app.core.security import (
     create_access_token,
     verify_password,
@@ -50,13 +51,20 @@ async def login(
         >>>      -H "Content-Type: application/json" \\
         >>>      -d '{"email": "usuario@exemplo.com", "senha": "minhasenha123"}'
     """
-    # Buscar usuário pelo email
-    usuario = crud_usuario.get_usuario_by_email(db, email=login_data.email)
+    # Buscar usuário pelo email (independentemente do status ativo/inativo)
+    usuario = crud_usuario.get_usuario_by_email_all_status(db, email=login_data.email)
     if not usuario:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Email ou senha incorretos",
             headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Verificar se o usuário está ativo
+    if not usuario.ativo:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Usuário inativo. Por favor, contate o suporte.",
         )
     
     # Verifica senha: usa o hash armazenado
@@ -88,23 +96,48 @@ async def login(
         "token_type": "bearer"
     }
 
+from backend.app.schemas.usuario import UsuarioCreate
+import logging
+logger = logging.getLogger(__name__)
+
 @router.post("/registro", response_model=schemas_auth.Token)
 async def registro(
     usuario_in: schemas_auth.RegistroUsuario,
     db: Session = Depends(get_db)
 ) -> Any:
     """
-    Registra um novo usuário e retorna um token de acesso.
+    Registra um novo usuário ou reativa/atualiza um usuário inativo e retorna um token de acesso.
     """
-    # Verifica se o email já existe
-    if crud_usuario.get_usuario_by_email(db, email=usuario_in.email):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email já cadastrado"
+    # 1. Tenta encontrar qualquer usuário (ativo ou inativo) com o email fornecido
+    existing_usuario = crud_usuario.get_usuario_by_email_all_status(db, email=usuario_in.email)
+
+    if existing_usuario:
+        if existing_usuario.ativo:
+            # Se o usuário existe e está ativo, não permite novo registro
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email já cadastrado"
+            )
+        else:
+            # Se o usuário existe mas está inativo, reativa e atualiza
+            existing_usuario.ativo = True
+            existing_usuario.nome = usuario_in.nome
+            existing_usuario.endereco = usuario_in.endereco
+            existing_usuario.set_senha(usuario_in.senha) # Atualiza a senha
+            
+            db.add(existing_usuario)
+            db.commit()
+            db.refresh(existing_usuario)
+            usuario = existing_usuario
+    else:
+        # Se não encontrou nenhum usuário, cria um novo
+        usuario_create = UsuarioCreate(
+            nome=usuario_in.nome,
+            email=usuario_in.email,
+            endereco=usuario_in.endereco,
+            senha=usuario_in.senha
         )
-    
-    # Cria o usuário
-    usuario = crud_usuario.create_usuario(db, usuario=usuario_in)
+        usuario = crud_usuario.create_usuario(db, usuario=usuario_create)
     
     # Enviar e-mail de confirmação de cadastro
     try:
@@ -116,14 +149,8 @@ async def registro(
         )
         
         if not email_enviado:
-            # Log do erro mas não falha o registro
-            import logging
-            logger = logging.getLogger(__name__)
             logger.warning(f"Falha ao enviar e-mail de confirmação para {usuario.email}")
     except Exception as e:
-        # Log do erro mas não falha o registro
-        import logging
-        logger = logging.getLogger(__name__)
         logger.error(f"Erro ao enviar e-mail de confirmação para {usuario.email}: {str(e)}")
     
     # Gera o token de acesso

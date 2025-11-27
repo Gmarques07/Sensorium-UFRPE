@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from ....crud import regra_alerta as crud_regra_alerta
 from ....schemas import regra_alerta as schemas
-from ....api.deps import get_db, get_current_user
+from ....api.deps import get_db, get_current_user_from_cookie
 from ....models.usuario import Usuario
 
 router = APIRouter()
@@ -13,7 +13,7 @@ def listar_regras_alerta(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user_from_cookie)
 ):
     """
     Retorna uma lista paginada das regras de alerta do usuário atual.
@@ -27,7 +27,7 @@ def listar_regras_alerta(
 def criar_regra_alerta(
     regra: schemas.RegraAlertaCreate,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user_from_cookie)
 ):
     """
     Cria uma nova regra de alerta para o usuário autenticado.
@@ -56,7 +56,7 @@ def criar_regra_alerta(
 def obter_regra_alerta(
     regra_id: int,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user_from_cookie)
 ):
     """
     Retorna uma regra de alerta específica.
@@ -76,7 +76,7 @@ def atualizar_regra_alerta(
     regra_id: int,
     regra: schemas.RegraAlertaUpdate,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user_from_cookie)
 ):
     """
     Atualiza uma regra de alerta existente.
@@ -95,7 +95,7 @@ def atualizar_regra_alerta(
 def deletar_regra_alerta(
     regra_id: int,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user_from_cookie)
 ):
     """
     Deleta uma regra de alerta existente.
