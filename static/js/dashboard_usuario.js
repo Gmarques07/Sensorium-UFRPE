@@ -70,7 +70,9 @@ function carregarSensoresGerenciamento() {
 
   container.innerHTML = `<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Carregando...</span></div><p class="mt-2 text-muted">Carregando sensores...</p></div>`;
 
-  fetch('/api/v1/locais/')
+  fetch('/api/v1/locais/', {
+      credentials: 'include'
+    })
     .then(response => {
       if (!response.ok) throw new Error('Erro ao carregar sensores');
       return response.json();
@@ -148,7 +150,10 @@ function copiarChaveSensor(chaveApi) {
 async function excluirSensor(sensorId, sensorNome) {
   confirmarAcao('Excluir Sensor', `Tem certeza que deseja excluir o sensor "${sensorNome}"? Esta ação não pode ser desfeita.`, async () => {
       try {
-        const response = await fetch(`/api/v1/locais/${sensorId}`, { method: 'DELETE' });
+        const response = await fetch(`/api/v1/locais/${sensorId}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
         if (response.ok) {
           mostrarAlertaModal('Sensor excluído com sucesso!', 'Sucesso', 'success');
           const sensorCard = document.getElementById(`sensor-card-${sensorId}`);
@@ -187,7 +192,9 @@ function montarQueryRelatorio(form) {
 }
 
 function carregarDadosSensores() {
-  fetch('/api/v1/usuarios/dashboard-dados')
+  fetch('/api/v1/usuarios/dashboard-dados', {
+      credentials: 'include'
+    })
     .then(response => {
       if (!response.ok) throw new Error('Erro ao carregar dados dos sensores');
       return response.json();
@@ -361,7 +368,9 @@ function mostrarDispositivoSelecionado() {
 function carregarSensoresParaAlertas() {
   const select = document.getElementById('sensorAlerta');
   select.innerHTML = '<option value="">Selecione um sensor</option>';
-  fetch('/api/v1/usuarios/dashboard-dados')
+  fetch('/api/v1/usuarios/dashboard-dados', {
+      credentials: 'include'
+    })
     .then(response => response.json())
     .then(data => {
       localStorage.setItem('sensores', JSON.stringify(data.dispositivos));
@@ -403,7 +412,9 @@ function atualizarCamposSensor(tipoSensor) {
 }
 
 function carregarAlertasConfigurados() {
-  fetch('/api/v1/regras-alerta/')
+  fetch('/api/v1/regras-alerta/', {
+      credentials: 'include'
+    })
     .then(response => {
       if (!response.ok) throw new Error('Erro ao carregar alertas');
       return response.json();
@@ -443,7 +454,10 @@ function obterNomeSensor(localId) {
 
 function excluirAlerta(alertaId) {
   confirmarAcao('Excluir Alerta', 'Tem certeza que deseja excluir este alerta?', () => {
-      fetch(`/api/v1/regras-alerta/${alertaId}`, { method: 'DELETE' })
+      fetch(`/api/v1/regras-alerta/${alertaId}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        })
       .then(response => {
         if (response.ok) {
           carregarAlertasConfigurados();
@@ -479,7 +493,9 @@ document.addEventListener('DOMContentLoaded', function() {
   handleHashChange();
 
   // --- Autenticação e Carga de Dados ---
-  fetch('/api/v1/usuarios/perfil')
+  fetch('/api/v1/usuarios/perfil', {
+      credentials: 'include'  // Inclui cookies nas requisições
+    })
     .then(response => {
       if (!response.ok) {
         window.location.href = '/login';
@@ -560,7 +576,10 @@ document.addEventListener('DOMContentLoaded', function() {
       } else {
           console.error("Modal de logout não encontrado!");
           if(confirm("Deseja sair da sua conta?")) {
-              fetch('/api/v1/auth/logout', { method: 'POST' })
+              fetch('/api/v1/auth/logout', {
+                  method: 'POST',
+                  credentials: 'include'
+                })
                   .then(() => {
                       localStorage.removeItem('accessToken');
                       localStorage.removeItem('user');
@@ -575,7 +594,10 @@ document.addEventListener('DOMContentLoaded', function() {
   const confirmLogoutBtn = document.getElementById('btnConfirmLogout');
   if (confirmLogoutBtn) {
     confirmLogoutBtn.addEventListener('click', function() {
-        fetch('/api/v1/auth/logout', { method: 'POST' })
+        fetch('/api/v1/auth/logout', {
+            method: 'POST',
+            credentials: 'include'
+          })
             .then(() => {
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('user');
