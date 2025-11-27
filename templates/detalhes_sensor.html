@@ -387,11 +387,19 @@
                 });
 
                 if (response.ok) {
+                    // Fechar o modal
+                    const modalEl = document.getElementById('modalConfirmVincular');
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    modal.hide();
+
                     const selectedOption = document.getElementById('selectUsuario').options[document.getElementById('selectUsuario').selectedIndex];
-                    const nomeUsuario = selectedOption.text.split(' (')[0]; // Extrai apenas o nome antes do email
+                    const nomeUsuario = selectedOption.text.split(' (')[0]; 
                     mostrarAlertaModal(`Usuário "${nomeUsuario}" vinculado ao sensor com sucesso!`, 'Sucesso', 'success');
-                    // Recarregar a página para atualizar os dados
-                    window.location.reload();
+                    
+                    // Aguardar um pouco antes de recarregar para mostrar a mensagem
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
                 } else {
                     const error = await response.json();
                     mostrarAlertaModal(`Erro: ${error.detail || 'Falha ao vincular usuário'}`, 'Erro', 'danger');
@@ -445,9 +453,26 @@
                 });
 
                 if (response.ok) {
+                    // Fechar o modal de confirmação
+                    const modalEl = document.getElementById('modalConfirmDesvincular');
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    modal.hide();
+
                     mostrarAlertaModal(`Usuário "${nomeUsuarioParaDesvincular}" desvinculado do sensor com sucesso!`, 'Sucesso', 'success');
-                    // Recarregar a página para atualizar os dados
-                    window.location.reload();
+                    
+                    // Remover a linha da tabela sem recarregar a página
+                    const btn = document.querySelector(`.btn-desvincular-usuario[data-usuario-id="${usuarioIdParaDesvincular}"]`);
+                    if (btn) {
+                        const row = btn.closest('tr');
+                        if (row) row.remove();
+                    }
+                    
+                    // Se não houver mais linhas, mostrar mensagem de vazio (opcional, mas bom para UX)
+                    const tbody = document.querySelector('table tbody');
+                    if (tbody && tbody.children.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-5 text-muted"><i class="bi bi-people fs-1 d-block mb-2"></i><p>Nenhum usuário vinculado a este sensor.</p></td></tr>';
+                    }
+
                 } else {
                     const error = await response.json();
                     mostrarAlertaModal(`Erro: ${error.detail || 'Falha ao desvincular usuário'}`, 'Erro', 'danger');
@@ -500,10 +525,5 @@
             dateElement.textContent = today.charAt(0).toUpperCase() + today.slice(1);
         }
     });
-
-    function mostrarAlertaModal(mensagem, titulo = 'Alerta', tipo = 'info') {
-        // Cria um modal temporário ou mostra uma notificação
-        alert(mensagem);
-    }
 </script>
 {% endblock %}

@@ -571,6 +571,9 @@ if (dateElement) {
       .then(blob => {
         const link = document.createElement('a');
         link.href = window.URL.createObjectURL(blob);
+        link.download = `relatorio_${form.inicio.value}_${form.fim.value}.csv`;
+        link.click();
+      })
       .catch(error => {
         console.error('Erro:', error);
         mostrarAlertaModal(error.message || 'Erro ao exportar relatório.', 'Erro', 'danger');

@@ -321,7 +321,15 @@
                     });
 
                     if (res.ok) {
-                        window.location.reload();
+                        // Fechar o modal
+                        const modalEl = document.getElementById('adicionarSensorModal');
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        modal.hide();
+
+                        mostrarAlertaModal('Sensor vinculado com sucesso!', 'Sucesso', 'success');
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
                     } else {
                         const data = await res.json();
                         mostrarAlertaModal(data.detail || 'Erro ao vincular.', 'Erro', 'danger');
@@ -351,7 +359,18 @@
                         });
 
                         if (res.ok) {
-                            window.location.reload();
+                            mostrarAlertaModal('Sensor desvinculado com sucesso.', 'Sucesso', 'success');
+                            // Remover linha da tabela
+                            const btn = document.querySelector(`.btn-remover-sensor[data-id="${id}"]`);
+                            if (btn) {
+                                const row = btn.closest('tr');
+                                if (row) row.remove();
+                            }
+                            // Verificar se a tabela ficou vazia
+                            const tbody = document.querySelector('table tbody');
+                            if (tbody && tbody.children.length === 0) {
+                                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted"><i class="bi bi-inbox fs-1 d-block mb-2"></i>Este usuário não possui sensores vinculados.</td></tr>';
+                            }
                         } else {
                             mostrarAlertaModal('Erro ao remover sensor.', 'Erro', 'danger');
                         }
