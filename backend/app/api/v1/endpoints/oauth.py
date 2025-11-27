@@ -162,7 +162,7 @@ async def google_callback(
 
         # Criar a resposta de redirecionamento PRIMEIRO
         redirect_url = f"{settings.BASE_URL}/dashboard"
-        redirect_response = RedirectResponse(url=redirect_url, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
+        redirect_response = RedirectResponse(url=redirect_url, status_code=status.HTTP_302_FOUND)
 
         # Definir o cookie DIRETAMENTE na resposta de redirecionamento
         redirect_response.set_cookie(
@@ -205,7 +205,7 @@ async def google_callback(
 
                     # Criar a resposta de redirecionamento PRIMEIRO
                     redirect_url = f"{settings.BASE_URL}/dashboard"
-                    redirect_response = RedirectResponse(url=redirect_url, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
+                    redirect_response = RedirectResponse(url=redirect_url, status_code=status.HTTP_302_FOUND)
 
                     # Definir o cookie DIRETAMENTE na resposta de redirecionamento
                     redirect_response.set_cookie(

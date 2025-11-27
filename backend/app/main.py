@@ -77,8 +77,8 @@ async def custom_http_exception_handler(request: Request, exc: StarletteHTTPExce
     
     # Redireciona para login se não autenticado (401) ou proibido (403) em rotas HTML
     if exc.status_code in [401, 403]:
-        # Redireciona para login de admin se for docs, redoc ou qualquer rota admin
-        if request.url.path in ["/docs", "/redoc"] or "/admin" in request.url.path:
+        # Redireciona para login de admin se for docs, redoc ou rotas admin estritas
+        if request.url.path in ["/docs", "/redoc"] or request.url.path.startswith("/admin"):
             return RedirectResponse(url="/admin", status_code=302)
         else:
             return RedirectResponse(url="/login", status_code=302)
