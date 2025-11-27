@@ -77,21 +77,7 @@ function showSection(event, sectionId) {
   history.pushState({}, '', `#${sectionId}`);
 }
 
-// Função para mostrar a seção de adicionar sensor
-function showAddSensorSection() {
-  // Rola para a seção de sensores
-  const sensoresSection = document.getElementById('sensores');
-  sensoresSection.scrollIntoView({ behavior: 'smooth' });
-
-  // Garante que a seção de sensores esteja ativa
-  document.querySelectorAll('.sidebar .nav-link').forEach(link => link.classList.remove('active'));
-  const sensorNavLink = document.querySelector('.nav-link[onclick*="showSection(event, \'sensores\')"]');
-  if (sensorNavLink) sensorNavLink.classList.add('active');
-
-  document.querySelectorAll('.section-panel').forEach(panel => panel.classList.remove('active'));
-  sensoresSection.classList.add('active');
-}
-
+// Função para mostrar a seção de adicionar sensor - REMOVIDA: funcionalidade transferida para admin
 // Função para carregar e exibir sensores para gerenciamento
 function carregarSensoresGerenciamento() {
   const container = document.getElementById('sensores-container');
@@ -168,10 +154,6 @@ function atualizarListaSensoresUsuario(sensores) {
                 <i class="bi bi-three-dots"></i>
               </button>
               <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="javascript:void(0)" onclick="copiarChaveSensor('${sensor.chave_api}')">
-                  <i class="bi bi-key me-2"></i>Copiar Chave API
-                </a></li>
-                <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="excluirSensor(${sensor.id}, '${sensor.nome}')">
                   <i class="bi bi-trash me-2"></i>Excluir Sensor
                 </a></li>
@@ -186,10 +168,6 @@ function atualizarListaSensoresUsuario(sensores) {
               <i class="bi bi-calendar me-1"></i>
               Criado em: ${new Date(sensor.data_criacao).toLocaleDateString('pt-BR')}
             </small>
-            <div class="mt-2">
-              <small class="text-muted d-block">Chave API:</small>
-              <code class="small" style="word-break: break-all;">${sensor.chave_api || 'Não gerada'}</code>
-            </div>
           </div>
         </div>
       </div>
@@ -201,15 +179,6 @@ function atualizarListaSensoresUsuario(sensores) {
   container.innerHTML = html;
 }
 
-// Função para copiar a chave de API de um sensor existente
-function copiarChaveSensor(chaveApi) {
-  navigator.clipboard.writeText(chaveApi).then(() => {
-    mostrarNotificacao('Chave API copiada para a área de transferência!', 'success');
-  }).catch(err => {
-    mostrarNotificacao('Erro ao copiar chave API', 'danger');
-    console.error('Erro ao copiar chave API:', err);
-  });
-}
 
 // Função para excluir um sensor
 async function excluirSensor(sensorId, sensorNome) {
@@ -260,7 +229,7 @@ function toggleSensorView(viewType) {
       </div>
     `;
     // Carregar a visão detalhada com gráficos
-    carregarDadosSensores();
+    carregarDadosSensores(true);  // Passa o parâmetro indicando que quer visualização detalhada
   }
 }
 
@@ -726,7 +695,7 @@ if (dateElement) {
 
 
 // Funções de carregamento de dados
-function carregarDadosSensores() {
+function carregarDadosSensores(mostrarDetalhada = false) {
   fetch('/api/v1/usuarios/dashboard-dados')
     .then(response => {
       if (!response.ok) {
@@ -752,20 +721,17 @@ function carregarDadosSensores() {
           selectDispositivos.appendChild(option);
         });
       }
-      // Verificar se estamos na aba sensores e em modo de visualização detalhada
-      const container = document.getElementById('sensores-container');
-      const isDetailedViewRequested = window.location.hash === '#sensores' &&
-        container &&
-        !container.querySelector('.sensor-card'); // Não há cards de gerenciamento visíveis
-
       // Verificar se estamos vindo de toggleSensorView('detailed') - nesse caso, SEMPRE renderizar
+      const container = document.getElementById('sensores-container');
       const currentCallIsFromDetailed = container &&
         (container.innerHTML.includes('selectDispositivo') || container.querySelector('#visualizacao-sensores'));
 
-      if (isDetailedViewRequested || currentCallIsFromDetailed) {
+      if (currentCallIsFromDetailed || mostrarDetalhada) {
+        // Se estamos vindo explicitamente da visualização detalhada ou foi solicitado mostrar detalhada
         renderizarSensores(data);
       } else {
-        // Carregar a lista de sensores para gerenciamento
+        // Caso contrário, carregar a lista de sensores para gerenciamento
+        // Isso inclui quando a página é recarregada, garantindo que a visualização padrão seja de gerenciamento
         carregarSensoresGerenciamento();
       }
     })
@@ -803,9 +769,6 @@ function renderizarSensores(data) {
       <div class="d-flex gap-2">
         <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleSensorView('manage')">
           <i class="bi bi-gear me-1"></i>Gerenciar Sensores
-        </button>
-        <button type="button" class="btn btn-sm btn-outline-primary" onclick="showAddSensorSection()">
-          <i class="bi bi-plus me-1"></i>Adicionar Novo
         </button>
       </div>
     </div>

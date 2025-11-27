@@ -7,11 +7,13 @@ from sqlalchemy import text
 from backend.app.crud import admin as crud_admin
 from backend.app.crud import usuario as crud_usuario
 from backend.app.crud import usuario_sensor as crud_usuario_sensor
+from backend.app.crud import sensor_registro as crud_sensor_registro
 from backend.app.schemas import admin as schemas
 from backend.app.schemas import usuario as usuario_schemas
 from backend.app.schemas import usuario_sensor as usuario_sensor_schemas
 from backend.app.schemas import auth as auth_schemas
 from backend.app.schemas import local as local_schemas
+from backend.app.schemas import sensor_registro as schemas_sensor_registro
 from backend.app.api.deps import get_db, get_current_admin
 from backend.app.models.usuario import Usuario
 from backend.app.models.admin import Admin
@@ -229,6 +231,36 @@ async def listar_sensores(
     """
     return db.query(Local).all()
 
+@router.post(
+    "/sensores/registrar-sensor",
+    response_model=schemas_sensor_registro.SensorRegistroResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Registrar Novo Sensor pelo Admin",
+    response_description="Sensor criado com chave de API",
+    tags=["admin"]
+)
+async def registrar_sensor_admin(
+    sensor_registro: schemas_sensor_registro.SensorRegistroCreate,
+    db: Session = Depends(get_db),
+    _: dict = Depends(get_current_admin)
+) -> Any:
+    """
+    Permite que um administrador registre um novo sensor (local) e obtenha uma chave de API única.
+    Este endpoint é específico para admin e não associa automaticamente a um usuário.
+    """
+    try:
+        # Cria o sensor localmente sem associação a usuário
+        db_local = crud_sensor_registro.criar_sensor_admin(
+            db,
+            sensor_registro
+        )
+        return db_local
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao registrar sensor: {str(e)}"
+        )
+
 @router.get("/usuarios/{usuario_id}/sensores", response_model=List[local_schemas.Local])
 async def listar_sensores_do_usuario(
     usuario_id: int,
@@ -335,6 +367,68 @@ async def remover_sensor_de_usuario(
     
     return None
 
+@router.get("/sensores/{sensor_id}", response_model=schemas_sensor_registro.SensorDetalhesResponse)
+async def obter_detalhes_sensor(
+    sensor_id: int,
+    db: Session = Depends(get_db),
+    _: dict = Depends(get_current_admin)
+) -> Any:
+    """
+    Obtém os detalhes de um sensor específico (disponível apenas para admin).
+    """
+    from backend.app.models.usuario_sensor import UsuarioSensor
+    from backend.app.models.usuario import Usuario
+
+    # Obter o sensor
+    sensor = db.query(Local).filter(Local.id == sensor_id).first()
+    if not sensor:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Sensor não encontrado"
+        )
+
+    # Obter os usuários associados a este sensor
+    usuarios_associados = db.query(Usuario).join(UsuarioSensor).filter(
+        UsuarioSensor.sensor_id == sensor_id
+    ).all()
+
+    # Retornar os detalhes do sensor com a lista de usuários associados
+    return schemas_sensor_registro.SensorDetalhesResponse(
+        id=sensor.id,
+        nome=sensor.nome,
+        tipo=sensor.tipo,
+        descricao=sensor.descricao,
+        chave_api=sensor.chave_api,
+        data_criacao=sensor.data_criacao,
+        usuarios_associados=usuarios_associados
+    )
+
+@router.delete("/sensores/{sensor_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def deletar_sensor(
+    sensor_id: int,
+    db: Session = Depends(get_db),
+    _: dict = Depends(get_current_admin)
+) -> None:
+    """
+    Remove um sensor do sistema (disponível apenas para admin).
+    """
+    from backend.app.crud import local as crud_local
+    from backend.app.models.usuario_sensor import UsuarioSensor
+
+    # Remover todas as associações do sensor com usuários antes de excluir o sensor
+    db.query(UsuarioSensor).filter(UsuarioSensor.sensor_id == sensor_id).delete()
+
+    # Excluir o sensor
+    success = crud_local.deletar_local(db, sensor_id)
+
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Sensor não encontrado"
+        )
+
+    return None
+
 @router.delete("/usuarios/{usuario_id}/sensores", status_code=status.HTTP_204_NO_CONTENT)
 async def remover_todos_sensores_do_usuario(
     usuario_id: int,
@@ -351,10 +445,10 @@ async def remover_todos_sensores_do_usuario(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Usuário não encontrado"
         )
-    
+
     # Remove todos os relacionamentos
     crud_usuario_sensor.delete_all_sensores_do_usuario(db, usuario_id)
-    
+
     return None
 
 @router.get("/configuracoes", response_model=List[schemas.Configuracao])

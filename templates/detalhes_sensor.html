@@ -1,0 +1,509 @@
+{% extends "partials/base.html" %}
+
+{% block title %}Detalhes do Sensor - {{ sensor.nome }}{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', path='css/dashboard.css') }}?v=3.0">
+{% endblock %}
+
+{% block content %}
+<nav class="navbar navbar-light bg-light d-lg-none border-bottom px-3 mb-3 fixed-top shadow-sm">
+    <div class="container-fluid">
+        <span class="navbar-brand fw-bold text-primary">Sensorium Admin</span>
+        <button class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu">
+            <i class="bi bi-list"></i> Menu
+        </button>
+    </div>
+</nav>
+<div class="d-lg-none" style="height: 70px;"></div>
+
+<div class="offcanvas-lg offcanvas-start sidebar-container" tabindex="-1" id="sidebarMenu">
+    <div class="offcanvas-header border-bottom border-white-50">
+        <h5 class="offcanvas-title text-white fw-bold">Admin</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu"></button>
+    </div>
+    <div class="offcanvas-body d-flex flex-column p-3 h-100">
+        <div class="d-none d-lg-flex align-items-center text-white mb-4 ps-2" data-aos="fade-right">
+             <i class="bi bi-shield-lock fs-3 me-2 logo-icon"></i>
+             <span class="fs-4 fw-bold brand-text">Sensorium</span>
+        </div>
+        <nav class="nav nav-pills flex-column gap-2">
+            <a class="nav-link text-white d-flex align-items-center gap-2" href="/admin/dashboard#painel">
+                <i class="bi bi-speedometer2"></i> <span>Painel Geral</span>
+            </a>
+            <a class="nav-link text-white d-flex align-items-center gap-2" href="/admin/dashboard#usuarios">
+                <i class="bi bi-people"></i> <span>Usuários</span>
+            </a>
+            <a class="nav-link text-white d-flex align-items-center gap-2 active" href="/admin/dashboard#sensores">
+                <i class="bi bi-cpu"></i> <span>Sensores</span>
+            </a>
+            <a class="nav-link text-white d-flex align-items-center gap-2" href="/admin/dashboard#notificacoes">
+                <i class="bi bi-bell"></i> <span>Notificações</span>
+            </a>
+            <a class="nav-link text-white d-flex align-items-center gap-2" href="/admin/dashboard#configuracoes">
+                <i class="bi bi-gear"></i> <span>Configurações</span>
+            </a>
+        </nav>
+        <div class="mt-auto pt-4 border-top border-white-50">
+            <a href="#" id="logout-button" class="nav-link text-white-50 d-flex align-items-center gap-2">
+                <i class="bi bi-box-arrow-right"></i> <span>Sair</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<main class="content col content-col">
+
+    <header class="header-card d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3" data-aos="fade-down">
+        <div class="d-flex align-items-center gap-3 w-100">
+            <div class="user-avatar shadow-sm" style="background: linear-gradient(135deg, #2c3e50 0%, #4ca1af 100%);">
+                <i class="bi bi-cpu"></i>
+            </div>
+            <div>
+                <h1 class="h4 fw-bold mb-0 welcome-text">Detalhes do Sensor</h1>
+                <div class="d-flex align-items-center gap-2 text-muted small mt-1">
+                    <span>{{ sensor.nome }}</span>
+                    <span class="separator">•</span>
+                    <span id="current-date">Carregando...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 w-100 w-md-auto justify-content-md-end align-items-center">
+            <button class="btn btn-icon-only shadow-sm" id="theme-toggle-det" title="Alternar tema">
+                <i class="bi bi-sun-fill theme-icon-active"></i>
+                <i class="bi bi-moon-fill theme-icon-hidden d-none"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger shadow-sm px-3 d-flex align-items-center gap-2" id="btn-excluir-sensor">
+                <i class="bi bi-trash"></i> <span>Excluir Sensor</span>
+            </button>
+            <a href="/admin/dashboard#sensores" class="btn btn-sm btn-outline-primary shadow-sm px-3 d-flex align-items-center gap-2">
+                <i class="bi bi-arrow-left"></i> <span>Voltar</span>
+            </a>
+        </div>
+    </header>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="dashboard-card h-100">
+                <h5 class="mb-3 fw-bold text-primary"><i class="bi bi-info-circle me-2"></i>Informações do Sensor</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item px-0 d-flex justify-content-between">
+                        <strong class="text-muted">ID:</strong> <span>#{{ sensor.id }}</span>
+                    </li>
+                    <li class="list-group-item px-0 d-flex justify-content-between">
+                        <strong class="text-muted">Nome:</strong> <span>{{ sensor.nome }}</span>
+                    </li>
+                    <li class="list-group-item px-0 d-flex justify-content-between">
+                        <strong class="text-muted">Tipo:</strong> 
+                        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
+                            {{ sensor.tipo }}
+                        </span>
+                    </li>
+                    <li class="list-group-item px-0 d-flex justify-content-between">
+                        <strong class="text-muted">Descrição:</strong> <span>{{ sensor.descricao or 'Não informado' }}</span>
+                    </li>
+                    <li class="list-group-item px-0 d-flex justify-content-between">
+                        <strong class="text-muted">Data de Criação:</strong> <span>{{ sensor.data_criacao.strftime('%d/%m/%Y %H:%M:%S') if sensor.data_criacao else 'N/A' }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="dashboard-card h-100">
+                <h5 class="mb-3 fw-bold text-primary"><i class="bi bi-key me-2"></i>Chave de API</h5>
+                <div class="alert alert-info">
+                    <p class="mb-2"><small class="text-muted">Chave de API para conexão com o dispositivo:</small></p>
+                    <div class="d-flex">
+                        <input type="text" class="form-control font-monospace" id="chaveApi" value="{{ sensor.chave_api }}" readonly>
+                        <button class="btn btn-outline-primary ms-2" type="button" onclick="copiarChaveAPI()">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                    <div class="form-text mt-2">
+                        <i class="bi bi-shield-lock me-1"></i> Esta chave é usada para autenticação do dispositivo com a API
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-header bg-primary text-white">
+            <i class="bi bi-person-plus me-2"></i>Vincular Usuário
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label for="selectUsuario" class="form-label fw-semibold">Selecione um usuário para vincular:</label>
+                    <select class="form-select" id="selectUsuario">
+                        <option value="">Selecione um usuário...</option>
+                        {% for usuario in usuarios_nao_associados %}
+                            <option value="{{ usuario.id }}">{{ usuario.nome }} ({{ usuario.email }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" id="btnAtribuirUsuario">Vincular</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-header bg-primary text-white">
+            <i class="bi bi-people me-2"></i>Usuários Vinculados
+        </div>
+        <div class="card-body">
+            {% if usuarios %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">ID</th>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th class="text-end pe-4">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usuario in usuarios %}
+                        <tr>
+                            <td class="ps-4 fw-bold text-muted">#{{ usuario.id }}</td>
+                            <td>{{ usuario.nome }}</td>
+                            <td>{{ usuario.email }}</td>
+                            <td class="text-end pe-4">
+                                <button class="btn btn-outline-danger btn-sm rounded-pill px-3 btn-desvincular-usuario" data-usuario-id="{{ usuario.id }}" data-sensor-id="{{ sensor.id }}">
+                                    <i class="bi bi-x-circle me-1"></i>Desvincular
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-people fs-1 d-block mb-2"></i>
+                <p>Nenhum usuário vinculado a este sensor.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Vinculação -->
+    <div class="modal fade" id="modalConfirmVincular" tabindex="-1" aria-labelledby="modalConfirmVincularLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalConfirmVincularLabel">
+                        <i class="bi bi-person-check me-2"></i>Vincular Usuário
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Deseja realmente vincular <strong id="nomeUsuarioVincular"></strong> ao sensor?</p>
+                    <p class="text-muted small mb-0">Esta ação dará acesso ao usuário a este sensor.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnConfirmarVincular">Vincular</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Desvinculação -->
+    <div class="modal fade" id="modalConfirmDesvincular" tabindex="-1" aria-labelledby="modalConfirmDesvincularLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalConfirmDesvincularLabel">
+                        <i class="bi bi-person-x me-2"></i>Desvincular Usuário
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Deseja realmente desvincular <strong id="nomeUsuarioDesvincular"></strong> do sensor?</p>
+                    <p class="text-muted small mb-0">Esta ação removerá o acesso do usuário a este sensor.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarDesvincular">Desvincular</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<!-- Modal de Confirmação de Logout -->
+<div class="modal fade" id="modalConfirmLogout" tabindex="-1" aria-labelledby="modalConfirmLogoutLabel" aria-hidden="true" style="z-index: 10000 !important;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalConfirmLogoutLabel">
+                    <i class="bi bi-box-arrow-right me-2"></i>Sair do Sistema
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body text-dark">
+                Tem certeza que deseja sair da área administrativa?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="btnConfirmLogout">Sim, Sair</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log("Página de Detalhes do Sensor: Iniciada");
+
+        // 2. TEMA (Dark Mode)
+        const themeToggle = document.getElementById('theme-toggle-det');
+
+        if (themeToggle) {
+            const sunIcon = themeToggle.querySelector('.bi-sun-fill');
+            const moonIcon = themeToggle.querySelector('.bi-moon-fill');
+
+            function aplicarTemaVisual(isDark) {
+                if (isDark) {
+                    document.body.classList.add('dark-mode');
+                    sunIcon.classList.add('d-none');
+                    moonIcon.classList.remove('d-none');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    sunIcon.classList.remove('d-none');
+                    moonIcon.classList.add('d-none');
+                }
+            }
+
+            // Carregar Preferência
+            const savedTheme = localStorage.getItem('theme');
+            aplicarTemaVisual(savedTheme === 'dark');
+
+            // Evento de Clique
+            themeToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                const isDark = document.body.classList.toggle('dark-mode');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                aplicarTemaVisual(isDark);
+            });
+        }
+
+        // 3. FUNÇÃO DE COPIAR CHAVE DE API
+        function copiarChaveAPI() {
+            const input = document.getElementById('chaveApi');
+            input.select();
+            document.execCommand('copy');
+            // Mostra uma notificação temporária
+            const originalText = input.nextElementSibling.innerHTML;
+            input.nextElementSibling.innerHTML = '<i class="bi bi-check-lg"></i> Copiado!';
+            setTimeout(() => {
+                input.nextElementSibling.innerHTML = originalText;
+            }, 2000);
+        }
+
+        // 4. EXCLUIR SENSOR
+        document.getElementById('btn-excluir-sensor').addEventListener('click', async () => {
+            if (!confirm(`Tem certeza que deseja excluir o sensor "${'{{ sensor.nome }}'}"? Esta ação não pode ser desfeita e removerá o sensor e todas as suas associações.`)) {
+                return;
+            }
+
+            const accessToken = localStorage.getItem('adminAccessToken');
+            if (!accessToken) {
+                mostrarAlertaModal('Token de admin não encontrado. Faça login novamente.', 'Erro', 'danger');
+                window.location.href = '/login_admin.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/v1/admin/sensores/{{ sensor.id }}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    // Redirecionar para a página de sensores
+                    window.location.href = '/admin/dashboard#sensores';
+                } else {
+                    const error = await response.json();
+                    mostrarAlertaModal(`Erro: ${error.detail || 'Falha ao excluir sensor'}`, 'Erro', 'danger');
+                }
+            } catch (error) {
+                mostrarAlertaModal(`Erro de conexão: ${error.message}`, 'Erro', 'danger');
+            }
+        });
+
+        // 5. ATRIBUIR USUÁRIO AO SENSOR
+        let usuarioIdParaVincular = null;
+        let sensorIdParaVincular = {{ sensor.id }};
+
+        document.getElementById('btnAtribuirUsuario').addEventListener('click', (e) => {
+            const selectUsuario = document.getElementById('selectUsuario');
+            usuarioIdParaVincular = parseInt(selectUsuario.value);
+
+            if (!usuarioIdParaVincular) {
+                mostrarAlertaModal('Selecione um usuário para vincular ao sensor.', 'Atenção', 'warning');
+                return;
+            }
+
+            // Obter e exibir o nome do usuário no modal
+            const selectedOption = selectUsuario.options[selectUsuario.selectedIndex];
+            const nomeUsuario = selectedOption.text.split(' (')[0]; // Extrai apenas o nome antes do email
+            document.getElementById('nomeUsuarioVincular').textContent = nomeUsuario;
+
+            // Mostrar o modal de confirmação
+            const modal = new bootstrap.Modal(document.getElementById('modalConfirmVincular'));
+            modal.show();
+        });
+
+        document.getElementById('btnConfirmarVincular').addEventListener('click', async () => {
+            if (!usuarioIdParaVincular) return;
+
+            const accessToken = localStorage.getItem('adminAccessToken');
+            if (!accessToken) {
+                mostrarAlertaModal('Token de admin não encontrado. Faça login novamente.', 'Erro', 'danger');
+                window.location.href = '/login_admin.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/v1/admin/usuarios/${usuarioIdParaVincular}/sensores?sensor_id=${sensorIdParaVincular}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const selectedOption = document.getElementById('selectUsuario').options[document.getElementById('selectUsuario').selectedIndex];
+                    const nomeUsuario = selectedOption.text.split(' (')[0]; // Extrai apenas o nome antes do email
+                    mostrarAlertaModal(`Usuário "${nomeUsuario}" vinculado ao sensor com sucesso!`, 'Sucesso', 'success');
+                    // Recarregar a página para atualizar os dados
+                    window.location.reload();
+                } else {
+                    const error = await response.json();
+                    mostrarAlertaModal(`Erro: ${error.detail || 'Falha ao vincular usuário'}`, 'Erro', 'danger');
+                }
+            } catch (error) {
+                mostrarAlertaModal(`Erro de conexão: ${error.message}`, 'Erro', 'danger');
+            }
+        });
+
+        // 6. DESVINCULAR USUÁRIO
+        let usuarioIdParaDesvincular = null;
+        let sensorIdParaDesvincular = null;
+        let nomeUsuarioParaDesvincular = '';
+
+        document.querySelectorAll('.btn-desvincular-usuario').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                usuarioIdParaDesvincular = e.target.dataset.usuarioId || e.target.parentElement.dataset.usuarioId;
+                sensorIdParaDesvincular = e.target.dataset.sensorId || e.target.parentElement.dataset.sensorId;
+
+                // Obter o nome do usuário para exibir no modal e na mensagem de sucesso
+                const row = e.target.closest('tr');
+                if (row) {
+                    const nomeCell = row.querySelector('td:nth-child(2)');
+                    if (nomeCell) {
+                        nomeUsuarioParaDesvincular = nomeCell.textContent.trim();
+                        document.getElementById('nomeUsuarioDesvincular').textContent = nomeUsuarioParaDesvincular;
+                    }
+                }
+
+                const modal = new bootstrap.Modal(document.getElementById('modalConfirmDesvincular'));
+                modal.show();
+            });
+        });
+
+        document.getElementById('btnConfirmarDesvincular').addEventListener('click', async () => {
+            if (!usuarioIdParaDesvincular || !sensorIdParaDesvincular) return;
+
+            const accessToken = localStorage.getItem('adminAccessToken');
+            if (!accessToken) {
+                mostrarAlertaModal('Token de admin não encontrado. Faça login novamente.', 'Erro', 'danger');
+                window.location.href = '/login_admin.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/v1/admin/usuarios/${usuarioIdParaDesvincular}/sensores/${sensorIdParaDesvincular}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    mostrarAlertaModal(`Usuário "${nomeUsuarioParaDesvincular}" desvinculado do sensor com sucesso!`, 'Sucesso', 'success');
+                    // Recarregar a página para atualizar os dados
+                    window.location.reload();
+                } else {
+                    const error = await response.json();
+                    mostrarAlertaModal(`Erro: ${error.detail || 'Falha ao desvincular usuário'}`, 'Erro', 'danger');
+                }
+            } catch (error) {
+                mostrarAlertaModal(`Erro de conexão: ${error.message}`, 'Erro', 'danger');
+            }
+        });
+
+        // 7. LOGOUT
+        const logoutBtn = document.getElementById('logout-button');
+        const confirmLogoutBtn = document.getElementById('btnConfirmLogout');
+
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const modalEl = document.getElementById('modalConfirmLogout');
+                if (modalEl) {
+                    const modal = new bootstrap.Modal(modalEl);
+                    modal.show();
+                } else {
+                    if (confirm('Deseja realmente sair?')) {
+                        fetch('/api/v1/admin/logout', { method: 'POST' })
+                            .then(() => {
+                                localStorage.removeItem('adminAccessToken');
+                                window.location.href = '/login_admin.html';
+                            })
+                            .catch(err => console.error('Erro no logout:', err));
+                    }
+                }
+            });
+        }
+
+        if (confirmLogoutBtn) {
+            confirmLogoutBtn.addEventListener('click', () => {
+                fetch('/api/v1/admin/logout', { method: 'POST' })
+                    .then(() => {
+                        localStorage.removeItem('adminAccessToken');
+                        window.location.href = '/login_admin.html';
+                    })
+                    .catch(err => console.error('Erro no logout:', err));
+            });
+        }
+
+        // 8. DATA NO HEADER
+        const dateElement = document.getElementById('current-date');
+        if (dateElement) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const today = new Date().toLocaleDateString('pt-BR', options);
+            dateElement.textContent = today.charAt(0).toUpperCase() + today.slice(1);
+        }
+    });
+
+    function mostrarAlertaModal(mensagem, titulo = 'Alerta', tipo = 'info') {
+        // Cria um modal temporário ou mostra uma notificação
+        alert(mensagem);
+    }
+</script>
+{% endblock %}

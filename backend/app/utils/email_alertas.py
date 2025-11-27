@@ -1,4 +1,5 @@
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import logging
 from backend.app.core.config import settings
 from backend.app.utils.email_yagmail import send_email_with_yagmail
@@ -76,7 +77,7 @@ def send_alerta_violacao_regra(
                     </div>
                     <div style="margin: 10px 0; display: flex; align-items: center;">
                         <span style="font-weight: bold; min-width: 120px; color: #495057; display: inline-block;">Data/Hora:</span>
-                        <span style="color: #212529;">{datetime.now().strftime("%d/%m/%Y %H:%M:%S")}</span>
+                        <span style="color: #212529;">{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%d/%m/%Y %H:%M:%S")}</span>
                     </div>
                 </div>
 

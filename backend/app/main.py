@@ -165,6 +165,38 @@ async def admin_dashboard_clean(request: Request, db: Session = Depends(get_db),
     # Reutiliza a lógica da rota original
     return await admin_dashboard(request, db, current_admin)
 
+@app.get("/admin/sensores/{sensor_id}/detalhes", response_class=HTMLResponse)
+async def detalhes_sensor_page(request: Request, sensor_id: int, db: Session = Depends(get_db), current_admin=Depends(get_current_admin_from_cookie)):
+    from backend.app.models.usuario_sensor import UsuarioSensor
+    from backend.app.models.usuario import Usuario
+    from backend.app.models.local import Local
+
+    # Obter o sensor
+    sensor = db.query(Local).filter(Local.id == sensor_id).first()
+    if not sensor:
+        raise HTTPException(status_code=404, detail="Sensor não encontrado")
+
+    # Obter os usuários associados a este sensor
+    usuarios_associados = db.query(Usuario).join(UsuarioSensor).filter(
+        UsuarioSensor.sensor_id == sensor_id
+    ).all()
+
+    # Obter todos os usuários
+    todos_usuarios = db.query(Usuario).all()
+
+    # Obter IDs dos usuários já associados
+    ids_usuarios_associados = {usuario.id for usuario in usuarios_associados}
+
+    # Obter usuários não associados
+    usuarios_nao_associados = [usuario for usuario in todos_usuarios if usuario.id not in ids_usuarios_associados]
+
+    return templates.TemplateResponse("detalhes_sensor.html", {
+        "request": request,
+        "sensor": sensor,
+        "usuarios": usuarios_associados,
+        "usuarios_nao_associados": usuarios_nao_associados
+    })
+
 @app.get("/admin/sensores/{usuario_id}", response_class=HTMLResponse)
 async def gerenciar_sensores_clean(request: Request, usuario_id: int, db: Session = Depends(get_db), current_admin=Depends(get_current_admin_from_cookie)):
     return await gerenciar_sensores(request, usuario_id, db, current_admin)
