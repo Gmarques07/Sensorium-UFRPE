@@ -1,6 +1,6 @@
 from typing import Any, Optional
 from fastapi import APIRouter, HTTPException, status, Depends, Request, Query
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, HTMLResponse
 from sqlalchemy.orm import Session
 from urllib.parse import urlencode
 import requests
@@ -160,12 +160,30 @@ async def google_callback(
             data={"sub": usuario.email}, expires_delta=access_token_expires
         )
 
-        # Criar a resposta de redirecionamento PRIMEIRO
-        redirect_url = f"{settings.BASE_URL}/dashboard"
-        redirect_response = RedirectResponse(url=redirect_url, status_code=status.HTTP_302_FOUND)
+        # Criar uma resposta HTML temporária com redirecionamento via JavaScript
+        # Isso permite que o cookie seja processado antes do redirecionamento
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Autenticação Google</title>
+        </head>
+        <body>
+            <script>
+                // Definir o cookie de acesso no JavaScript também como fallback
+                document.cookie = "access_token=Bearer {access_token}; path=/; max-age={settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60}; samesite=lax; {(settings.ENVIRONMENT == 'production') and 'secure;' or ''}";
 
-        # Definir o cookie DIRETAMENTE na resposta de redirecionamento
-        redirect_response.set_cookie(
+                // Agora redirecionar para o dashboard
+                window.location.href = "/dashboard";
+            </script>
+        </body>
+        </html>
+        """
+
+        response = HTMLResponse(content=html_content)
+
+        # Definir o cookie também na resposta para garantir compatibilidade
+        response.set_cookie(
             key="access_token",
             value=f"Bearer {access_token}",
             httponly=True,
@@ -176,7 +194,7 @@ async def google_callback(
             path="/"
         )
 
-        return redirect_response
+        return response
 
     except HTTPException:
         # Re-lançar HTTPExceptions para manter os códigos de erro apropriados
@@ -203,12 +221,30 @@ async def google_callback(
                         data={"sub": usuario_existente.email}, expires_delta=access_token_expires
                     )
 
-                    # Criar a resposta de redirecionamento PRIMEIRO
-                    redirect_url = f"{settings.BASE_URL}/dashboard"
-                    redirect_response = RedirectResponse(url=redirect_url, status_code=status.HTTP_302_FOUND)
+                    # Criar uma resposta HTML temporária com redirecionamento via JavaScript
+                    # Isso permite que o cookie seja processado antes do redirecionamento
+                    html_content = f"""
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Autenticação Google</title>
+                    </head>
+                    <body>
+                        <script>
+                            // Definir o cookie de acesso no JavaScript também como fallback
+                            document.cookie = "access_token=Bearer {access_token}; path=/; max-age={settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60}; samesite=lax; {(settings.ENVIRONMENT == 'production') and 'secure;' or ''}";
 
-                    # Definir o cookie DIRETAMENTE na resposta de redirecionamento
-                    redirect_response.set_cookie(
+                            // Agora redirecionar para o dashboard
+                            window.location.href = "/dashboard";
+                        </script>
+                    </body>
+                    </html>
+                    """
+
+                    response = HTMLResponse(content=html_content)
+
+                    # Definir o cookie também na resposta para garantir compatibilidade
+                    response.set_cookie(
                         key="access_token",
                         value=f"Bearer {access_token}",
                         httponly=True,
@@ -219,7 +255,7 @@ async def google_callback(
                         path="/"
                     )
 
-                    return redirect_response
+                    return response
                 else:
                     print(f"[OAuth] Usuário não encontrado mesmo após erro de duplicidade: {google_email}")
             except Exception as inner_e:
