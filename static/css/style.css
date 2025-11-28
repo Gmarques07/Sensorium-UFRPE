@@ -300,3 +300,26 @@ body.dark-mode nav.navbar #theme-toggle,
 nav.navbar.navbar-dark #theme-toggle {
     color: var(--white);
 }
+
+/* Fixes for Dark Mode Modals and Text Utilities */
+body.dark-mode .modal-content {
+    background-color: #181818;
+    border-color: #333;
+    color: #F5F5F5;
+}
+
+body.dark-mode .text-muted {
+    color: #a0a0a0 !important;
+}
+
+body.dark-mode .text-dark {
+    color: #F5F5F5 !important;
+}
+
+body.dark-mode .text-success {
+    color: #00FF41 !important;
+}
+
+body.dark-mode .bg-success.bg-opacity-10 {
+    background-color: rgba(0, 255, 65, 0.1) !important;
+}

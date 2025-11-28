@@ -94,7 +94,7 @@ function atualizarListaSensoresUsuario(sensores) {
   if (!container) return;
 
   if (!sensores || sensores.length === 0) {
-    container.innerHTML = `<div class="text-center py-4"><i class="bi bi-cpu fs-1 text-muted"></i><h5 class="mt-3 text-muted">Nenhum sensor registrado</h5><p class="text-muted">Registre seu primeiro sensor usando o formulário acima</p></div>`;
+    container.innerHTML = `<div class="text-center py-4"><i class="bi bi-cpu fs-1 text-muted"></i><h5 class="mt-3 text-muted">Nenhum sensor registrado</h5></div>`;
     return;
   }
 
