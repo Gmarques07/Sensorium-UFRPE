@@ -133,9 +133,6 @@
                                 <td class="text-muted">{{ usuario.email }}</td>
                                 <td class="text-muted">{{ usuario.endereco or '-' }}</td>
                                 <td class="text-end pe-4">
-                                    <button class="btn btn-primary btn-action-lg btn-visualizar-usuario" data-id="{{ usuario.id }}" title="Ver">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
                                     <a href="/admin/sensores/{{ usuario.id }}" class="btn btn-warning text-white btn-action-lg" title="Editar">
                                         <i class="bi bi-pencil"></i>
                                     </a>

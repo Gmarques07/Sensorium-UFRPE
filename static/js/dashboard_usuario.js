@@ -1,6 +1,6 @@
 // =================================================================
 // 1. DEFINIÇÕES DE FUNÇÕES GLOBAIS
-// Todas as funções são definidas aqui no escopo global para garantir 
+// Todas as funções são definidas aqui no escopo global para garantir
 // que estejam disponíveis quando chamadas.
 // =================================================================
 
@@ -20,18 +20,18 @@ function showSection(event, sectionId) {
   }
 
   document.querySelectorAll('.section-panel').forEach(panel => panel.classList.remove('active'));
-  
+
   let section = document.getElementById(sectionId);
   if (!section) {
       console.warn(`Seção "${sectionId}" não encontrada. Redirecionando para dashboard.`);
       sectionId = 'dashboard';
       section = document.getElementById(sectionId);
       history.replaceState({}, '', `#${sectionId}`);
-      
+
       const newTargetLink = document.querySelector(`.nav-link[href="#${sectionId}"]`);
       if (newTargetLink) newTargetLink.classList.add('active');
   }
-  
+
   if (section) section.classList.add('active');
 
   const sidebarEl = document.getElementById('sidebarMenu');
@@ -67,6 +67,9 @@ function handleHashChange() {
 function carregarSensoresGerenciamento() {
   const container = document.getElementById('sensores-container');
   if (!container) return;
+
+  // Limpar a flag quando retornar ao modo de gerenciamento
+  sessionStorage.removeItem('navigatedToDetailedView');
 
   container.innerHTML = `<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Carregando...</span></div><p class="mt-2 text-muted">Carregando sensores...</p></div>`;
 
@@ -113,12 +116,6 @@ function atualizarListaSensoresUsuario(sensores) {
               <h5 class="card-title">${sensor.nome}</h5>
               <span class="badge bg-primary">${sensor.tipo}</span>
             </div>
-            <div class="dropdown">
-              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-three-dots"></i></button>
-              <ul class="dropdown-menu">
-                <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="excluirSensor(${sensor.id}, '${sensor.nome}')"><i class="bi bi-trash me-2"></i>Excluir Sensor</a></li>
-              </ul>
-            </div>
           </div>
           ${sensor.descricao ? `<p class="card-text text-muted">${sensor.descricao}</p>` : ''}
           <div class="mt-3">
@@ -141,27 +138,6 @@ function copiarChaveSensor(chaveApi) {
   });
 }
 
-async function excluirSensor(sensorId, sensorNome) {
-  confirmarAcao('Excluir Sensor', `Tem certeza que deseja excluir o sensor "${sensorNome}"? Esta ação não pode ser desfeita.`, async () => {
-      try {
-        const response = await fetch(`/api/v1/locais/${sensorId}`, {
-          method: 'DELETE',
-          credentials: 'include'
-        });
-        if (response.ok) {
-          mostrarAlertaModal('Sensor excluído com sucesso!', 'Sucesso', 'success');
-          const sensorCard = document.getElementById(`sensor-card-${sensorId}`);
-          if (sensorCard) sensorCard.remove();
-          carregarDadosSensores();
-        } else {
-          const error = await response.json();
-          mostrarAlertaModal(`Erro ao excluir sensor: ${error.detail || 'Erro desconhecido'}`, 'Erro', 'danger');
-        }
-      } catch (error) {
-        mostrarAlertaModal(`Erro de conexão: ${error.message}`, 'Erro de Conexão', 'danger');
-      }
-  });
-}
 
 function toggleSensorView(viewType) {
   const container = document.getElementById('sensores-container');
@@ -169,6 +145,8 @@ function toggleSensorView(viewType) {
   if (viewType === 'manage') {
     carregarSensoresGerenciamento();
   } else if (viewType === 'detailed') {
+    // Marcar que o usuário navegou ativamente para o modo detalhado
+    sessionStorage.setItem('navigatedToDetailedView', 'true');
     container.innerHTML = `<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Carregando...</span></div><p class="mt-2 text-muted">Carregando dados dos sensores...</p></div>`;
     carregarDadosSensores();
   }
@@ -198,7 +176,7 @@ function carregarDadosSensores() {
       localStorage.setItem('sensores', JSON.stringify(data.dispositivos));
       const totalDispositivos = document.getElementById('total-dispositivos');
       if (totalDispositivos) totalDispositivos.textContent = data.dispositivos.length;
-      
+
       const selectDispositivos = document.getElementById('dispRel');
       if (selectDispositivos) {
         selectDispositivos.innerHTML = '<option value="">Todos</option>';
@@ -209,15 +187,18 @@ function carregarDadosSensores() {
           selectDispositivos.appendChild(option);
         });
       }
-      
-      const container = document.getElementById('sensores-container');
-      const isDetailedViewRequested = window.location.hash === '#sensores' && container && !container.querySelector('.sensor-card');
-      const currentCallIsFromDetailed = container && (container.innerHTML.includes('selectDispositivo') || container.querySelector('#visualizacao-sensores'));
 
-      if (isDetailedViewRequested || currentCallIsFromDetailed) {
-        renderizarSensores(data);
-      } else {
+      const container = document.getElementById('sensores-container');
+      // Verificar se é um recarregamento da página usando sessionStorage
+      // Marcar a navegação ao entrar em modo detalhado
+      const isPageReload = !sessionStorage.getItem('navigatedToDetailedView');
+
+      if (isPageReload) {
+        // Ao recarregar a página, mostrar o modo de gerenciamento como padrão
         carregarSensoresGerenciamento();
+      } else {
+        // Foi uma navegação ativa para o modo detalhado, manter esse estado
+        renderizarSensores(data);
       }
     })
     .catch(error => {
@@ -247,7 +228,6 @@ function renderizarSensores(data) {
       <label for="selectDispositivo" class="form-label fw-semibold">Selecione o Dispositivo:</label>
       <div class="d-flex gap-2">
         <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleSensorView('manage')"><i class="bi bi-gear me-1"></i>Gerenciar Sensores</button>
-        <button type="button" class="btn btn-sm btn-outline-primary" onclick="showAddSensorSection()"><i class="bi bi-plus me-1"></i>Adicionar Novo</button>
       </div>
     </div>
     <select class="form-select w-auto d-inline-block" id="selectDispositivo" onchange="mostrarDispositivoSelecionado()">`;
@@ -392,7 +372,7 @@ function criarGraficos(data) {
     const umidadeData = data.umidade_por_dispositivo[disp.nome];
 
     const configComum = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(0, 0, 0, 0.8)', titleFont: { family: "'Poppins', sans-serif" }, bodyFont: { family: "'Poppins', sans-serif" }, padding: 12, cornerRadius: 8, displayColors: false } }, scales: { y: { beginAtZero: false, grid: { color: 'rgba(0, 0, 0, 0.05)' }, ticks: { font: { family: "'Poppins', sans-serif" } } }, x: { grid: { display: false }, ticks: { font: { family: "'Poppins', sans-serif" } } } }, animation: { duration: 2000, easing: 'easeOutQuart' }, interaction: { intersect: false, mode: 'index' } };
-    
+
     const phCtx = document.getElementById(`phChart-${dispositivoId}`);
     if (phCtx && phData && phData.historico) {
       const historicoPh = phData.historico.reverse();
@@ -566,6 +546,10 @@ function fecharVisualizacaoRelatorio() {
 // =================================================================
 
 document.addEventListener('DOMContentLoaded', function() {
+  // Limpar a flag de navegação detalhada ao carregar a página
+  // Isso garante que ao recarregar a página, volte ao modo de gerenciamento
+  sessionStorage.removeItem('navigatedToDetailedView');
+
   // Inicializa a navegação baseada no hash da URL
   handleHashChange();
 
@@ -608,7 +592,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   });
-  
+
   document.getElementById('toggleSenha')?.addEventListener('click', function() {
     // ...
   });
@@ -620,7 +604,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('formCriarAlerta')?.addEventListener('submit', function(e) {
     // ...
   });
-  
+
   document.getElementById('tipoSensorAlerta')?.addEventListener('change', function() {
     // ...
   });
@@ -638,7 +622,7 @@ document.addEventListener('DOMContentLoaded', function() {
     btn.disabled = true;
 
     const queryString = montarQueryRelatorio(form);
-    
+
     fetch(`/api/v1/relatorios/visualizar?${queryString}`, {
       credentials: 'include'
     })
@@ -649,7 +633,7 @@ document.addEventListener('DOMContentLoaded', function() {
     .then(data => {
       const tbody = document.getElementById('tabela-relatorio-corpo');
       tbody.innerHTML = '';
-      
+
       if (data.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">Nenhum registro encontrado para o período.</td></tr>';
       } else {
@@ -665,10 +649,10 @@ document.addEventListener('DOMContentLoaded', function() {
           tbody.appendChild(tr);
         });
       }
-      
+
       const container = document.getElementById('relatorio-visualizacao');
       container.classList.remove('d-none');
-      
+
       // Scroll suave até o resultado
       container.scrollIntoView({ behavior: 'smooth', block: 'start' });
     })
@@ -681,7 +665,7 @@ document.addEventListener('DOMContentLoaded', function() {
       btn.disabled = false;
     });
   });
-  
+
   document.getElementById('btnExportCSV')?.addEventListener('click', function() {
     const form = document.getElementById('formRelatorios');
     if (!form.checkValidity()) {
@@ -743,7 +727,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (logoutButton) {
     logoutButton.addEventListener('click', function(e) {
       e.preventDefault();
-      
+
       const modalEl = document.getElementById('modalConfirmLogout');
       if (modalEl) {
           const modal = new bootstrap.Modal(modalEl);
