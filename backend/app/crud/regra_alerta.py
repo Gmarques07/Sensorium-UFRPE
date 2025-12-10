@@ -40,8 +40,10 @@ def get_regras_alerta_por_usuario_e_local(db: Session, usuario_email: str, local
     )
 
 
-def create_regra_alerta(db: Session, regra: RegraAlertaCreate) -> RegraAlerta:
-    db_regra = RegraAlerta(**regra.model_dump())
+def create_regra_alerta(db: Session, regra: RegraAlertaCreate, usuario_email: str) -> RegraAlerta:
+    regra_data = regra.model_dump()
+    regra_data["usuario_email"] = usuario_email
+    db_regra = RegraAlerta(**regra_data)
     db.add(db_regra)
     db.commit()
     db.refresh(db_regra)

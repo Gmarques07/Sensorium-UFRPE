@@ -546,6 +546,16 @@ function fecharVisualizacaoRelatorio() {
 // =================================================================
 
 document.addEventListener('DOMContentLoaded', function() {
+  // Exibir Data Atual no Header
+  try {
+      const dateElement = document.getElementById('current-date');
+      if (dateElement) {
+          const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+          const today = new Date().toLocaleDateString('pt-BR', options);
+          dateElement.textContent = today.charAt(0).toUpperCase() + today.slice(1);
+      }
+  } catch (e) { console.error('Erro ao exibir data:', e); }
+
   // Limpar a flag de navegação detalhada ao carregar a página
   // Isso garante que ao recarregar a página, volte ao modo de gerenciamento
   sessionStorage.removeItem('navigatedToDetailedView');
@@ -594,19 +604,121 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   document.getElementById('toggleSenha')?.addEventListener('click', function() {
-    // ...
+    const input = document.getElementById('senha');
+    const icon = this.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('bi-eye');
+        icon.classList.add('bi-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('bi-eye-slash');
+        icon.classList.add('bi-eye');
+    }
   });
 
   document.querySelector('#modalEditarPerfil form')?.addEventListener('submit', function(e) {
-    // ...
+    e.preventDefault();
+    const form = this;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+
+    if (!data.senha) {
+        delete data.senha;
+    }
+
+    const btn = form.querySelector('button[type="submit"]');
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...';
+    btn.disabled = true;
+
+    fetch('/api/v1/usuarios/perfil', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data),
+        credentials: 'include'
+    })
+    .then(response => {
+        if (response.ok) {
+            mostrarAlertaModal('Perfil atualizado com sucesso!', 'Sucesso', 'success');
+            const modalEl = document.getElementById('modalEditarPerfil');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+            if (data.nome) {
+                 const welcomeMessage = document.getElementById('welcome-message');
+                 if (welcomeMessage) welcomeMessage.textContent = `Olá, ${data.nome}!`;
+            }
+        } else {
+            return response.json().then(err => { throw new Error(err.detail || 'Erro ao atualizar perfil'); });
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        mostrarAlertaModal(error.message || 'Erro ao atualizar perfil.', 'Erro', 'danger');
+    })
+    .finally(() => {
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+    });
   });
 
   document.getElementById('formCriarAlerta')?.addEventListener('submit', function(e) {
-    // ...
+    e.preventDefault();
+    const form = this;
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+
+    const payload = {
+        local_id: parseInt(data.local_id),
+        sensor_tipo: data.sensor_tipo,
+        campo_sensor: data.campo_sensor,
+        operador: data.operador,
+        valor_limite: parseFloat(data.valor_limite),
+        mensagem_alerta: data.mensagem_alerta,
+        ativa: true
+    };
+
+    const btn = form.querySelector('button[type="submit"]');
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...';
+    btn.disabled = true;
+
+    fetch('/api/v1/regras-alerta/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload),
+        credentials: 'include'
+    })
+    .then(response => {
+        if (response.ok) {
+            mostrarAlertaModal('Alerta criado com sucesso!', 'Sucesso', 'success');
+            limparFormularioAlerta();
+            carregarAlertasConfigurados();
+        } else {
+            return response.json().then(err => { throw new Error(err.detail || 'Erro ao criar alerta'); });
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        mostrarAlertaModal(error.message || 'Erro ao criar alerta.', 'Erro', 'danger');
+    })
+    .finally(() => {
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+    });
   });
 
   document.getElementById('tipoSensorAlerta')?.addEventListener('change', function() {
-    // ...
+    atualizarCamposSensor(this.value);
   });
 
   document.getElementById('btnVisualizarRelatorio')?.addEventListener('click', function() {

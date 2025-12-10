@@ -43,14 +43,7 @@ def criar_regra_alerta(
             detail="Você não tem permissão para criar regras para este sensor"
         )
     
-    # Verificar se o usuário está tentando criar uma regra para si mesmo
-    if regra.usuario_email != current_user.email:
-        raise HTTPException(
-            status_code=403, 
-            detail="Você só pode criar regras para si mesmo"
-        )
-    
-    return crud_regra_alerta.create_regra_alerta(db, regra)
+    return crud_regra_alerta.create_regra_alerta(db, regra, current_user.email)
 
 @router.get("/{regra_id}", response_model=schemas.RegraAlerta)
 def obter_regra_alerta(

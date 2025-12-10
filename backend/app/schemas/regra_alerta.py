@@ -4,7 +4,6 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class RegraAlertaBase(BaseModel):
-    usuario_email: str
     local_id: int
     sensor_tipo: str  # PH, UMIDADE, BOIA
     campo_sensor: str  # Campo do sensor (ex: 'ph', 'valor', 'umidade_percentual')
@@ -29,6 +28,7 @@ class RegraAlertaUpdate(BaseModel):
 
 class RegraAlerta(RegraAlertaBase):
     id: int
+    usuario_email: str
     data_criacao: datetime
     data_atualizacao: datetime
 
